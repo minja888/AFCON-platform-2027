@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Karibu Arusha — turn your AFCON Pamoja 2027 empty match days into unforgettable safaris. Book trusted, licensed Arusha operators on WhatsApp." />
+  <title>Karibu Arusha · AFCON Pamoja 2027</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Anton&family=Caveat:wght@600;700&family=Hanken+Grotesk:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css?v=2" />
+</head>
+<body>
+  <!-- ===== HEADER ===== -->
+  <header class="site-header" id="siteHeader">
+    <div class="container header-inner">
+      <a href="#/home" class="brand" aria-label="Karibu Arusha home">
+        <span class="brand-mark">KA</span>
+        <span class="brand-text">
+          <strong>Karibu Arusha</strong>
+          <small data-i18n="brand_tag">AFCON Pamoja 2027</small>
+        </span>
+      </a>
+
+      <nav class="main-nav" id="mainNav">
+        <a href="#/home" data-i18n="nav_home">Home</a>
+        <a href="#/trips" data-i18n="nav_trips">Trips</a>
+        <a href="#/operators" data-i18n="nav_operators">Operators</a>
+        <a href="#/matches" data-i18n="nav_matches">Matches</a>
+        <a href="#/dashboard" data-i18n="nav_dashboard">Dashboard</a>
+        <a href="#/about" data-i18n="nav_about">About</a>
+        <a href="#/login" class="nav-login" id="navLogin" data-i18n="nav_login">Login</a>
+        <a href="#/register" class="nav-cta" id="navRegister" data-i18n="nav_register">Register</a>
+        <span class="nav-user" id="navUser" hidden>
+          <span class="nav-user-name" id="navUserName"></span>
+          <button class="nav-logout" id="navLogout" data-i18n="nav_logout">Log out</button>
+        </span>
+      </nav>
+
+      <div class="header-actions">
+        <label class="lang-switch" aria-label="Language">
+          <span class="globe">🌐</span>
+          <select id="langSelect">
+            <option value="en">English</option>
+            <option value="sw">Kiswahili</option>
+            <option value="fr">Français</option>
+            <option value="ar">العربية</option>
+            <option value="pt">Português</option>
+            <option value="ha">Hausa</option>
+          </select>
+        </label>
+        <button class="nav-toggle" id="navToggle" aria-label="Menu">☰</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- ===== APP ROOT (views injected here) ===== -->
+  <main id="app"></main>
+
+  <!-- ===== BOOKING MODAL ===== -->
+  <div class="modal-backdrop" id="modalBackdrop" hidden>
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+      <button class="modal-close" id="modalClose" aria-label="Close">✕</button>
+      <div id="modalBody"></div>
+    </div>
+  </div>
+
+  <!-- ===== FOOTER ===== -->
+  <footer class="site-footer">
+    <div class="container footer-grid">
+      <div>
+        <div class="brand footer-brand">
+          <span class="brand-mark">KA</span>
+          <strong>Karibu Arusha</strong>
+        </div>
+        <p class="footer-tag" data-i18n="footer_tag">Come for the football. Stay for Tanzania.</p>
+        <p class="footer-built" data-i18n="footer_built">Built by Arusha youth · TUNAWEZA GROUP</p>
+      </div>
+      <div>
+        <h4 data-i18n="footer_explore">Explore</h4>
+        <a href="#/trips" data-i18n="nav_trips">Trips</a>
+        <a href="#/operators" data-i18n="nav_operators">Operators</a>
+        <a href="#/matches" data-i18n="nav_matches">Matches</a>
+        <a href="#/dashboard" data-i18n="nav_dashboard">Dashboard</a>
+      </div>
+      <div>
+        <h4 data-i18n="footer_contact">Visitor Desk</h4>
+        <p data-i18n="footer_desk">Multilingual WhatsApp support during the tournament.</p>
+        <a class="footer-wa" id="footerWhatsApp" target="_blank" rel="noopener">💬 WhatsApp the Visitor Desk</a>
+      </div>
+    </div>
+    <div class="container footer-bottom">
+      <span>© 2027 Karibu Arusha · <a href="#/admin" class="footer-admin" data-i18n="admin_link">Admin</a></span>
+    </div>
+  </footer>
+
+  <!-- data + logic (order matters) -->
+  <script src="countries.js?v=2"></script>
+  <script src="data.js?v=2"></script>
+  <script src="i18n.js?v=2"></script>
+  <script src="app.js?v=2"></script>
+</body>
+</html>
