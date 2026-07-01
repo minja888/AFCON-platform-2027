@@ -260,7 +260,8 @@
           </div>
           <div class="scroll-hero-content" id="scrollHeroContent">
             <span class="hero-kicker">${t("hero_kicker")}</span>
-            <h1 class="hero-title">${t("hero_title")}</h1>
+            <p class="hero-lead">${t("hero_lead")}</p>
+            <h1 class="hero-arusha">Arusha</h1>
             <p class="hero-script">${t("hero_script")}</p>
             <p class="hero-sub">${t("hero_sub")}</p>
             <div class="hero-cta-row">
@@ -1095,6 +1096,13 @@
   document.getElementById("mainNav").addEventListener("click", e => {
     if (e.target.tagName === "A") document.getElementById("mainNav").classList.remove("open");
   });
+  // close the menu when tapping anywhere outside it (so the page is usable again)
+  document.addEventListener("click", (e) => {
+    const nav = document.getElementById("mainNav");
+    if (nav.classList.contains("open") && !nav.contains(e.target) && !e.target.closest("#navToggle")) {
+      nav.classList.remove("open");
+    }
+  });
 
   /* ---------- show/hide password toggle (delegated, works for every .pass-wrap) ---------- */
   document.addEventListener("click", (e) => {
@@ -1116,10 +1124,11 @@
     location.hash = "#/home"; render();
   });
 
-  /* ---------- header shadow on scroll ---------- */
+  /* ---------- header shadow on scroll + auto-close the mobile menu ---------- */
   window.addEventListener("scroll", () => {
     document.getElementById("siteHeader").classList.toggle("scrolled", window.scrollY > 10);
-  });
+    document.getElementById("mainNav").classList.remove("open");  // scrolling closes the menu
+  }, { passive: true });
 
   /* ---------- boot ---------- */
   window.addEventListener("hashchange", render);
