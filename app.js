@@ -138,6 +138,13 @@
       login.hidden = false; reg.hidden = false; chip.hidden = true;
     }
   }
+  /* primary call-to-action: registered tourists go to their account, not "Register" again */
+  function primaryCta(cls, arrow) {
+    const u = getCurrentUser();
+    const suffix = arrow ? " →" : "";
+    if (u && u.name) return `<a href="#/account" class="${cls}">${t("home_acct_cta")}${suffix}</a>`;
+    return `<a href="#/register" class="${cls}">${t("home_reg_cta")}${suffix}</a>`;
+  }
 
   /* ---------- Supabase insert + favourites helpers ---------- */
   function sbInsert(table, row) {
@@ -314,7 +321,7 @@
             <p class="hero-script">${t("hero_script")}</p>
             <p class="hero-sub">${t("hero_sub")}</p>
             <div class="hero-cta-row">
-              <a href="#/register" class="btn btn-primary">${t("home_reg_cta")}</a>
+              ${primaryCta("btn btn-primary")}
               <a href="#/trips" class="btn btn-ghost">${t("hero_cta")}</a>
             </div>
             <div class="scroll-hint" aria-hidden="true">↓</div>
@@ -373,7 +380,7 @@
             <h2>${t("home_reg_title")}</h2>
             <p>${t("home_reg_text")}</p>
           </div>
-          <a href="#/register" class="btn btn-primary btn-lg">${t("home_reg_cta")} →</a>
+          ${primaryCta("btn btn-primary btn-lg", true)}
         </div>
       </section>
     `;
