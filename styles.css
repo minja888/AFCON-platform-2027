@@ -755,6 +755,26 @@ img { max-width: 100%; display: block; }
 .star-pick .star.on { color: var(--gold); }
 .nav-user-name:hover { color: var(--gold-deep); }
 
+/* ---------- account: personal profile + activity ---------- */
+.acct-profile { display: flex; align-items: center; gap: 18px; background: var(--white); border: 1px solid var(--line); border-radius: var(--radius); padding: 22px; box-shadow: var(--shadow); margin-bottom: 16px; }
+.acct-avatar { flex: 0 0 auto; width: 64px; height: 64px; border-radius: 50%; display: grid; place-items: center; font-family: var(--display); font-weight: 700; font-size: 1.8rem; color: #fff; background: linear-gradient(135deg, var(--green-deep), var(--gold)); }
+.acct-profile-name { margin: 0 0 6px; color: var(--green-deep); }
+.acct-profile-meta { display: flex; flex-wrap: wrap; gap: 6px 16px; color: var(--muted); font-size: .9rem; }
+.acct-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 28px; }
+.acct-stat { background: var(--sand); border: 1px solid var(--line); border-radius: var(--radius-sm); padding: 14px 8px; text-align: center; }
+.acct-stat-n { display: block; font-family: var(--display); font-weight: 700; font-size: 1.6rem; color: var(--gold-deep); line-height: 1; }
+.acct-stat-l { display: block; font-size: .78rem; color: var(--muted); margin-top: 4px; }
+.acct-section-h { color: var(--green-deep); font-size: 1.15rem; margin: 8px 0 14px; }
+.acct-timeline { list-style: none; margin: 0 0 28px; padding: 0; display: flex; flex-direction: column; gap: 10px; max-width: 720px; }
+.acct-tl-item { display: flex; gap: 12px; background: var(--white); border: 1px solid var(--line); border-radius: var(--radius-sm); padding: 12px 14px; }
+.acct-tl-icon { flex: 0 0 auto; font-size: 1.2rem; }
+.acct-tl-body { flex: 1; min-width: 0; }
+.acct-tl-top { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.acct-tl-time { margin-left: auto; color: var(--muted); font-size: .78rem; }
+.acct-tl-stars { color: var(--gold); letter-spacing: 1px; }
+.acct-tl-msg { margin: 4px 0 0; color: var(--ink); font-size: .92rem; }
+@media (max-width: 560px) { .acct-stats { grid-template-columns: repeat(2, 1fr); } .acct-profile { flex-direction: column; text-align: center; } .acct-profile-meta { justify-content: center; } }
+
 /* ---------- favourite (heart) button ---------- */
 .fav-btn .fav-heart { color: #c9a; display: inline-block; transition: color .18s, transform .18s; }
 .fav-btn.on { border-color: var(--red); color: var(--red); }

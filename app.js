@@ -159,6 +159,15 @@
     return i === -1;
   }
 
+  /* ---------- personal activity mirror (so a tourist sees THEIR OWN history) ---------- */
+  const ACT_KEY = "ka_activity";
+  function getActivity() { try { return JSON.parse(localStorage.getItem(ACT_KEY)) || []; } catch (e) { return []; } }
+  function addActivity(entry) {
+    const a = getActivity();
+    a.unshift(Object.assign({ ts: new Date().toISOString() }, entry));  // newest first
+    localStorage.setItem(ACT_KEY, JSON.stringify(a.slice(0, 100)));      // keep it bounded
+  }
+
   const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
   /* ---------- scroll-gallery hero (vanilla port of the bento scroll-animation) ---------- */
@@ -688,6 +697,22 @@
      VIEW: REGISTER (tourist data capture)
      =================================================================== */
   function viewRegister() {
+    const cu = getCurrentUser();
+    if (cu && cu.name) {                       // already registered & signed in — don't ask again
+      const f = esc(String(cu.name).split(" ")[0]);
+      return `
+        <section class="container auth-wrap">
+          <div class="auth-card">
+            <div class="auth-icon">✅</div>
+            <h1 class="auth-title">${t("reg_already")}</h1>
+            <p class="auth-sub">${f} — ${t("reg_already_sub")}</p>
+            <div class="hero-cta-row" style="justify-content:center">
+              <a class="btn btn-primary" href="#/account">${t("reg_go_account")}</a>
+              <a class="btn btn-ghost" href="#/trips">${t("reg_explore")}</a>
+            </div>
+          </div>
+        </section>`;
+    }
     const countries = window.COUNTRIES || [];
     const dialOpts = countries.map(c =>
       `<option value="+${c.d}" data-c="${c.c}"${c.c === "TZ" ? " selected" : ""}>${flag(c.c)} +${c.d}</option>`).join("");
@@ -845,7 +870,8 @@
         dial: phone ? dial.value : "", phone: fullPhone,
         email, interest, lang, pass: hashPass(pass)
       });
-      setCurrentUser({ name, email, phone: fullPhone, country: countryName, ts });  // auto sign-in
+      setCurrentUser({ name, email, phone: fullPhone, country: countryName, interest, ts });  // auto sign-in
+      addActivity({ type: "register", message: t("act_registered") });
       updateAuthNav();
       form.hidden = true;
       document.getElementById("regSuccess").hidden = false;
@@ -1109,6 +1135,42 @@
         </section>`;
     }
     const first = esc(String(u.name).split(" ")[0]);
+    const memberSince = u.ts ? new Date(u.ts).toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" }) : "";
+    const act = getActivity();
+    const favCount = getFavs().length;
+    const countOf = (ty) => act.filter(a => a.type === ty).length;
+    const actIcon = { register: "🎉", enquiry: "📨", review: "⭐", challenge: "⚠️" };
+    const actLabel = { register: t("acct_enquiry_h"), enquiry: t("acct_enquiry"), review: t("acct_review"), challenge: t("acct_challenge") };
+    const timeAgo = (iso) => { try { return new Date(iso).toLocaleString(undefined, { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" }); } catch (e) { return ""; } };
+    const activityList = act.length
+      ? `<ul class="acct-timeline">${act.map(a => `
+          <li class="acct-tl-item">
+            <span class="acct-tl-icon">${actIcon[a.type] || "•"}</span>
+            <div class="acct-tl-body">
+              <div class="acct-tl-top"><strong>${esc(actLabel[a.type] || a.type)}</strong>${a.rating ? ` <span class="acct-tl-stars">${"★".repeat(a.rating)}</span>` : ""}<span class="acct-tl-time">${timeAgo(a.ts)}</span></div>
+              ${a.message ? `<p class="acct-tl-msg">${esc(a.message)}</p>` : ""}
+            </div>
+          </li>`).join("")}</ul>`
+      : `<p class="muted">${t("acct_no_activity")}</p>`;
+    const profileCard = `
+      <div class="acct-profile">
+        <div class="acct-avatar">${esc(String(u.name).trim().charAt(0).toUpperCase() || "🙂")}</div>
+        <div class="acct-profile-info">
+          <h2 class="acct-profile-name">${esc(u.name)}</h2>
+          <div class="acct-profile-meta">
+            ${u.country ? `<span>📍 ${esc(u.country)}</span>` : ""}
+            ${u.phone ? `<span>📱 ${esc(u.phone)}</span>` : ""}
+            ${u.email ? `<span>✉️ ${esc(u.email)}</span>` : ""}
+            ${memberSince ? `<span>🗓️ ${t("acct_since")} ${esc(memberSince)}</span>` : ""}
+          </div>
+        </div>
+      </div>
+      <div class="acct-stats">
+        <div class="acct-stat"><span class="acct-stat-n">${countOf("enquiry")}</span><span class="acct-stat-l">${t("acct_enquiry")}</span></div>
+        <div class="acct-stat"><span class="acct-stat-n">${countOf("review")}</span><span class="acct-stat-l">${t("acct_review")}</span></div>
+        <div class="acct-stat"><span class="acct-stat-n">${countOf("challenge")}</span><span class="acct-stat-l">${t("acct_challenge")}</span></div>
+        <div class="acct-stat"><span class="acct-stat-n">${favCount}</span><span class="acct-stat-l">${t("acct_favs")}</span></div>
+      </div>`;
     const starPicker = `<div class="star-pick" id="reviewStars" role="radiogroup" aria-label="${t("acct_rating")}">${[1, 2, 3, 4, 5].map(i => `<button type="button" class="star" data-v="${i}" aria-label="${i}">★</button>`).join("")}</div><input type="hidden" id="reviewRating" value="0" />`;
     const favs = getFavs().map(id => window.TRIPS.find(x => x.id === id)).filter(Boolean);
     const favList = favs.length
@@ -1130,6 +1192,10 @@
         <div class="container"><h1>${t("acct_hi")}, ${first} 👋</h1><p class="detail-meta">${t("acct_lead")}</p></div>
       </section>
       <section class="container section">
+        ${profileCard}
+        <h2 class="acct-section-h">${t("acct_activity_h")}</h2>
+        ${activityList}
+        <h2 class="acct-section-h">${t("acct_tools_h")}</h2>
         <div class="acct-tabs" id="acctTabs">
           <button class="acct-tab active" data-tab="enquiry">📨 ${t("acct_enquiry")}</button>
           <button class="acct-tab" data-tab="review">⭐ ${t("acct_review")}</button>
@@ -1175,6 +1241,7 @@
           type, name: u.name || null, email: u.email || null, phone: u.phone || null,
           country: u.country || null, rating, message: msg, lang
         }).then(() => {
+          addActivity({ type, message: msg, rating });   // mirror into the tourist's own history
           form.querySelector(".acct-ok").hidden = false;
           form.querySelector(".acct-msg").value = "";
           if (type === "review" && starWrap) { document.getElementById("reviewRating").value = "0"; starWrap.querySelectorAll(".star").forEach(st => st.classList.remove("on")); }
