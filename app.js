@@ -184,7 +184,7 @@
     "1549366021-9f761d450615",    // elephant
     "1547970810-dc1eac37d174",    // rhinos on the plains
     "1523805009345-7448845a9e53"  // giraffe at sunset
-  ].map(id => `https://images.unsplash.com/photo-${id}?w=1200&q=65&auto=format&fit=crop`);
+  ].map(id => `https://images.unsplash.com/photo-${id}?w=900&q=60&auto=format&fit=crop`);
 
   let scrollHeroHandler = null;
   function stopScrollHero() {

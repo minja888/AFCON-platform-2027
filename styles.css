@@ -118,7 +118,7 @@ img { max-width: 100%; display: block; }
 .nav-toggle { display: none; background: var(--cream-2); border: none; font-size: 1.3rem; width: 40px; height: 40px; border-radius: 10px; cursor: pointer; }
 
 /* ---------- scroll-gallery hero (bento reveal) ---------- */
-.scroll-hero { position: relative; height: 300vh; }
+.scroll-hero { position: relative; height: 190vh; }
 .scroll-hero-sticky {
   position: sticky; top: 0; height: 100vh; min-height: 560px; overflow: hidden;
   background:
