@@ -719,6 +719,7 @@ img { max-width: 100%; display: block; }
 .reg-table td { padding: 10px 12px; border-bottom: 1px solid var(--line); vertical-align: top; }
 .reg-table tr:hover td { background: var(--sand); }
 .admin-empty { padding: 18px 0; }
+.admin-central { background: rgba(74,124,89,.10); border: 1px solid rgba(74,124,89,.25); border-radius: 8px; padding: 9px 13px; font-size: .85rem; color: var(--green-deep); margin: 10px 0 4px; }
 
 /* ---------- animations ---------- */
 @keyframes fade { from { opacity: 0 } to { opacity: 1 } }

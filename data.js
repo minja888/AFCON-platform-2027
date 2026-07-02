@@ -16,6 +16,12 @@ window.CONFIG = {
   registrationEndpoint: "",
   // Administrator passcode for the #/admin registrations panel. CHANGE THIS before launch.
   adminCode: "arusha2027",
+  // Real central backend (Supabase). Every registration is saved here across ALL devices.
+  // View them at: Supabase dashboard → project "karibu-arusha" → Table Editor → registrations
+  supabase: {
+    url: "https://buvvljnhgkjmumxtvenq.supabase.co",
+    anonKey: "sb_publishable_Je9PkAk_GwjK4rE55tvAXg_ulqNlscI"
+  },
   city: "Arusha",
   tournament: "AFCON Pamoja 2027",
   dates: "19 June – 17 July 2027",

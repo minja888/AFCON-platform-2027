@@ -120,7 +120,9 @@ window.I18N = {
     login_btn: "Sign in", login_err: "We couldn't find that account. Check your details or register.",
     login_no_acct: "New here?", login_register: "Create an account",
     login_already: "You're signed in", login_already_sub: "you're already signed in.",
-    pass_show: "Show password", pass_hide: "Hide password"
+    pass_show: "Show password", pass_hide: "Hide password",
+    admin_central: "The list below is only this device. Every registration from every visitor is saved centrally in the database.",
+    admin_central_link: "Open the central database"
   },
 
   sw: {
@@ -236,7 +238,9 @@ window.I18N = {
     login_btn: "Ingia", login_err: "Hatukupata akaunti hiyo. Angalia taarifa zako au jisajili.",
     login_no_acct: "Ni mara yako ya kwanza?", login_register: "Fungua akaunti",
     login_already: "Umeingia tayari", login_already_sub: "tayari umeingia.",
-    pass_show: "Onyesha nenosiri", pass_hide: "Ficha nenosiri"
+    pass_show: "Onyesha nenosiri", pass_hide: "Ficha nenosiri",
+    admin_central: "Orodha hapa chini ni ya kifaa hiki tu. Kila usajili kutoka kwa kila mgeni umehifadhiwa kwenye database ya kati.",
+    admin_central_link: "Fungua database ya kati"
   },
 
   fr: {

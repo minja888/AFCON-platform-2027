@@ -65,9 +65,29 @@
   function getRegs() { try { return JSON.parse(localStorage.getItem(REG_KEY)) || []; } catch (e) { return []; } }
   function saveReg(rec) {
     const all = getRegs(); all.push(rec);
-    localStorage.setItem(REG_KEY, JSON.stringify(all));
+    localStorage.setItem(REG_KEY, JSON.stringify(all));           // 1) keep a local copy (offline-safe)
     const url = window.CONFIG && window.CONFIG.registrationEndpoint;
     if (url) { try { fetch(url, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(rec) }); } catch (e) {} }
+    // 2) send to the central Supabase database (visible across all devices)
+    const sb = window.CONFIG && window.CONFIG.supabase;
+    if (sb && sb.url && sb.anonKey) {
+      try {
+        fetch(sb.url + "/rest/v1/registrations", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "apikey": sb.anonKey,
+            "Authorization": "Bearer " + sb.anonKey,
+            "Prefer": "return=minimal"
+          },
+          body: JSON.stringify({
+            name: rec.name, country: rec.country, country_code: rec.countryCode,
+            dial: rec.dial || null, phone: rec.phone || null,
+            email: rec.email || null, interest: rec.interest || null, lang: rec.lang
+          })
+        }).catch(() => {});
+      } catch (e) {}
+    }
     return all.length;
   }
   function clearRegs() { localStorage.removeItem(REG_KEY); }
@@ -837,6 +857,7 @@
           </div>
         </div>
         <p class="muted small">${t("admin_sub")}</p>
+        <p class="admin-central">🌍 ${t("admin_central")} <a href="https://supabase.com/dashboard/project/buvvljnhgkjmumxtvenq/editor" target="_blank" rel="noopener" class="link-inline">${t("admin_central_link")} →</a></p>
         ${body}
       </div>`;
   }
