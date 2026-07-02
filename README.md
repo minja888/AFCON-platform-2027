@@ -63,6 +63,18 @@ works offline. To collect data centrally, paste a form endpoint into
 > ⚠️ The tourist password + admin passcode are **client-side only** (demo-grade, not real security).
 > For genuine accounts, wire `registrationEndpoint` to a real backend with server-side auth.
 
+### 🔔 Admin notifications (email + WhatsApp)
+
+Every new registration and submission automatically notifies the admin, via a Supabase
+Edge Function (`notify-admin`) triggered on insert. To **activate**, add two free API keys as
+Edge Function secrets in the Supabase dashboard:
+
+- `RESEND_API_KEY` — email alerts. Sign up free at [resend.com](https://resend.com) with the admin email; in test mode it sends to that same address.
+- `CALLMEBOT_APIKEY` — WhatsApp alerts. Free one-time opt-in at [callmebot.com/blog/free-api-whatsapp-messages](https://www.callmebot.com/blog/free-api-whatsapp-messages/) from the admin's WhatsApp number.
+
+Optional secrets `ADMIN_EMAIL` / `ADMIN_WHATSAPP` override the defaults
+(`tumainminja888@gmail.com` / `255787540009`). No keys in the website code — all server-side.
+
 ---
 
 ## ✏️ Common edits (no real coding)
