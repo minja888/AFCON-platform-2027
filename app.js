@@ -139,6 +139,26 @@
     }
   }
 
+  /* ---------- Supabase insert + favourites helpers ---------- */
+  function sbInsert(table, row) {
+    const sb = window.CONFIG && window.CONFIG.supabase;
+    if (!sb || !sb.url) return Promise.reject(new Error("no-backend"));
+    return fetch(sb.url + "/rest/v1/" + table, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "apikey": sb.anonKey, "Authorization": "Bearer " + sb.anonKey, "Prefer": "return=minimal" },
+      body: JSON.stringify(row)
+    }).then(r => { if (!r.ok) throw new Error("insert " + r.status); return true; });
+  }
+  const FAV_KEY = "ka_favs";
+  function getFavs() { try { return JSON.parse(localStorage.getItem(FAV_KEY)) || []; } catch (e) { return []; } }
+  function isFav(id) { return getFavs().indexOf(id) !== -1; }
+  function toggleFav(id) {
+    const f = getFavs(); const i = f.indexOf(id);
+    if (i === -1) f.push(id); else f.splice(i, 1);
+    localStorage.setItem(FAV_KEY, JSON.stringify(f));
+    return i === -1;
+  }
+
   const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
   /* ---------- scroll-gallery hero (vanilla port of the bento scroll-animation) ---------- */
@@ -454,6 +474,9 @@
         </ul>
         <div class="detail-cta">
           <button class="btn btn-primary btn-wa" data-book="${tr.id}">💬 ${t("book_whatsapp")}</button>
+          <button class="btn btn-ghost fav-btn ${isFav(tr.id) ? "on" : ""}" data-fav="${tr.id}" aria-pressed="${isFav(tr.id)}">
+            <span class="fav-heart">♥</span> <span class="fav-txt">${isFav(tr.id) ? t("fav_saved") : t("fav_save")}</span>
+          </button>
           <span class="muted small">${t("safe_text")}</span>
         </div>
       </section>`;
@@ -840,33 +863,60 @@
       body: JSON.stringify(body)
     }).then(r => { if (!r.ok) throw new Error("rpc " + r.status); return r.json(); });
   }
-  function centralAdminHTML(rows) {
-    const body = rows.length
-      ? `<div class="table-wrap"><table class="reg-table">
-          <thead><tr>
-            <th>${t("admin_name")}</th><th>${t("admin_country")}</th><th>${t("admin_contact")}</th>
-            <th>${t("admin_interest")}</th><th>${t("admin_when")}</th>
-          </tr></thead><tbody>
-          ${rows.map(r => `<tr>
-            <td>${esc(r.name || "")}</td>
-            <td>${flagImg(r.country_code)} ${esc(r.country || "")}</td>
-            <td>${esc([r.phone, r.email].filter(Boolean).join(" · ")) || "—"}</td>
-            <td>${esc(r.interest || "—")}</td>
-            <td>${esc(new Date(r.created_at).toLocaleDateString(lang === "sw" ? "sw-TZ" : lang))}</td>
-          </tr>`).join("")}
-          </tbody></table></div>`
+  function renderAdminDashboard(data) {
+    const regs = (data && data.registrations) || [];
+    const subs = (data && data.submissions) || [];
+    const enq = subs.filter(s => s.type === "enquiry");
+    const rev = subs.filter(s => s.type === "review");
+    const chal = subs.filter(s => s.type === "challenge");
+    const when = ts => esc(new Date(ts).toLocaleDateString(lang === "sw" ? "sw-TZ" : lang));
+    const contact = r => esc([r.phone, r.email].filter(Boolean).join(" · ")) || "—";
+    const avg = rev.length ? (rev.reduce((a, b) => a + (b.rating || 0), 0) / rev.length).toFixed(1) : null;
+
+    const stat = (icon, val, label) => `<div class="stat-card-sm"><span class="ssm-icon">${icon}</span><strong>${val}</strong><span>${label}</span></div>`;
+    const summary = `<div class="admin-summary">
+      ${stat("🧾", regs.length, t("admin_sum_reg"))}
+      ${stat("📨", enq.length, t("admin_sum_enq"))}
+      ${stat("⭐", avg ? `${rev.length} · ${avg}★` : rev.length, t("admin_sum_rev"))}
+      ${stat("⚠️", chal.length, t("admin_sum_chal"))}
+    </div>`;
+
+    const regTable = regs.length ? `<div class="table-wrap"><table class="reg-table">
+      <thead><tr><th>${t("admin_name")}</th><th>${t("admin_country")}</th><th>${t("admin_phone")}</th><th>${t("admin_email")}</th><th>${t("admin_interest")}</th><th>${t("admin_when")}</th></tr></thead>
+      <tbody>${regs.map(r => `<tr>
+        <td>${esc(r.name || "")}</td>
+        <td>${flagImg(r.country_code)} ${esc(r.country || "")}</td>
+        <td>${esc(r.phone || "—")}</td>
+        <td>${esc(r.email || "—")}</td>
+        <td>${esc(r.interest || "—")}</td>
+        <td>${when(r.created_at)}</td></tr>`).join("")}</tbody></table></div>`
       : `<p class="muted admin-empty">${t("admin_empty")}</p>`;
+
+    const msgTable = (list) => list.length ? `<div class="table-wrap"><table class="reg-table">
+      <thead><tr><th>${t("admin_name")}</th><th>${t("admin_contact")}</th><th>${t("admin_message")}</th><th>${t("admin_when")}</th></tr></thead>
+      <tbody>${list.map(s => `<tr><td>${esc(s.name || "—")}</td><td>${contact(s)}</td><td class="msg-cell">${esc(s.message || "")}</td><td>${when(s.created_at)}</td></tr>`).join("")}</tbody></table></div>`
+      : `<p class="muted admin-empty">${t("admin_none")}</p>`;
+
+    const revTable = rev.length ? `<div class="table-wrap"><table class="reg-table">
+      <thead><tr><th>${t("admin_name")}</th><th>${t("admin_rating")}</th><th>${t("admin_message")}</th><th>${t("admin_when")}</th></tr></thead>
+      <tbody>${rev.map(s => `<tr><td>${esc(s.name || "—")}</td><td class="stars-cell"><span class="on">${"★".repeat(s.rating || 0)}</span>${"★".repeat(5 - (s.rating || 0))}</td><td class="msg-cell">${esc(s.message || "")}</td><td>${when(s.created_at)}</td></tr>`).join("")}</tbody></table></div>`
+      : `<p class="muted admin-empty">${t("admin_none")}</p>`;
+
     return `
-      <div class="panel admin-panel">
-        <div class="admin-head">
-          <h3>${t("admin_title")} <span class="admin-count">${rows.length}</span></h3>
-          <div class="admin-actions">
-            <button class="btn btn-small" id="regExport"${rows.length ? "" : " disabled"}>⬇ ${t("admin_export")}</button>
-          </div>
-        </div>
-        <p class="muted small">${t("admin_sub")}</p>
-        ${body}
-      </div>`;
+      ${summary}
+      <div class="admin-tabs" id="adminTabs">
+        <button class="admin-tab active" data-tab="reg">🧾 ${t("admin_sum_reg")} (${regs.length})</button>
+        <button class="admin-tab" data-tab="enq">📨 ${t("admin_sum_enq")} (${enq.length})</button>
+        <button class="admin-tab" data-tab="rev">⭐ ${t("admin_sum_rev")} (${rev.length})</button>
+        <button class="admin-tab" data-tab="chal">⚠️ ${t("admin_sum_chal")} (${chal.length})</button>
+      </div>
+      <div class="admin-cat" data-cat="reg">
+        <div class="admin-head"><h3>${t("admin_sum_reg")}</h3><div class="admin-actions"><button class="btn btn-small" id="regExport"${regs.length ? "" : " disabled"}>⬇ ${t("admin_export")}</button></div></div>
+        ${regTable}
+      </div>
+      <div class="admin-cat" data-cat="enq" hidden><h3>📨 ${t("admin_sum_enq")}</h3>${msgTable(enq)}</div>
+      <div class="admin-cat" data-cat="rev" hidden><h3>⭐ ${t("admin_sum_rev")}</h3>${revTable}</div>
+      <div class="admin-cat" data-cat="chal" hidden><h3>⚠️ ${t("admin_sum_chal")}</h3>${msgTable(chal)}</div>`;
   }
   function exportCentralCSV(rows) {
     const head = ["Registered", "Name", "Country", "Phone", "Email", "Interest", "Lang"];
@@ -932,7 +982,7 @@
         const btn = login.querySelector("button[type=submit]");
         if (!val) { er.textContent = t("admin_login_err"); er.hidden = false; return; }
         btn.disabled = true; er.hidden = true;
-        sbRpc("admin_login", { p_pass: val })
+        sbRpc("admin_data", { p_pass: val })
           .then(() => { sessionStorage.setItem("ka_admin_pass", val); render(); })
           .catch(() => { er.textContent = t("admin_login_err"); er.hidden = false; btn.disabled = false; });
       });
@@ -956,15 +1006,24 @@
         .catch(() => { msg.className = "form-error"; msg.textContent = t("admin_cp_err"); msg.hidden = false; });
     });
 
-    // load ALL central registrations using the stored passcode
+    // load ALL central data (registrations + submissions) using the stored passcode
     const pass = sessionStorage.getItem("ka_admin_pass");
     const container = document.getElementById("adminData");
-    sbRpc("admin_login", { p_pass: pass })
-      .then((rows) => {
-        rows = rows || [];
-        container.innerHTML = centralAdminHTML(rows);
+    sbRpc("admin_data", { p_pass: pass })
+      .then((data) => {
+        data = data || {};
+        container.innerHTML = renderAdminDashboard(data);
+        // category tabs
+        const tabs = document.getElementById("adminTabs");
+        if (tabs) tabs.addEventListener("click", (e) => {
+          const b = e.target.closest(".admin-tab"); if (!b) return;
+          tabs.querySelectorAll(".admin-tab").forEach(x => x.classList.remove("active"));
+          b.classList.add("active");
+          const cat = b.dataset.tab;
+          container.querySelectorAll(".admin-cat").forEach(c => { c.hidden = c.dataset.cat !== cat; });
+        });
         const exp = document.getElementById("regExport");
-        if (exp) exp.addEventListener("click", () => exportCentralCSV(rows));
+        if (exp) exp.addEventListener("click", () => exportCentralCSV(data.registrations || []));
       })
       .catch(() => {
         sessionStorage.removeItem("ka_admin_pass");
@@ -1030,6 +1089,101 @@
     });
   }
 
+  /* ===================================================================
+     VIEW: MY ACCOUNT (tourist tools — enquiry, review, challenge, favourites)
+     =================================================================== */
+  function viewAccount() {
+    const u = getCurrentUser();
+    if (!u || !u.name) {
+      return `
+        <section class="container auth-wrap">
+          <div class="auth-card">
+            <div class="auth-icon">🔑</div>
+            <h1 class="auth-title">${t("acct_need_login")}</h1>
+            <p class="auth-sub">${t("acct_need_login_sub")}</p>
+            <div class="hero-cta-row" style="justify-content:center">
+              <a class="btn btn-primary" href="#/login">${t("login_btn")}</a>
+              <a class="btn btn-ghost" href="#/register">${t("login_register")}</a>
+            </div>
+          </div>
+        </section>`;
+    }
+    const first = esc(String(u.name).split(" ")[0]);
+    const starPicker = `<div class="star-pick" id="reviewStars" role="radiogroup" aria-label="${t("acct_rating")}">${[1, 2, 3, 4, 5].map(i => `<button type="button" class="star" data-v="${i}" aria-label="${i}">★</button>`).join("")}</div><input type="hidden" id="reviewRating" value="0" />`;
+    const favs = getFavs().map(id => window.TRIPS.find(x => x.id === id)).filter(Boolean);
+    const favList = favs.length
+      ? `<div class="card-grid trips-grid">${favs.map(tripCard).join("")}</div>`
+      : `<p class="muted">${t("acct_no_favs")} <a href="#/trips" class="link-inline">${t("nav_trips")} →</a></p>`;
+    const panel = (type, title, sub, ph, extra) => `
+      <div class="acct-panel" data-panel="${type}"${type === "enquiry" ? "" : " hidden"}>
+        <form class="acct-form" data-type="${type}" novalidate>
+          <h3>${title}</h3>
+          <p class="muted small">${sub}</p>
+          ${extra || ""}
+          <textarea class="acct-msg" rows="4" placeholder="${ph}" required></textarea>
+          <div class="acct-ok form-ok" hidden>✓ ${t("acct_sent")}</div>
+          <button class="btn btn-primary" type="submit">${t("acct_send")}</button>
+        </form>
+      </div>`;
+    return `
+      <section class="detail-hero grad-gold">
+        <div class="container"><h1>${t("acct_hi")}, ${first} 👋</h1><p class="detail-meta">${t("acct_lead")}</p></div>
+      </section>
+      <section class="container section">
+        <div class="acct-tabs" id="acctTabs">
+          <button class="acct-tab active" data-tab="enquiry">📨 ${t("acct_enquiry")}</button>
+          <button class="acct-tab" data-tab="review">⭐ ${t("acct_review")}</button>
+          <button class="acct-tab" data-tab="challenge">⚠️ ${t("acct_challenge")}</button>
+          <button class="acct-tab" data-tab="favs">❤️ ${t("acct_favs")}</button>
+        </div>
+        ${panel("enquiry", t("acct_enquiry_h"), t("acct_enquiry_sub"), t("acct_enquiry_ph"))}
+        ${panel("review", t("acct_review_h"), t("acct_review_sub"), t("acct_review_ph"), starPicker)}
+        ${panel("challenge", t("acct_challenge_h"), t("acct_challenge_sub"), t("acct_challenge_ph"))}
+        <div class="acct-panel" data-panel="favs" hidden>
+          <h3>${t("acct_favs_h")}</h3>
+          ${favList}
+        </div>
+      </section>`;
+  }
+  function bindAccount() {
+    const tabs = document.getElementById("acctTabs");
+    if (!tabs) return;
+    tabs.addEventListener("click", (e) => {
+      const b = e.target.closest(".acct-tab"); if (!b) return;
+      tabs.querySelectorAll(".acct-tab").forEach(x => x.classList.remove("active"));
+      b.classList.add("active");
+      const which = b.dataset.tab;
+      document.querySelectorAll(".acct-panel").forEach(p => { p.hidden = p.dataset.panel !== which; });
+    });
+    const starWrap = document.getElementById("reviewStars");
+    if (starWrap) starWrap.addEventListener("click", (e) => {
+      const s = e.target.closest(".star"); if (!s) return;
+      const v = +s.dataset.v;
+      document.getElementById("reviewRating").value = v;
+      starWrap.querySelectorAll(".star").forEach(st => st.classList.toggle("on", +st.dataset.v <= v));
+    });
+    const u = getCurrentUser() || {};
+    document.querySelectorAll(".acct-form").forEach(form => {
+      form.addEventListener("submit", (e) => {
+        e.preventDefault();
+        const type = form.dataset.type;
+        const msg = form.querySelector(".acct-msg").value.trim();
+        if (!msg) return;
+        const rating = type === "review" ? (+document.getElementById("reviewRating").value || null) : null;
+        const btn = form.querySelector("button[type=submit]"); btn.disabled = true;
+        sbInsert("submissions", {
+          type, name: u.name || null, email: u.email || null, phone: u.phone || null,
+          country: u.country || null, rating, message: msg, lang
+        }).then(() => {
+          form.querySelector(".acct-ok").hidden = false;
+          form.querySelector(".acct-msg").value = "";
+          if (type === "review" && starWrap) { document.getElementById("reviewRating").value = "0"; starWrap.querySelectorAll(".star").forEach(st => st.classList.remove("on")); }
+          btn.disabled = false;
+        }).catch(() => { btn.disabled = false; alert(t("acct_err")); });
+      });
+    });
+  }
+
   function notFound() {
     return `<section class="container section center">
       <h2>🦒</h2><p class="muted">404</p>
@@ -1089,6 +1243,7 @@
       case "dashboard": html = viewDashboard(); break;
       case "register": html = viewRegister(); break;
       case "login": html = viewLogin(); break;
+      case "account": html = viewAccount(); break;
       case "admin": html = viewAdmin(); break;
       case "about": html = viewAbout(); break;
       default: html = notFound();
@@ -1122,6 +1277,7 @@
     if (route === "dashboard") animateCounters();
     if (route === "register") bindRegister();
     if (route === "login") bindLogin();
+    if (route === "account") bindAccount();
     if (route === "admin") bindAdminPage();
     if (route === "home") buildScrollHero(); else stopScrollHero();
     setupReveal();
@@ -1179,6 +1335,17 @@
     input.type = reveal ? "text" : "password";
     btn.textContent = reveal ? "🙈" : "👁";
     btn.setAttribute("aria-label", reveal ? t("pass_hide") : t("pass_show"));
+  });
+
+  /* ---------- save/remove a favourite trip (must be logged in) ---------- */
+  document.addEventListener("click", (e) => {
+    const b = e.target.closest(".fav-btn"); if (!b) return;
+    if (!getCurrentUser()) { location.hash = "#/login"; return; }
+    const added = toggleFav(b.dataset.fav);
+    b.classList.toggle("on", added);
+    b.setAttribute("aria-pressed", added);
+    const txt = b.querySelector(".fav-txt");
+    if (txt) txt.textContent = added ? t("fav_saved") : t("fav_save");
   });
 
   /* ---------- tourist logout ---------- */

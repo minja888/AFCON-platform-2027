@@ -128,7 +128,19 @@ window.I18N = {
     admin_cp_old: "Current password", admin_cp_new: "New password (4+ characters)",
     admin_cp_save: "Update password",
     admin_cp_ok: "Password updated. Use the new one next time.",
-    admin_cp_err: "Couldn't update — check your current password."
+    admin_cp_err: "Couldn't update — check your current password.",
+    admin_phone: "Phone", admin_email: "Email", admin_message: "Message", admin_rating: "Rating", admin_none: "Nothing here yet.",
+    admin_sum_reg: "Registrations", admin_sum_enq: "Enquiries", admin_sum_rev: "Reviews", admin_sum_chal: "Challenges",
+    nav_account: "My account",
+    acct_hi: "Karibu", acct_lead: "Send an enquiry, leave a review, report a challenge, or view your saved trips.",
+    acct_enquiry: "Enquiry", acct_review: "Review", acct_challenge: "Challenge", acct_favs: "Favourites",
+    acct_enquiry_h: "Send an enquiry", acct_enquiry_sub: "Tell us what you're looking for — we'll reply on WhatsApp.", acct_enquiry_ph: "e.g. I'd like a 2-day Ngorongoro safari for 3 people on 24 June…",
+    acct_review_h: "Leave a review", acct_review_sub: "How was your experience?", acct_review_ph: "Share what you loved…",
+    acct_challenge_h: "Report a challenge", acct_challenge_sub: "Hit a problem? Tell us so we can fix it.", acct_challenge_ph: "Describe the challenge you faced…",
+    acct_favs_h: "Your saved trips", acct_no_favs: "No saved trips yet. Tap the ♥ on any trip to save it.",
+    acct_send: "Send", acct_sent: "Sent — asante! We'll be in touch.", acct_err: "Couldn't send. Please try again.", acct_rating: "Your rating",
+    acct_need_login: "Sign in to continue", acct_need_login_sub: "Create an account or log in to send enquiries, reviews and save trips.",
+    fav_save: "Save", fav_saved: "Saved ♥"
   },
 
   sw: {
@@ -252,7 +264,19 @@ window.I18N = {
     admin_cp_old: "Nenosiri la sasa", admin_cp_new: "Nenosiri jipya (herufi 4+)",
     admin_cp_save: "Sasisha nenosiri",
     admin_cp_ok: "Nenosiri limebadilishwa. Tumia jipya wakati ujao.",
-    admin_cp_err: "Imeshindikana — angalia nenosiri la sasa."
+    admin_cp_err: "Imeshindikana — angalia nenosiri la sasa.",
+    admin_phone: "Simu", admin_email: "Barua pepe", admin_message: "Ujumbe", admin_rating: "Ukadiriaji", admin_none: "Bado hakuna kitu hapa.",
+    admin_sum_reg: "Usajili", admin_sum_enq: "Maswali", admin_sum_rev: "Reviews", admin_sum_chal: "Changamoto",
+    nav_account: "Akaunti yangu",
+    acct_hi: "Karibu", acct_lead: "Tuma swali, weka review, ripoti changamoto, au ona safari ulizohifadhi.",
+    acct_enquiry: "Swali", acct_review: "Review", acct_challenge: "Changamoto", acct_favs: "Pendwa",
+    acct_enquiry_h: "Tuma swali", acct_enquiry_sub: "Tuambie unachotafuta — tutakujibu kwa WhatsApp.", acct_enquiry_ph: "mf. Nataka safari ya siku 2 Ngorongoro kwa watu 3 tarehe 24 Juni…",
+    acct_review_h: "Weka review", acct_review_sub: "Uzoefu wako ulikuwaje?", acct_review_ph: "Shiriki ulichopenda…",
+    acct_challenge_h: "Ripoti changamoto", acct_challenge_sub: "Umepata tatizo? Tuambie tulirekebishe.", acct_challenge_ph: "Eleza changamoto uliyokutana nayo…",
+    acct_favs_h: "Safari ulizohifadhi", acct_no_favs: "Bado hujahifadhi safari. Gusa ♥ kwenye safari yoyote kuihifadhi.",
+    acct_send: "Tuma", acct_sent: "Imetumwa — asante! Tutawasiliana nawe.", acct_err: "Imeshindikana kutuma. Jaribu tena.", acct_rating: "Ukadiriaji wako",
+    acct_need_login: "Ingia kuendelea", acct_need_login_sub: "Fungua akaunti au ingia ili kutuma maswali, reviews na kuhifadhi safari.",
+    fav_save: "Hifadhi", fav_saved: "Imehifadhiwa ♥"
   },
 
   fr: {
