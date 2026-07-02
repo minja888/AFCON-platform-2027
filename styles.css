@@ -720,6 +720,10 @@ img { max-width: 100%; display: block; }
 .reg-table tr:hover td { background: var(--sand); }
 .admin-empty { padding: 18px 0; }
 .admin-central { background: rgba(74,124,89,.10); border: 1px solid rgba(74,124,89,.25); border-radius: 8px; padding: 9px 13px; font-size: .85rem; color: var(--green-deep); margin: 10px 0 4px; }
+.form-ok { background: #e7f3ec; border: 1px solid #9cc7ab; color: var(--green-deep); border-radius: var(--radius-sm); padding: 10px 14px; font-size: .9rem; }
+.admin-cp { margin-top: 20px; border: 1px solid var(--line); border-radius: var(--radius-sm); padding: 14px 16px; background: var(--white); box-shadow: var(--shadow); }
+.admin-cp summary { cursor: pointer; font-family: var(--display); font-weight: 700; color: var(--green-deep); }
+.admin-cp-form { display: flex; flex-direction: column; gap: 14px; max-width: 420px; margin-top: 16px; }
 
 /* ---------- animations ---------- */
 @keyframes fade { from { opacity: 0 } to { opacity: 1 } }

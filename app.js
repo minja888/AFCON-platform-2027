@@ -830,20 +830,29 @@
   }
 
   /* admin table of registrations (shown on the dashboard) */
-  function regAdminHTML() {
-    const rows = getRegs();
+  /* ---------- central admin backed by Supabase RPC (passcode-gated) ---------- */
+  function sbRpc(fn, body) {
+    const sb = window.CONFIG && window.CONFIG.supabase;
+    if (!sb || !sb.url) return Promise.reject(new Error("no-backend"));
+    return fetch(sb.url + "/rest/v1/rpc/" + fn, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "apikey": sb.anonKey, "Authorization": "Bearer " + sb.anonKey },
+      body: JSON.stringify(body)
+    }).then(r => { if (!r.ok) throw new Error("rpc " + r.status); return r.json(); });
+  }
+  function centralAdminHTML(rows) {
     const body = rows.length
       ? `<div class="table-wrap"><table class="reg-table">
           <thead><tr>
             <th>${t("admin_name")}</th><th>${t("admin_country")}</th><th>${t("admin_contact")}</th>
             <th>${t("admin_interest")}</th><th>${t("admin_when")}</th>
           </tr></thead><tbody>
-          ${rows.slice().reverse().map(r => `<tr>
-            <td>${esc(r.name)}</td>
-            <td>${flag(r.countryCode)} ${esc(r.country)}</td>
+          ${rows.map(r => `<tr>
+            <td>${esc(r.name || "")}</td>
+            <td>${flagImg(r.country_code)} ${esc(r.country || "")}</td>
             <td>${esc([r.phone, r.email].filter(Boolean).join(" · ")) || "—"}</td>
             <td>${esc(r.interest || "—")}</td>
-            <td>${esc(new Date(r.ts).toLocaleDateString(lang === "sw" ? "sw-TZ" : lang))}</td>
+            <td>${esc(new Date(r.created_at).toLocaleDateString(lang === "sw" ? "sw-TZ" : lang))}</td>
           </tr>`).join("")}
           </tbody></table></div>`
       : `<p class="muted admin-empty">${t("admin_empty")}</p>`;
@@ -853,28 +862,31 @@
           <h3>${t("admin_title")} <span class="admin-count">${rows.length}</span></h3>
           <div class="admin-actions">
             <button class="btn btn-small" id="regExport"${rows.length ? "" : " disabled"}>⬇ ${t("admin_export")}</button>
-            <button class="btn btn-small btn-danger" id="regClear"${rows.length ? "" : " disabled"}>${t("admin_clear")}</button>
           </div>
         </div>
         <p class="muted small">${t("admin_sub")}</p>
-        <p class="admin-central">🌍 ${t("admin_central")} <a href="https://supabase.com/dashboard/project/buvvljnhgkjmumxtvenq/editor" target="_blank" rel="noopener" class="link-inline">${t("admin_central_link")} →</a></p>
         ${body}
       </div>`;
   }
-
-  function bindAdmin() {
-    const exp = document.getElementById("regExport");
-    if (exp) exp.addEventListener("click", exportRegsCSV);
-    const clr = document.getElementById("regClear");
-    if (clr) clr.addEventListener("click", () => {
-      if (confirm(t("admin_confirm_clear"))) { clearRegs(); render(); }
-    });
+  function exportCentralCSV(rows) {
+    const head = ["Registered", "Name", "Country", "Phone", "Email", "Interest", "Lang"];
+    const data = rows.map(r => [r.created_at, r.name, r.country, r.phone || "", r.email || "", r.interest || "", r.lang || ""]);
+    const csv = [head].concat(data)
+      .map(row => row.map(f => `"${String(f == null ? "" : f).replace(/"/g, '""')}"`).join(",")).join("\r\n");
+    const blob = new Blob(["﻿" + csv], { type: "text/csv;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url; a.download = "karibu-arusha-registrations.csv"; a.click();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
   }
 
   /* ===================================================================
-     VIEW: ADMIN (passcode-gated registrations panel)
+     VIEW: ADMIN (passcode gate → ALL central registrations + change password)
      =================================================================== */
-  function isAdmin() { return sessionStorage.getItem("ka_admin") === "1"; }
+  function isAdmin() { return !!sessionStorage.getItem("ka_admin_pass"); }
+  function pwField(id, ph) {
+    return `<div class="pass-wrap"><input id="${id}" type="password" autocomplete="off" placeholder="${esc(ph)}" /><button type="button" class="pass-toggle" aria-label="${t("pass_show")}">👁</button></div>`;
+  }
   function viewAdmin() {
     if (!isAdmin()) {
       return `
@@ -885,10 +897,7 @@
             <p class="auth-sub">${t("admin_login_sub")}</p>
             <div class="field">
               <label for="adminPass">${t("admin_pass_ph")}</label>
-              <div class="pass-wrap">
-                <input id="adminPass" type="password" autocomplete="current-password" placeholder="${t("admin_pass_ph")}" />
-                <button type="button" class="pass-toggle" aria-label="${t("pass_show")}">👁</button>
-              </div>
+              ${pwField("adminPass", t("admin_pass_ph"))}
             </div>
             <div id="adminErr" class="form-error" role="alert" hidden></div>
             <button type="submit" class="btn btn-primary btn-block">${t("admin_login_btn")}</button>
@@ -897,13 +906,19 @@
     }
     return `
       <section class="detail-hero grad-green">
-        <div class="container">
-          <h1>${t("admin_title")}</h1>
-          <p class="detail-meta">${t("admin_sub")}</p>
-        </div>
+        <div class="container"><h1>${t("admin_title")}</h1><p class="detail-meta">${t("admin_sub")}</p></div>
       </section>
       <section class="container section">
-        ${regAdminHTML()}
+        <div id="adminData"><p class="muted">${t("admin_loading")}</p></div>
+        <details class="admin-cp">
+          <summary>🔑 ${t("admin_change_pw")}</summary>
+          <form id="adminCpForm" class="admin-cp-form" novalidate>
+            <div class="field"><label for="cpOld">${t("admin_cp_old")}</label>${pwField("cpOld", t("admin_cp_old"))}</div>
+            <div class="field"><label for="cpNew">${t("admin_cp_new")}</label>${pwField("cpNew", t("admin_cp_new"))}</div>
+            <div id="cpMsg" role="alert" hidden></div>
+            <button type="submit" class="btn btn-primary">${t("admin_cp_save")}</button>
+          </form>
+        </details>
         <div class="center mt"><button class="btn btn-ghost" id="adminLogout">${t("admin_logout")}</button></div>
       </section>`;
   }
@@ -913,19 +928,48 @@
       login.addEventListener("submit", (e) => {
         e.preventDefault();
         const val = document.getElementById("adminPass").value;
-        if (val && val === (window.CONFIG.adminCode || "")) {
-          sessionStorage.setItem("ka_admin", "1");
-          render();
-        } else {
-          const er = document.getElementById("adminErr");
-          er.textContent = t("admin_login_err"); er.hidden = false;
-        }
+        const er = document.getElementById("adminErr");
+        const btn = login.querySelector("button[type=submit]");
+        if (!val) { er.textContent = t("admin_login_err"); er.hidden = false; return; }
+        btn.disabled = true; er.hidden = true;
+        sbRpc("admin_login", { p_pass: val })
+          .then(() => { sessionStorage.setItem("ka_admin_pass", val); render(); })
+          .catch(() => { er.textContent = t("admin_login_err"); er.hidden = false; btn.disabled = false; });
       });
       return;
     }
-    bindAdmin(); // export / clear
+    // authed view
     const logout = document.getElementById("adminLogout");
-    if (logout) logout.addEventListener("click", () => { sessionStorage.removeItem("ka_admin"); render(); });
+    if (logout) logout.addEventListener("click", () => { sessionStorage.removeItem("ka_admin_pass"); render(); });
+
+    const cp = document.getElementById("adminCpForm");
+    if (cp) cp.addEventListener("submit", (e) => {
+      e.preventDefault();
+      const oldv = document.getElementById("cpOld").value, nv = document.getElementById("cpNew").value;
+      const msg = document.getElementById("cpMsg"); msg.hidden = true;
+      sbRpc("admin_change_password", { p_old: oldv, p_new: nv })
+        .then(() => {
+          sessionStorage.setItem("ka_admin_pass", nv);
+          msg.className = "form-ok"; msg.textContent = t("admin_cp_ok"); msg.hidden = false;
+          document.getElementById("cpOld").value = ""; document.getElementById("cpNew").value = "";
+        })
+        .catch(() => { msg.className = "form-error"; msg.textContent = t("admin_cp_err"); msg.hidden = false; });
+    });
+
+    // load ALL central registrations using the stored passcode
+    const pass = sessionStorage.getItem("ka_admin_pass");
+    const container = document.getElementById("adminData");
+    sbRpc("admin_login", { p_pass: pass })
+      .then((rows) => {
+        rows = rows || [];
+        container.innerHTML = centralAdminHTML(rows);
+        const exp = document.getElementById("regExport");
+        if (exp) exp.addEventListener("click", () => exportCentralCSV(rows));
+      })
+      .catch(() => {
+        sessionStorage.removeItem("ka_admin_pass");
+        if (container) container.innerHTML = `<p class="form-error">${t("admin_login_err")}</p>`;
+      });
   }
 
   /* ===================================================================

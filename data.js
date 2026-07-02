@@ -14,7 +14,9 @@ window.CONFIG = {
   // Optional: paste a form endpoint URL (e.g. Formspree/Google Apps Script/Supabase) to
   // ALSO send registrations to a real server. Leave "" to store on-device only.
   registrationEndpoint: "",
-  // Administrator passcode for the #/admin registrations panel. CHANGE THIS before launch.
+  // NOTE: the admin passcode is now stored SECURELY in the Supabase database
+  // (initial value: "arusha2027") and can be changed inside the Admin panel.
+  // This field is kept only for reference and is no longer used to log in.
   adminCode: "arusha2027",
   // Real central backend (Supabase). Every registration is saved here across ALL devices.
   // View them at: Supabase dashboard → project "karibu-arusha" → Table Editor → registrations

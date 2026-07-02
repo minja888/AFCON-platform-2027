@@ -122,7 +122,13 @@ window.I18N = {
     login_already: "You're signed in", login_already_sub: "you're already signed in.",
     pass_show: "Show password", pass_hide: "Hide password",
     admin_central: "The list below is only this device. Every registration from every visitor is saved centrally in the database.",
-    admin_central_link: "Open the central database"
+    admin_central_link: "Open the central database",
+    admin_loading: "Loading all registrations…",
+    admin_change_pw: "Change admin password",
+    admin_cp_old: "Current password", admin_cp_new: "New password (4+ characters)",
+    admin_cp_save: "Update password",
+    admin_cp_ok: "Password updated. Use the new one next time.",
+    admin_cp_err: "Couldn't update — check your current password."
   },
 
   sw: {
@@ -240,7 +246,13 @@ window.I18N = {
     login_already: "Umeingia tayari", login_already_sub: "tayari umeingia.",
     pass_show: "Onyesha nenosiri", pass_hide: "Ficha nenosiri",
     admin_central: "Orodha hapa chini ni ya kifaa hiki tu. Kila usajili kutoka kwa kila mgeni umehifadhiwa kwenye database ya kati.",
-    admin_central_link: "Fungua database ya kati"
+    admin_central_link: "Fungua database ya kati",
+    admin_loading: "Inapakia usajili wote…",
+    admin_change_pw: "Badilisha nenosiri la msimamizi",
+    admin_cp_old: "Nenosiri la sasa", admin_cp_new: "Nenosiri jipya (herufi 4+)",
+    admin_cp_save: "Sasisha nenosiri",
+    admin_cp_ok: "Nenosiri limebadilishwa. Tumia jipya wakati ujao.",
+    admin_cp_err: "Imeshindikana — angalia nenosiri la sasa."
   },
 
   fr: {
