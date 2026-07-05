@@ -755,34 +755,55 @@ img { max-width: 100%; display: block; }
 .star-pick .star.on { color: var(--gold); }
 .nav-user-name:hover { color: var(--gold-deep); }
 
-/* ---------- deposit (Stripe) button + modal ---------- */
+/* ---------- deposit button ---------- */
 .btn-gold { background: var(--gold); color: var(--green-deep); border: none; }
 .btn-gold:hover { background: var(--gold-deep); color: #fff; }
 .btn-gold:disabled { opacity: .6; cursor: wait; }
-.pay-trip { display: flex; align-items: center; gap: 12px; background: var(--sand); border: 1px solid var(--line); border-radius: var(--radius-sm); padding: 12px 14px; margin: 12px 0; }
-.pay-trip-icon { font-size: 1.7rem; }
-.pay-breakdown { border: 1px solid var(--line); border-radius: var(--radius-sm); overflow: hidden; margin-bottom: 12px; }
-.pay-row { display: flex; justify-content: space-between; padding: 10px 14px; font-size: .95rem; }
-.pay-row + .pay-row { border-top: 1px solid var(--line); }
-.pay-row-hl { background: rgba(224,165,46,.14); color: var(--green-deep); font-weight: 600; }
-.pay-note { margin: 0 0 12px; }
-.pay-confirm { font-size: 1rem; }
-.pay-method-label { font-weight: 600; color: var(--green-deep); font-size: .9rem; margin: 0 0 8px; }
-.pay-methods { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 14px; }
-.pay-method {
-  display: inline-flex; align-items: center; gap: 6px; cursor: pointer;
-  border: 1.5px solid var(--line); background: var(--white); color: var(--ink);
-  border-radius: 999px; padding: 9px 14px; font-family: var(--font); font-size: .88rem; font-weight: 600;
-  transition: border-color .15s, background .15s, transform .1s;
-}
-.pay-method:hover { border-color: var(--gold); transform: translateY(-1px); }
-.pay-method.active { border-color: var(--gold-deep); background: rgba(224,165,46,.16); color: var(--green-deep); box-shadow: 0 0 0 2px rgba(224,165,46,.25); }
-.pay-custom { margin-bottom: 14px; }
-.pay-custom label { display: block; font-size: .82rem; color: var(--muted); margin-bottom: 6px; }
-.pay-custom-row { display: flex; align-items: center; gap: 6px; max-width: 200px; }
-.pay-cur { font-weight: 700; color: var(--green-deep); }
-.pay-custom-row input { width: 100%; padding: 9px 12px; border: 1.5px solid var(--line); border-radius: var(--radius-sm); background: var(--sand); font-size: 1rem; font-family: var(--font); color: var(--ink); }
-.pay-custom-row input:focus { outline: none; border-color: var(--gold); background: #fff; box-shadow: 0 0 0 3px rgba(224,165,46,.18); }
+
+/* ---------- payment gateway modal (Card via Stripe · Mobile Money) ---------- */
+.pg { display: flex; flex-direction: column; }
+.pg-head { text-align: center; }
+.pg-lock { display: inline-flex; align-items: center; gap: 5px; font-size: .74rem; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: var(--green); background: rgba(30,95,60,.1); padding: 4px 10px; border-radius: 999px; }
+.pg-title { margin: 10px 0 4px; color: var(--green-deep); }
+.pg-trip { margin: 0; font-size: .92rem; }
+.pg-hero { text-align: center; margin: 16px 0; padding: 16px; background: linear-gradient(135deg, rgba(224,165,46,.14), rgba(30,95,60,.08)); border-radius: var(--radius); }
+.pg-hero-label { display: block; font-size: .78rem; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); }
+.pg-hero-amt { font-family: var(--display); font-weight: 700; font-size: 2.8rem; line-height: 1; color: var(--green-deep); font-variant-numeric: tabular-nums; margin: 4px 0; }
+.pg-hero-tzs { font-size: .82rem; color: var(--muted); font-variant-numeric: tabular-nums; }
+.amt-chips { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 12px; }
+.amt-chip { display: flex; flex-direction: column; gap: 2px; align-items: center; cursor: pointer; padding: 10px 6px; min-height: 48px; border: 1.5px solid var(--line); background: var(--white); border-radius: var(--radius-sm); color: var(--ink); font-family: var(--font); transition: border-color .15s, background .15s, transform .1s; }
+.amt-chip b { font-size: .82rem; } .amt-chip small { font-size: .78rem; color: var(--muted); }
+.amt-chip:hover { border-color: var(--gold); transform: translateY(-1px); }
+.amt-chip.active { border-color: var(--gold-deep); background: rgba(224,165,46,.16); box-shadow: 0 0 0 2px rgba(224,165,46,.25); }
+.amt-chip.active small { color: var(--gold-deep); font-weight: 600; }
+.pg-field { margin-bottom: 14px; }
+.pg-field label { display: block; font-size: .82rem; color: var(--muted); margin-bottom: 6px; }
+.pg-input { display: flex; align-items: center; gap: 6px; border: 1.5px solid var(--line); background: var(--sand); border-radius: var(--radius-sm); padding: 0 12px; }
+.pg-input span { font-weight: 700; color: var(--green-deep); }
+.pg-input input { flex: 1; width: 100%; min-height: 46px; border: none; background: none; font-size: 1rem; font-family: var(--font); color: var(--ink); }
+.pg-input input:focus { outline: none; }
+.pg-input:focus-within { border-color: var(--gold); background: #fff; box-shadow: 0 0 0 3px rgba(224,165,46,.18); }
+.pg-tabs { display: flex; gap: 6px; background: var(--sand); border: 1px solid var(--line); border-radius: 999px; padding: 4px; margin-bottom: 14px; }
+.pg-tab { flex: 1; cursor: pointer; border: none; background: none; border-radius: 999px; padding: 10px; min-height: 44px; font-family: var(--display); font-weight: 600; font-size: .9rem; color: var(--muted); transition: background .18s, color .18s; }
+.pg-tab.active { background: var(--green-deep); color: #fff; }
+.pg-pane { margin-bottom: 8px; }
+.pg-brands { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 8px; }
+.pg-brands b { font-size: .72rem; letter-spacing: .03em; color: var(--green-deep); background: var(--sand); border: 1px solid var(--line); border-radius: 6px; padding: 4px 8px; }
+.pg-help { margin: 0 0 12px; font-size: .85rem; color: var(--muted); }
+.mm-provs { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin-bottom: 12px; }
+.mm-prov { cursor: pointer; padding: 11px 8px; min-height: 46px; border: 1.5px solid var(--line); background: var(--white); border-radius: var(--radius-sm); font-family: var(--font); font-weight: 600; font-size: .86rem; color: var(--ink); transition: border-color .15s, background .15s; }
+.mm-prov:hover { border-color: var(--gold); }
+.mm-prov.active { border-color: var(--green-deep); background: rgba(30,95,60,.1); color: var(--green-deep); box-shadow: 0 0 0 2px rgba(30,95,60,.2); }
+.pg-err { color: var(--red); font-size: .85rem; margin-bottom: 10px; }
+.pg-cta { font-size: 1.02rem; font-variant-numeric: tabular-nums; }
+.pg-foot { display: flex; align-items: center; justify-content: center; gap: 5px; text-align: center; color: var(--muted); font-size: .76rem; margin: 10px 0 0; }
+.pg-done { text-align: center; }
+.pg-done-mark { font-size: 2.6rem; }
+.pg-done h3 { color: var(--green-deep); margin: 6px 0 10px; }
+.pg-steps { text-align: left; display: flex; flex-direction: column; gap: 10px; margin: 14px 0 18px; }
+.pg-step { display: flex; gap: 10px; align-items: flex-start; font-size: .9rem; }
+.pg-step span { flex: 0 0 auto; width: 24px; height: 24px; border-radius: 50%; background: var(--gold); color: var(--green-deep); font-weight: 700; display: grid; place-items: center; font-size: .82rem; }
+.pg-step code { background: var(--sand); border: 1px solid var(--line); border-radius: 5px; padding: 1px 6px; font-weight: 600; }
 
 /* ---------- account: personal profile + activity ---------- */
 .acct-profile { display: flex; align-items: center; gap: 18px; background: var(--white); border: 1px solid var(--line); border-radius: var(--radius); padding: 22px; box-shadow: var(--shadow); margin-bottom: 16px; }

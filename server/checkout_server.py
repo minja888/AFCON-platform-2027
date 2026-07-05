@@ -22,7 +22,7 @@ app = Flask(__name__)
 
 STRIPE_KEY = os.environ.get("STRIPE_KEY", "")          # NEVER hard-code the key
 SITE_URL = os.environ.get("SITE_URL", "https://afcon-platform-2027.vercel.app")
-DEPOSIT_RATE = 0.20                                     # 20% deposit, min $10
+MIN_PAY = 2                                            # tourists can pay any amount from $2
 
 # Server-side price list (USD) — the client can only pick a trip id.
 PRICES = {
@@ -46,14 +46,13 @@ def create_checkout():
     if not STRIPE_KEY:
         return jsonify(error="server-missing-key"), 500
 
-    min_deposit = max(10, round(trip["price"] * DEPOSIT_RATE))  # USD
-    # Tourist may choose the amount, but the server enforces the range.
+    # Tourist may choose the amount (from $2), but the server enforces the range.
     try:
-        deposit = int(round(float(body.get("amount", min_deposit))))
+        deposit = int(round(float(body.get("amount", MIN_PAY))))
     except (TypeError, ValueError):
-        deposit = min_deposit
-    if deposit < min_deposit or deposit > trip["price"]:
-        return jsonify(error="bad-amount", min=min_deposit, max=trip["price"]), 400
+        deposit = MIN_PAY
+    if deposit < MIN_PAY or deposit > trip["price"]:
+        return jsonify(error="bad-amount", min=MIN_PAY, max=trip["price"]), 400
     params = {
         "mode": "payment",
         "success_url": f"{SITE_URL}/#/pay-ok",

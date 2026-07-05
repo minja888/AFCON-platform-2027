@@ -1260,7 +1260,7 @@
   }
 
   /* ---------- Stripe deposit (TEST MODE): server-side edge function owns the key ---------- */
-  function startPayment(tripId, btn) {
+  function startPayment(tripId, btn, amount) {
     const sb = window.CONFIG && window.CONFIG.supabase;
     if (!sb || !sb.url) return;
     const u = getCurrentUser() || {};
@@ -1271,8 +1271,7 @@
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         tripId, name: u.name || "", email: u.email || "",
-        amount: +(btn.dataset.amount || 0) || undefined,
-        method: (document.querySelector(".pay-method.active[data-method]") || {}).dataset?.method || "card"
+        amount: +amount || undefined
       })
     })
       .then(r => r.json())
@@ -1331,69 +1330,144 @@
     backdrop.hidden = false;
     document.body.style.overflow = "hidden";
   }
-  /* ---------- pretty deposit modal (summary before Stripe Checkout) ---------- */
+  /* ---------- premium payment gateway (Card via Stripe · Mobile Money) ---------- */
+  const MIN_PAY = 2;                       // tourists can pay any amount from $2
+  const TZS_RATE = 2650;                   // display-only USD→TZS approximation
+  const fmtTZS = (usd) => "≈ TZS " + Math.round(usd * TZS_RATE).toLocaleString("en-US");
+  const MM_PROVIDERS = [
+    { id: "mpesa", name: "M-Pesa", ussd: "*150*00#" },
+    { id: "tigo", name: "Mixx by Yas", ussd: "*150*01#" },
+    { id: "airtel", name: "Airtel Money", ussd: "*150*60#" },
+    { id: "halopesa", name: "HaloPesa", ussd: "*150*88#" },
+  ];
   function openPayModal(tripId) {
     const tr = window.TRIPS.find(x => x.id === tripId);
     if (!tr || !tr.priceFrom) return;
-    const deposit = Math.max(10, Math.round(tr.priceFrom * 0.2));
-    const balance = tr.priceFrom - deposit;
+    const price = tr.priceFrom;
+    const deposit = Math.max(MIN_PAY, Math.round(price * 0.2));
+    const half = Math.max(MIN_PAY, Math.round(price / 2));
+    let amount = deposit;                   // current chosen amount (USD)
+    const lock = `<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="4" y="10" width="16" height="10" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg>`;
+
     modalBody.innerHTML = `
-      <h3 id="modalTitle">💳 ${t("pay_deposit")}</h3>
-      <div class="pay-trip">
-        <span class="pay-trip-icon">${tr.icon}</span>
-        <div><strong>${esc(L(tr.name))}</strong><br><small class="muted">${tr.duration} ${tr.duration > 1 ? t("days") : t("day")} · ★ ${tr.rating}</small></div>
-      </div>
-      <div class="pay-breakdown">
-        <div class="pay-row"><span>${t("pay_total")}</span><span>$${tr.priceFrom}</span></div>
-        <div class="pay-row pay-row-hl"><span>${t("pay_now")}</span><span><strong id="payNowAmt">$${deposit}</strong></span></div>
-        <div class="pay-row"><span>${t("pay_balance")}</span><span id="payBalAmt">$${balance}</span></div>
-      </div>
-      <p class="pay-method-label">${t("pay_amount_label")}</p>
-      <div class="pay-methods pay-amounts" role="radiogroup" aria-label="${t("pay_amount_label")}">
-        <button type="button" class="pay-method active" data-amt="${deposit}">${t("pay_amt_dep")} · $${deposit}</button>
-        <button type="button" class="pay-method" data-amt="${Math.min(tr.priceFrom, Math.round(tr.priceFrom / 2))}">50% · $${Math.min(tr.priceFrom, Math.round(tr.priceFrom / 2))}</button>
-        <button type="button" class="pay-method" data-amt="${tr.priceFrom}">${t("pay_amt_full")} · $${tr.priceFrom}</button>
-      </div>
-      <div class="pay-custom">
-        <label for="payCustom">${t("pay_amt_custom")} ($${deposit}–$${tr.priceFrom})</label>
-        <div class="pay-custom-row"><span class="pay-cur">$</span><input id="payCustom" type="number" inputmode="numeric" min="${deposit}" max="${tr.priceFrom}" step="1" placeholder="${deposit}" /></div>
-      </div>
-      <p class="pay-method-label">${t("pay_method")}</p>
-      <div class="pay-methods" role="radiogroup" aria-label="${t("pay_method")}">
-        <button type="button" class="pay-method active" data-method="card">💳 <span>${t("pay_m_card")}</span></button>
-        <button type="button" class="pay-method" data-method="apple">🍎 <span>Apple Pay</span></button>
-        <button type="button" class="pay-method" data-method="google">🇬 <span>Google Pay</span></button>
-      </div>
-      <p class="muted small pay-note">🔒 ${t("pay_secure")}</p>
-      <button class="btn btn-gold btn-block pay-confirm" data-pay-go="${tr.id}">${t("pay_continue")} →</button>`;
-    // amount + method selection (each chip group is its own radio set)
-    const updateAmt = (v) => {
-      const now = document.getElementById("payNowAmt"); if (now) now.textContent = "$" + v;
-      const bal = document.getElementById("payBalAmt"); if (bal) bal.textContent = "$" + Math.max(0, tr.priceFrom - v);
-      const go = modalBody.querySelector(".pay-confirm"); if (go) go.dataset.amount = v;
+      <div class="pg">
+        <div class="pg-head">
+          <span class="pg-lock">${lock} ${t("pay_secure_badge")}</span>
+          <h3 id="modalTitle" class="pg-title">${t("pay_deposit")}</h3>
+          <p class="pg-trip"><span>${tr.icon}</span> ${esc(L(tr.name))} · <span class="muted">${t("from")} $${price}</span></p>
+        </div>
+
+        <div class="pg-hero">
+          <span class="pg-hero-label">${t("pay_now")}</span>
+          <div class="pg-hero-amt">$<span id="pgAmt">${amount}</span></div>
+          <span class="pg-hero-tzs" id="pgTzs">${fmtTZS(amount)}</span>
+        </div>
+
+        <div class="amt-chips" role="group" aria-label="${t("pay_amount_label")}">
+          <button type="button" class="amt-chip active" data-amt="${deposit}"><b>${t("pay_amt_dep")}</b><small>$${deposit}</small></button>
+          <button type="button" class="amt-chip" data-amt="${half}"><b>50%</b><small>$${half}</small></button>
+          <button type="button" class="amt-chip" data-amt="${price}"><b>${t("pay_amt_full")}</b><small>$${price}</small></button>
+        </div>
+        <div class="pg-field">
+          <label for="payCustom">${t("pay_amt_custom")}</label>
+          <div class="pg-input"><span>$</span><input id="payCustom" type="number" inputmode="numeric" min="${MIN_PAY}" max="${price}" step="1" placeholder="${t("pay_amt_ph")} (${MIN_PAY}–${price})" /></div>
+        </div>
+
+        <div class="pg-tabs" role="tablist" aria-label="${t("pay_method")}">
+          <button type="button" class="pg-tab active" data-tab="card" role="tab" aria-selected="true">💳 ${t("pay_m_card")}</button>
+          <button type="button" class="pg-tab" data-tab="mm" role="tab" aria-selected="false">📱 ${t("pay_m_mobile")}</button>
+        </div>
+
+        <div class="pg-pane" data-pane="card">
+          <p class="pg-brands"><b>VISA</b><b>Mastercard</b><b> Pay</b><b>G Pay</b></p>
+          <p class="pg-help">${t("pay_card_help")}</p>
+        </div>
+        <div class="pg-pane" data-pane="mm" hidden>
+          <p class="pg-help">${t("pay_mm_help")}</p>
+          <div class="mm-provs" role="group" aria-label="${t("pay_mm_provider")}">
+            ${MM_PROVIDERS.map((p, i) => `<button type="button" class="mm-prov${i === 0 ? " active" : ""}" data-prov="${p.id}">${p.name}</button>`).join("")}
+          </div>
+          <div class="pg-field">
+            <label for="mmPhone">${t("pay_mm_phone")}</label>
+            <div class="pg-input"><span>📱</span><input id="mmPhone" type="tel" inputmode="tel" autocomplete="tel" placeholder="0712 345 678" /></div>
+          </div>
+        </div>
+
+        <div class="pg-err" id="pgErr" role="alert" hidden></div>
+        <button class="btn btn-gold btn-block pg-cta" id="pgCta" data-trip="${tr.id}">${t("pay_pay")} $${amount} →</button>
+        <p class="pg-foot">${lock} ${t("pay_secure")}</p>
+      </div>`;
+
+    const $ = (s) => modalBody.querySelector(s);
+    const amtEl = $("#pgAmt"), tzsEl = $("#pgTzs"), cta = $("#pgCta"), custom = $("#payCustom"), err = $("#pgErr");
+    let method = "card", provider = MM_PROVIDERS[0].id;
+    const ctaLabel = () => method === "card" ? `${t("pay_pay")} $${amount} →` : `${t("pay_mm_cta")} $${amount} →`;
+    const setAmount = (v, fromInput) => {
+      amount = v; amtEl.textContent = v; tzsEl.textContent = fmtTZS(v);
+      cta.textContent = ctaLabel();
+      if (!fromInput) { const c = $(".amt-chip[data-amt='" + v + "']"); }
     };
-    modalBody.querySelectorAll(".pay-methods").forEach(group => {
-      group.addEventListener("click", (e) => {
-        const m = e.target.closest(".pay-method"); if (!m) return;
-        group.querySelectorAll(".pay-method").forEach(x => x.classList.remove("active"));
-        m.classList.add("active");
-        if (m.dataset.amt) {
-          const inp = document.getElementById("payCustom"); if (inp) inp.value = "";
-          updateAmt(+m.dataset.amt);
-        }
-      });
+
+    $(".amt-chips").addEventListener("click", (e) => {
+      const c = e.target.closest(".amt-chip"); if (!c) return;
+      $(".amt-chips").querySelectorAll(".amt-chip").forEach(x => x.classList.remove("active"));
+      c.classList.add("active"); if (custom) custom.value = "";
+      setAmount(+c.dataset.amt);
     });
-    const custom = document.getElementById("payCustom");
-    if (custom) custom.addEventListener("input", () => {
-      let v = Math.round(+custom.value);
-      if (!Number.isFinite(v) || custom.value === "") return;
-      v = Math.min(tr.priceFrom, Math.max(deposit, v));   // clamp to allowed range
-      modalBody.querySelectorAll(".pay-amounts .pay-method").forEach(x => x.classList.remove("active"));
-      updateAmt(v);
+    custom.addEventListener("input", () => {
+      if (custom.value === "") return;
+      let v = Math.min(price, Math.max(MIN_PAY, Math.round(+custom.value)));
+      if (!Number.isFinite(v)) return;
+      $(".amt-chips").querySelectorAll(".amt-chip").forEach(x => x.classList.remove("active"));
+      setAmount(v, true);
     });
-    updateAmt(deposit);
+    $(".pg-tabs").addEventListener("click", (e) => {
+      const tabBtn = e.target.closest(".pg-tab"); if (!tabBtn) return;
+      method = tabBtn.dataset.tab;
+      $(".pg-tabs").querySelectorAll(".pg-tab").forEach(x => { const on = x === tabBtn; x.classList.toggle("active", on); x.setAttribute("aria-selected", on); });
+      modalBody.querySelectorAll(".pg-pane").forEach(p => { p.hidden = p.dataset.pane !== method; });
+      cta.textContent = ctaLabel();
+    });
+    $(".mm-provs").addEventListener("click", (e) => {
+      const p = e.target.closest(".mm-prov"); if (!p) return;
+      $(".mm-provs").querySelectorAll(".mm-prov").forEach(x => x.classList.remove("active"));
+      p.classList.add("active"); provider = p.dataset.prov;
+    });
+    cta.addEventListener("click", () => {
+      err.hidden = true;
+      if (method === "card") return startPayment(tr.id, cta, amount);
+      const phone = ($("#mmPhone").value || "").trim();
+      if (phone.replace(/\D/g, "").length < 9) { err.textContent = t("pay_mm_err_phone"); err.hidden = false; return; }
+      startMobilePayment(tr, amount, provider, phone, cta);
+    });
+    setAmount(deposit);
     backdrop.hidden = false;
     document.body.style.overflow = "hidden";
+  }
+  /* mobile-money = request-to-pay: log it, notify the desk, show USSD instructions */
+  function startMobilePayment(tr, amount, provider, phone, btn) {
+    const prov = MM_PROVIDERS.find(p => p.id === provider) || MM_PROVIDERS[0];
+    const u = getCurrentUser() || {};
+    btn.disabled = true; btn.textContent = "⏳ …";
+    sbInsert("submissions", {
+      type: "mobile_payment", name: u.name || null, email: u.email || null, phone,
+      country: u.country || null, rating: null, lang,
+      message: `Mobile-money request: $${amount} for "${L(tr.name)}" via ${prov.name} (${phone}).`
+    }).then(() => {
+      addActivity({ type: "payment", message: `${t("act_mm_request")} $${amount} · ${prov.name}` });
+      modalBody.querySelector(".pg").innerHTML = `
+        <div class="pg-done">
+          <div class="pg-done-mark">📲</div>
+          <h3>${t("pay_mm_ok_title")}</h3>
+          <p class="pg-help">${t("pay_mm_ok_sub")}</p>
+          <div class="pg-steps">
+            <div class="pg-step"><span>1</span> ${t("pay_mm_step1").replace("{prov}", `<strong>${prov.name}</strong>`).replace("{ussd}", `<code>${prov.ussd}</code>`)}</div>
+            <div class="pg-step"><span>2</span> ${t("pay_mm_step2").replace("{amt}", `<strong>$${amount}</strong> (${fmtTZS(amount)})`)}</div>
+            <div class="pg-step"><span>3</span> ${t("pay_mm_step3")}</div>
+          </div>
+          <button class="btn btn-primary btn-block" onclick="document.getElementById('modalClose').click()">${t("pay_mm_done")}</button>
+        </div>`;
+    }).catch(() => { btn.disabled = false; btn.textContent = t("pay_mm_cta") + " $" + amount + " →"; alert(t("pay_err")); });
   }
   function closeBooking() {
     backdrop.hidden = true;
