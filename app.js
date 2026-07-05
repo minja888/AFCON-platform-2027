@@ -1269,7 +1269,7 @@
     fetch(sb.url + "/functions/v1/create-payment", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ tripId, name: u.name || "", email: u.email || "" })
+      body: JSON.stringify({ tripId, name: u.name || "", email: u.email || "", method: (document.querySelector(".pay-method.active") || {}).dataset?.method || "card" })
     })
       .then(r => r.json())
       .then(d => {
@@ -1344,9 +1344,19 @@
         <div class="pay-row pay-row-hl"><span>${t("pay_now")} (20%)</span><span><strong>$${deposit}</strong></span></div>
         <div class="pay-row"><span>${t("pay_balance")}</span><span>$${balance}</span></div>
       </div>
+      <p class="pay-method-label">${t("pay_method")}</p>
+      <div class="pay-methods" role="radiogroup" aria-label="${t("pay_method")}">
+        <button type="button" class="pay-method active" data-method="card">💳 <span>${t("pay_m_card")}</span></button>
+        <button type="button" class="pay-method" data-method="apple">🍎 <span>Apple Pay</span></button>
+        <button type="button" class="pay-method" data-method="google">🇬 <span>Google Pay</span></button>
+      </div>
       <p class="muted small pay-note">🔒 ${t("pay_secure")}</p>
-      <button class="btn btn-gold btn-block pay-confirm" data-pay-go="${tr.id}">${t("pay_continue")} →</button>
-      <p class="pay-cards" aria-hidden="true">VISA · Mastercard · Apple Pay · Google Pay</p>`;
+      <button class="btn btn-gold btn-block pay-confirm" data-pay-go="${tr.id}">${t("pay_continue")} →</button>`;
+    modalBody.querySelector(".pay-methods").addEventListener("click", (e) => {
+      const m = e.target.closest(".pay-method"); if (!m) return;
+      modalBody.querySelectorAll(".pay-method").forEach(x => x.classList.remove("active"));
+      m.classList.add("active");
+    });
     backdrop.hidden = false;
     document.body.style.overflow = "hidden";
   }
