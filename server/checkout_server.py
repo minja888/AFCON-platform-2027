@@ -22,7 +22,7 @@ app = Flask(__name__)
 
 STRIPE_KEY = os.environ.get("STRIPE_KEY", "")          # NEVER hard-code the key
 SITE_URL = os.environ.get("SITE_URL", "https://afcon-platform-2027.vercel.app")
-MIN_PAY = 2                                            # tourists can pay any amount from $2
+MIN_PAY = 1                                            # tourists can pay any amount from $1
 
 # Server-side price list (USD) — the client can only pick a trip id.
 PRICES = {

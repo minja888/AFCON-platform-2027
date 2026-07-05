@@ -1331,7 +1331,7 @@
     document.body.style.overflow = "hidden";
   }
   /* ---------- premium payment gateway (Card via Stripe · Mobile Money) ---------- */
-  const MIN_PAY = 2;                       // tourists can pay any amount from $2
+  const MIN_PAY = 1;                       // tourists can pay any amount from $1
   const TZS_RATE = 2650;                   // display-only USD→TZS approximation
   const fmtTZS = (usd) => "≈ TZS " + Math.round(usd * TZS_RATE).toLocaleString("en-US");
   const MM_PROVIDERS = [
@@ -1455,11 +1455,16 @@
       message: `Mobile-money request: $${amount} for "${L(tr.name)}" via ${prov.name} (${phone}).`
     }).then(() => {
       addActivity({ type: "payment", message: `${t("act_mm_request")} $${amount} · ${prov.name}` });
+      const mm = (window.CONFIG && window.CONFIG.mobileMoney) || {};
+      const sendBox = mm.till
+        ? `<div class="pg-sendbox"><span class="pg-sendbox-l">${t("pay_mm_sendto")}</span><strong class="pg-sendbox-till">${esc(mm.till)}</strong>${mm.name ? `<span class="muted small">${esc(mm.name)}</span>` : ""}</div>`
+        : "";
       modalBody.querySelector(".pg").innerHTML = `
         <div class="pg-done">
           <div class="pg-done-mark">📲</div>
           <h3>${t("pay_mm_ok_title")}</h3>
           <p class="pg-help">${t("pay_mm_ok_sub")}</p>
+          ${sendBox}
           <div class="pg-steps">
             <div class="pg-step"><span>1</span> ${t("pay_mm_step1").replace("{prov}", `<strong>${prov.name}</strong>`).replace("{ussd}", `<code>${prov.ussd}</code>`)}</div>
             <div class="pg-step"><span>2</span> ${t("pay_mm_step2").replace("{amt}", `<strong>$${amount}</strong> (${fmtTZS(amount)})`)}</div>

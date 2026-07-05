@@ -804,6 +804,9 @@ img { max-width: 100%; display: block; }
 .pg-step { display: flex; gap: 10px; align-items: flex-start; font-size: .9rem; }
 .pg-step span { flex: 0 0 auto; width: 24px; height: 24px; border-radius: 50%; background: var(--gold); color: var(--green-deep); font-weight: 700; display: grid; place-items: center; font-size: .82rem; }
 .pg-step code { background: var(--sand); border: 1px solid var(--line); border-radius: 5px; padding: 1px 6px; font-weight: 600; }
+.pg-sendbox { display: flex; flex-direction: column; gap: 2px; align-items: center; background: rgba(30,95,60,.1); border: 1.5px dashed var(--green); border-radius: var(--radius-sm); padding: 12px; margin: 14px 0 4px; }
+.pg-sendbox-l { font-size: .78rem; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); }
+.pg-sendbox-till { font-family: var(--display); font-size: 1.4rem; color: var(--green-deep); }
 
 /* ---------- account: personal profile + activity ---------- */
 .acct-profile { display: flex; align-items: center; gap: 18px; background: var(--white); border: 1px solid var(--line); border-radius: var(--radius); padding: 22px; box-shadow: var(--shadow); margin-bottom: 16px; }
