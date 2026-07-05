@@ -1327,6 +1327,29 @@
     backdrop.hidden = false;
     document.body.style.overflow = "hidden";
   }
+  /* ---------- pretty deposit modal (summary before Stripe Checkout) ---------- */
+  function openPayModal(tripId) {
+    const tr = window.TRIPS.find(x => x.id === tripId);
+    if (!tr || !tr.priceFrom) return;
+    const deposit = Math.max(10, Math.round(tr.priceFrom * 0.2));
+    const balance = tr.priceFrom - deposit;
+    modalBody.innerHTML = `
+      <h3 id="modalTitle">💳 ${t("pay_deposit")}</h3>
+      <div class="pay-trip">
+        <span class="pay-trip-icon">${tr.icon}</span>
+        <div><strong>${esc(L(tr.name))}</strong><br><small class="muted">${tr.duration} ${tr.duration > 1 ? t("days") : t("day")} · ★ ${tr.rating}</small></div>
+      </div>
+      <div class="pay-breakdown">
+        <div class="pay-row"><span>${t("pay_total")}</span><span>$${tr.priceFrom}</span></div>
+        <div class="pay-row pay-row-hl"><span>${t("pay_now")} (20%)</span><span><strong>$${deposit}</strong></span></div>
+        <div class="pay-row"><span>${t("pay_balance")}</span><span>$${balance}</span></div>
+      </div>
+      <p class="muted small pay-note">🔒 ${t("pay_secure")}</p>
+      <button class="btn btn-gold btn-block pay-confirm" data-pay-go="${tr.id}">${t("pay_continue")} →</button>
+      <p class="pay-cards" aria-hidden="true">VISA · Mastercard · Apple Pay · Google Pay</p>`;
+    backdrop.hidden = false;
+    document.body.style.overflow = "hidden";
+  }
   function closeBooking() {
     backdrop.hidden = true;
     document.body.style.overflow = "";
@@ -1460,8 +1483,10 @@
 
   /* ---------- pay a trip deposit via Stripe Checkout ---------- */
   document.addEventListener("click", (e) => {
-    const b = e.target.closest(".pay-btn"); if (!b) return;
-    startPayment(b.dataset.pay, b);
+    const b = e.target.closest(".pay-btn");
+    if (b) { openPayModal(b.dataset.pay); return; }        // step 1: pretty summary modal
+    const go = e.target.closest(".pay-confirm");
+    if (go) startPayment(go.dataset.payGo, go);            // step 2: off to Stripe Checkout
   });
 
   /* ---------- tourist logout ---------- */

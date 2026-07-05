@@ -755,10 +755,19 @@ img { max-width: 100%; display: block; }
 .star-pick .star.on { color: var(--gold); }
 .nav-user-name:hover { color: var(--gold-deep); }
 
-/* ---------- deposit (Stripe) button ---------- */
+/* ---------- deposit (Stripe) button + modal ---------- */
 .btn-gold { background: var(--gold); color: var(--green-deep); border: none; }
 .btn-gold:hover { background: var(--gold-deep); color: #fff; }
 .btn-gold:disabled { opacity: .6; cursor: wait; }
+.pay-trip { display: flex; align-items: center; gap: 12px; background: var(--sand); border: 1px solid var(--line); border-radius: var(--radius-sm); padding: 12px 14px; margin: 12px 0; }
+.pay-trip-icon { font-size: 1.7rem; }
+.pay-breakdown { border: 1px solid var(--line); border-radius: var(--radius-sm); overflow: hidden; margin-bottom: 12px; }
+.pay-row { display: flex; justify-content: space-between; padding: 10px 14px; font-size: .95rem; }
+.pay-row + .pay-row { border-top: 1px solid var(--line); }
+.pay-row-hl { background: rgba(224,165,46,.14); color: var(--green-deep); font-weight: 600; }
+.pay-note { margin: 0 0 12px; }
+.pay-confirm { font-size: 1rem; }
+.pay-cards { text-align: center; color: var(--muted); font-size: .75rem; letter-spacing: .06em; margin: 10px 0 0; }
 
 /* ---------- account: personal profile + activity ---------- */
 .acct-profile { display: flex; align-items: center; gap: 18px; background: var(--white); border: 1px solid var(--line); border-radius: var(--radius); padding: 22px; box-shadow: var(--shadow); margin-bottom: 16px; }
