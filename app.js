@@ -1269,7 +1269,11 @@
     fetch(sb.url + "/functions/v1/create-payment", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ tripId, name: u.name || "", email: u.email || "", method: (document.querySelector(".pay-method.active") || {}).dataset?.method || "card" })
+      body: JSON.stringify({
+        tripId, name: u.name || "", email: u.email || "",
+        amount: +(btn.dataset.amount || 0) || undefined,
+        method: (document.querySelector(".pay-method.active[data-method]") || {}).dataset?.method || "card"
+      })
     })
       .then(r => r.json())
       .then(d => {
@@ -1341,8 +1345,18 @@
       </div>
       <div class="pay-breakdown">
         <div class="pay-row"><span>${t("pay_total")}</span><span>$${tr.priceFrom}</span></div>
-        <div class="pay-row pay-row-hl"><span>${t("pay_now")} (20%)</span><span><strong>$${deposit}</strong></span></div>
-        <div class="pay-row"><span>${t("pay_balance")}</span><span>$${balance}</span></div>
+        <div class="pay-row pay-row-hl"><span>${t("pay_now")}</span><span><strong id="payNowAmt">$${deposit}</strong></span></div>
+        <div class="pay-row"><span>${t("pay_balance")}</span><span id="payBalAmt">$${balance}</span></div>
+      </div>
+      <p class="pay-method-label">${t("pay_amount_label")}</p>
+      <div class="pay-methods pay-amounts" role="radiogroup" aria-label="${t("pay_amount_label")}">
+        <button type="button" class="pay-method active" data-amt="${deposit}">${t("pay_amt_dep")} · $${deposit}</button>
+        <button type="button" class="pay-method" data-amt="${Math.min(tr.priceFrom, Math.round(tr.priceFrom / 2))}">50% · $${Math.min(tr.priceFrom, Math.round(tr.priceFrom / 2))}</button>
+        <button type="button" class="pay-method" data-amt="${tr.priceFrom}">${t("pay_amt_full")} · $${tr.priceFrom}</button>
+      </div>
+      <div class="pay-custom">
+        <label for="payCustom">${t("pay_amt_custom")} ($${deposit}–$${tr.priceFrom})</label>
+        <div class="pay-custom-row"><span class="pay-cur">$</span><input id="payCustom" type="number" inputmode="numeric" min="${deposit}" max="${tr.priceFrom}" step="1" placeholder="${deposit}" /></div>
       </div>
       <p class="pay-method-label">${t("pay_method")}</p>
       <div class="pay-methods" role="radiogroup" aria-label="${t("pay_method")}">
@@ -1352,11 +1366,32 @@
       </div>
       <p class="muted small pay-note">🔒 ${t("pay_secure")}</p>
       <button class="btn btn-gold btn-block pay-confirm" data-pay-go="${tr.id}">${t("pay_continue")} →</button>`;
-    modalBody.querySelector(".pay-methods").addEventListener("click", (e) => {
-      const m = e.target.closest(".pay-method"); if (!m) return;
-      modalBody.querySelectorAll(".pay-method").forEach(x => x.classList.remove("active"));
-      m.classList.add("active");
+    // amount + method selection (each chip group is its own radio set)
+    const updateAmt = (v) => {
+      const now = document.getElementById("payNowAmt"); if (now) now.textContent = "$" + v;
+      const bal = document.getElementById("payBalAmt"); if (bal) bal.textContent = "$" + Math.max(0, tr.priceFrom - v);
+      const go = modalBody.querySelector(".pay-confirm"); if (go) go.dataset.amount = v;
+    };
+    modalBody.querySelectorAll(".pay-methods").forEach(group => {
+      group.addEventListener("click", (e) => {
+        const m = e.target.closest(".pay-method"); if (!m) return;
+        group.querySelectorAll(".pay-method").forEach(x => x.classList.remove("active"));
+        m.classList.add("active");
+        if (m.dataset.amt) {
+          const inp = document.getElementById("payCustom"); if (inp) inp.value = "";
+          updateAmt(+m.dataset.amt);
+        }
+      });
     });
+    const custom = document.getElementById("payCustom");
+    if (custom) custom.addEventListener("input", () => {
+      let v = Math.round(+custom.value);
+      if (!Number.isFinite(v) || custom.value === "") return;
+      v = Math.min(tr.priceFrom, Math.max(deposit, v));   // clamp to allowed range
+      modalBody.querySelectorAll(".pay-amounts .pay-method").forEach(x => x.classList.remove("active"));
+      updateAmt(v);
+    });
+    updateAmt(deposit);
     backdrop.hidden = false;
     document.body.style.overflow = "hidden";
   }

@@ -777,6 +777,12 @@ img { max-width: 100%; display: block; }
 }
 .pay-method:hover { border-color: var(--gold); transform: translateY(-1px); }
 .pay-method.active { border-color: var(--gold-deep); background: rgba(224,165,46,.16); color: var(--green-deep); box-shadow: 0 0 0 2px rgba(224,165,46,.25); }
+.pay-custom { margin-bottom: 14px; }
+.pay-custom label { display: block; font-size: .82rem; color: var(--muted); margin-bottom: 6px; }
+.pay-custom-row { display: flex; align-items: center; gap: 6px; max-width: 200px; }
+.pay-cur { font-weight: 700; color: var(--green-deep); }
+.pay-custom-row input { width: 100%; padding: 9px 12px; border: 1.5px solid var(--line); border-radius: var(--radius-sm); background: var(--sand); font-size: 1rem; font-family: var(--font); color: var(--ink); }
+.pay-custom-row input:focus { outline: none; border-color: var(--gold); background: #fff; box-shadow: 0 0 0 3px rgba(224,165,46,.18); }
 
 /* ---------- account: personal profile + activity ---------- */
 .acct-profile { display: flex; align-items: center; gap: 18px; background: var(--white); border: 1px solid var(--line); border-radius: var(--radius); padding: 22px; box-shadow: var(--shadow); margin-bottom: 16px; }

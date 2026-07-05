@@ -46,7 +46,14 @@ def create_checkout():
     if not STRIPE_KEY:
         return jsonify(error="server-missing-key"), 500
 
-    deposit = max(10, round(trip["price"] * DEPOSIT_RATE))  # USD
+    min_deposit = max(10, round(trip["price"] * DEPOSIT_RATE))  # USD
+    # Tourist may choose the amount, but the server enforces the range.
+    try:
+        deposit = int(round(float(body.get("amount", min_deposit))))
+    except (TypeError, ValueError):
+        deposit = min_deposit
+    if deposit < min_deposit or deposit > trip["price"]:
+        return jsonify(error="bad-amount", min=min_deposit, max=trip["price"]), 400
     params = {
         "mode": "payment",
         "success_url": f"{SITE_URL}/#/pay-ok",
