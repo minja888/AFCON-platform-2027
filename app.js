@@ -490,6 +490,7 @@
         </ul>
         <div class="detail-cta">
           <button class="btn btn-primary btn-wa" data-book="${tr.id}">💬 ${t("book_whatsapp")}</button>
+          ${tr.priceFrom ? `<button class="btn btn-gold pay-btn" data-pay="${tr.id}">💳 ${t("pay_deposit")} ($${Math.max(10, Math.round(tr.priceFrom * 0.2))})</button>` : ""}
           <button class="btn btn-ghost fav-btn ${isFav(tr.id) ? "on" : ""}" data-fav="${tr.id}" aria-pressed="${isFav(tr.id)}">
             <span class="fav-heart">♥</span> <span class="fav-txt">${isFav(tr.id) ? t("fav_saved") : t("fav_save")}</span>
           </button>
@@ -1258,6 +1259,40 @@
     });
   }
 
+  /* ---------- Stripe deposit (TEST MODE): server-side edge function owns the key ---------- */
+  function startPayment(tripId, btn) {
+    const sb = window.CONFIG && window.CONFIG.supabase;
+    if (!sb || !sb.url) return;
+    const u = getCurrentUser() || {};
+    const orig = btn.textContent;
+    btn.disabled = true; btn.textContent = "⏳ …";
+    fetch(sb.url + "/functions/v1/create-payment", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ tripId, name: u.name || "", email: u.email || "" })
+    })
+      .then(r => r.json())
+      .then(d => {
+        if (d && d.url) { addActivity({ type: "payment", message: t("act_pay_started") + " — " + tripId }); location.href = d.url; }
+        else throw new Error(d && d.error);
+      })
+      .catch(() => { btn.disabled = false; btn.textContent = orig; alert(t("pay_err")); });
+  }
+  function viewPayOk() {
+    return `
+      <section class="container auth-wrap">
+        <div class="auth-card">
+          <div class="auth-icon">🎉</div>
+          <h1 class="auth-title">${t("pay_ok_title")}</h1>
+          <p class="auth-sub">${t("pay_ok_sub")}</p>
+          <div class="hero-cta-row" style="justify-content:center">
+            <a class="btn btn-primary" href="#/account">${t("reg_go_account")}</a>
+            <a class="btn btn-ghost" href="#/trips">${t("reg_explore")}</a>
+          </div>
+        </div>
+      </section>`;
+  }
+
   function notFound() {
     return `<section class="container section center">
       <h2>🦒</h2><p class="muted">404</p>
@@ -1320,6 +1355,7 @@
       case "account": html = viewAccount(); break;
       case "admin": html = viewAdmin(); break;
       case "about": html = viewAbout(); break;
+      case "pay-ok": html = viewPayOk(); break;
       default: html = notFound();
     }
     app.innerHTML = html;
@@ -1420,6 +1456,12 @@
     b.setAttribute("aria-pressed", added);
     const txt = b.querySelector(".fav-txt");
     if (txt) txt.textContent = added ? t("fav_saved") : t("fav_save");
+  });
+
+  /* ---------- pay a trip deposit via Stripe Checkout ---------- */
+  document.addEventListener("click", (e) => {
+    const b = e.target.closest(".pay-btn"); if (!b) return;
+    startPayment(b.dataset.pay, b);
   });
 
   /* ---------- tourist logout ---------- */

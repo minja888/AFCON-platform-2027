@@ -755,6 +755,11 @@ img { max-width: 100%; display: block; }
 .star-pick .star.on { color: var(--gold); }
 .nav-user-name:hover { color: var(--gold-deep); }
 
+/* ---------- deposit (Stripe) button ---------- */
+.btn-gold { background: var(--gold); color: var(--green-deep); border: none; }
+.btn-gold:hover { background: var(--gold-deep); color: #fff; }
+.btn-gold:disabled { opacity: .6; cursor: wait; }
+
 /* ---------- account: personal profile + activity ---------- */
 .acct-profile { display: flex; align-items: center; gap: 18px; background: var(--white); border: 1px solid var(--line); border-radius: var(--radius); padding: 22px; box-shadow: var(--shadow); margin-bottom: 16px; }
 .acct-avatar { flex: 0 0 auto; width: 64px; height: 64px; border-radius: 50%; display: grid; place-items: center; font-family: var(--display); font-weight: 700; font-size: 1.8rem; color: #fff; background: linear-gradient(135deg, var(--green-deep), var(--gold)); }
