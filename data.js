@@ -13,7 +13,7 @@ window.CONFIG = {
   visitorDeskWhatsApp: "255787540009",
   // Mobile-money merchant the tourist sends money to (M-Pesa Lipa Namba / Tigo / Airtel /
   // HaloPesa merchant, or a personal number). Leave "" to hide the "Send to" box.
-  mobileMoney: { name: "", till: "" },   // e.g. { name: "Karibu Arusha", till: "Lipa 5551234" }
+  mobileMoney: { name: "VELLAT COMPANY LIMITED", till: "M-Pesa Lipa 51219278" },
   // Optional: paste a form endpoint URL (e.g. Formspree/Google Apps Script/Supabase) to
   // ALSO send registrations to a real server. Leave "" to store on-device only.
   registrationEndpoint: "",
