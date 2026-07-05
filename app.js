@@ -298,7 +298,7 @@
     document.querySelectorAll(".card, .kpi-card, .panel, .step-card, .win-card, .match-card")
       .forEach((el, idx) => {
         el.classList.add("reveal");
-        el.style.setProperty("--reveal-delay", (Math.min(idx, 6) * 50) + "ms");
+        el.style.setProperty("--reveal-delay", (Math.min(idx, 5) * 28) + "ms");
         revealObserver.observe(el);
       });
   }
