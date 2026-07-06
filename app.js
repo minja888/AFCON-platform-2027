@@ -142,7 +142,8 @@
   function primaryCta(cls, arrow) {
     const u = getCurrentUser();
     const suffix = arrow ? " →" : "";
-    if (u && u.name) return `<a href="#/account" class="${cls}">${t("home_acct_cta")}${suffix}</a>`;
+    // Signed-in tourists never see "Register" or "My account" — send them exploring instead.
+    if (u && u.name) return `<a href="#/explore" class="${cls}">${t("home_member_cta")}${suffix}</a>`;
     return `<a href="#/register" class="${cls}">${t("home_reg_cta")}${suffix}</a>`;
   }
 
@@ -389,6 +390,7 @@
         </div>
       </section>
 
+      ${getCurrentUser() && getCurrentUser().name ? "" : `
       <section class="container section">
         <div class="home-reg">
           <div class="home-reg-text">
@@ -398,7 +400,7 @@
           </div>
           ${primaryCta("btn btn-primary btn-lg", true)}
         </div>
-      </section>
+      </section>`}
     `;
   }
 
