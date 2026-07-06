@@ -1444,35 +1444,87 @@
     backdrop.hidden = false;
     document.body.style.overflow = "hidden";
   }
-  /* mobile-money = request-to-pay: log it, notify the desk, show USSD instructions */
+  /* mobile money: try a real ClickPesa USSD-PUSH; fall back to manual "send to Lipa" */
   function startMobilePayment(tr, amount, provider, phone, btn) {
     const prov = MM_PROVIDERS.find(p => p.id === provider) || MM_PROVIDERS[0];
     const u = getCurrentUser() || {};
+    const sb = window.CONFIG && window.CONFIG.supabase;
     btn.disabled = true; btn.textContent = "⏳ …";
+    fetch(sb.url + "/functions/v1/mm-push", {
+      method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ tripId: tr.id, amount, phone, name: u.name || "", email: u.email || "" })
+    })
+      .then(r => r.json())
+      .then(d => {
+        if (d && d.ok && d.orderReference) {           // real push sent — wait for PIN
+          addActivity({ type: "payment", message: `${t("act_mm_request")} $${amount} · ${prov.name}` });
+          mmWaitForPin(tr, amount, prov, phone, d.orderReference);
+        } else {                                        // not configured → manual instructions
+          mmManualDone(tr, amount, prov, phone);
+        }
+      })
+      .catch(() => mmManualDone(tr, amount, prov, phone));  // network issue → manual fallback
+  }
+  function mmWaitForPin(tr, amount, prov, phone, ref) {
+    const pg = modalBody.querySelector(".pg"); if (!pg) return;
+    pg.innerHTML = `
+      <div class="pg-done">
+        <div class="pg-spin" aria-hidden="true"></div>
+        <h3>${t("pay_mm_wait_title")}</h3>
+        <p class="pg-help">${t("pay_mm_wait_sub").replace("{prov}", `<strong>${prov.name}</strong>`).replace("{amt}", `<strong>$${amount}</strong> (${fmtTZS(amount)})`)}</p>
+        <p class="pg-foot">${t("pay_mm_wait_ref")} <code>${esc(ref)}</code></p>
+      </div>`;
+    const sb = window.CONFIG.supabase;
+    let tries = 0; const MAX = 20;                     // ~80s
+    const done = (paid) => {
+      const pg2 = modalBody.querySelector(".pg"); if (!pg2) return;
+      if (paid) {
+        addActivity({ type: "payment", message: `${t("act_mm_paid")} $${amount} · ${prov.name}` });
+        pg2.innerHTML = `<div class="pg-done"><div class="pg-done-mark">✅</div><h3>${t("pay_mm_success_title")}</h3><p class="pg-help">${t("pay_mm_success_sub")}</p><button class="btn btn-primary btn-block" onclick="document.getElementById('modalClose').click()">${t("pay_mm_done")}</button></div>`;
+      } else {
+        pg2.innerHTML = `<div class="pg-done"><div class="pg-done-mark">⌛</div><h3>${t("pay_mm_fail_title")}</h3><p class="pg-help">${t("pay_mm_fail_sub")}</p><button class="btn btn-gold btn-block pay-btn" data-pay="${tr.id}">${t("pay_mm_retry")}</button></div>`;
+      }
+    };
+    const poll = () => {
+      tries++;
+      fetch(sb.url + "/functions/v1/mm-status?ref=" + encodeURIComponent(ref))
+        .then(r => r.json())
+        .then(d => {
+          const s = (d && d.status || "").toUpperCase();
+          if (s === "SUCCESS" || s === "SETTLED" || s === "PAID" || s === "COMPLETED") return done(true);
+          if (s === "FAILED" || s === "CANCELLED" || s === "REJECTED") return done(false);
+          if (tries >= MAX) return done(false);
+          setTimeout(poll, 4000);
+        })
+        .catch(() => { if (tries >= MAX) return done(false); setTimeout(poll, 4000); });
+    };
+    setTimeout(poll, 4000);
+  }
+  function mmManualDone(tr, amount, prov, phone) {
+    const u = getCurrentUser() || {};
     sbInsert("submissions", {
       type: "mobile_payment", name: u.name || null, email: u.email || null, phone,
       country: u.country || null, rating: null, lang,
       message: `Mobile-money request: $${amount} for "${L(tr.name)}" via ${prov.name} (${phone}).`
-    }).then(() => {
-      addActivity({ type: "payment", message: `${t("act_mm_request")} $${amount} · ${prov.name}` });
-      const mm = (window.CONFIG && window.CONFIG.mobileMoney) || {};
-      const sendBox = mm.till
-        ? `<div class="pg-sendbox"><span class="pg-sendbox-l">${t("pay_mm_sendto")}</span><strong class="pg-sendbox-till">${esc(mm.till)}</strong>${mm.name ? `<span class="muted small">${esc(mm.name)}</span>` : ""}</div>`
-        : "";
-      modalBody.querySelector(".pg").innerHTML = `
-        <div class="pg-done">
-          <div class="pg-done-mark">📲</div>
-          <h3>${t("pay_mm_ok_title")}</h3>
-          <p class="pg-help">${t("pay_mm_ok_sub")}</p>
-          ${sendBox}
-          <div class="pg-steps">
-            <div class="pg-step"><span>1</span> ${t("pay_mm_step1").replace("{prov}", `<strong>${prov.name}</strong>`).replace("{ussd}", `<code>${prov.ussd}</code>`)}</div>
-            <div class="pg-step"><span>2</span> ${t("pay_mm_step2").replace("{amt}", `<strong>$${amount}</strong> (${fmtTZS(amount)})`)}</div>
-            <div class="pg-step"><span>3</span> ${t("pay_mm_step3")}</div>
-          </div>
-          <button class="btn btn-primary btn-block" onclick="document.getElementById('modalClose').click()">${t("pay_mm_done")}</button>
-        </div>`;
-    }).catch(() => { btn.disabled = false; btn.textContent = t("pay_mm_cta") + " $" + amount + " →"; alert(t("pay_err")); });
+    }).then(() => addActivity({ type: "payment", message: `${t("act_mm_request")} $${amount} · ${prov.name}` })).catch(() => {});
+    const mm = (window.CONFIG && window.CONFIG.mobileMoney) || {};
+    const sendBox = mm.till
+      ? `<div class="pg-sendbox"><span class="pg-sendbox-l">${t("pay_mm_sendto")}</span><strong class="pg-sendbox-till">${esc(mm.till)}</strong>${mm.name ? `<span class="muted small">${esc(mm.name)}</span>` : ""}</div>`
+      : "";
+    const pg = modalBody.querySelector(".pg"); if (!pg) return;
+    pg.innerHTML = `
+      <div class="pg-done">
+        <div class="pg-done-mark">📲</div>
+        <h3>${t("pay_mm_ok_title")}</h3>
+        <p class="pg-help">${t("pay_mm_ok_sub")}</p>
+        ${sendBox}
+        <div class="pg-steps">
+          <div class="pg-step"><span>1</span> ${t("pay_mm_step1").replace("{prov}", `<strong>${prov.name}</strong>`).replace("{ussd}", `<code>${prov.ussd}</code>`)}</div>
+          <div class="pg-step"><span>2</span> ${t("pay_mm_step2").replace("{amt}", `<strong>$${amount}</strong> (${fmtTZS(amount)})`)}</div>
+          <div class="pg-step"><span>3</span> ${t("pay_mm_step3")}</div>
+        </div>
+        <button class="btn btn-primary btn-block" onclick="document.getElementById('modalClose').click()">${t("pay_mm_done")}</button>
+      </div>`;
   }
   function closeBooking() {
     backdrop.hidden = true;
