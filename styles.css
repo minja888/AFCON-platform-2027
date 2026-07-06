@@ -1018,3 +1018,49 @@ img { max-width: 100%; display: block; }
 @media (prefers-reduced-motion: reduce) {
   .bounce-word { animation: none; }
 }
+
+/* =====================================================================
+   CINEMATIC 4K HERO — crossfading Ken-Burns background (v31)
+   ===================================================================== */
+.cine-hero { position: relative; min-height: 86vh; min-height: 86dvh; display: grid; place-items: center; overflow: hidden; isolation: isolate; }
+.cine-bg { position: absolute; inset: 0; z-index: -2; background: #14180f; }
+.cine-slide {
+  position: absolute; inset: 0; background-size: cover; background-position: center;
+  opacity: 0; will-change: opacity, transform;
+  animation: cineFade 30s ease-in-out infinite;
+}
+@keyframes cineFade {
+  0%   { opacity: 0; transform: scale(1.03); }
+  4%   { opacity: 1; }
+  18%  { opacity: 1; transform: scale(1.12); }
+  23%  { opacity: 0; }
+  100% { opacity: 0; transform: scale(1.03); }
+}
+/* dark cinematic scrim for text legibility (top + bottom) */
+.cine-scrim { position: absolute; inset: 0; background:
+  linear-gradient(180deg, rgba(12,14,8,.55) 0%, rgba(12,14,8,.15) 32%, rgba(12,14,8,.30) 62%, rgba(12,14,8,.78) 100%),
+  radial-gradient(120% 90% at 50% 40%, transparent 40%, rgba(12,14,8,.45) 100%); }
+.cine-grain { position: absolute; inset: 0; opacity: .05; mix-blend-mode: overlay;
+  background-image: radial-gradient(rgba(255,255,255,.9) .5px, transparent .5px); background-size: 3px 3px; }
+
+.cine-content { position: relative; z-index: 1; text-align: center; width: min(820px, 92vw); padding: 26px; color: #fff; }
+.cine-content .hero-kicker { color: #f4d68a; background: rgba(20,24,14,.42); border: 1px solid rgba(244,214,138,.35); backdrop-filter: blur(3px); }
+.cine-content .hero-lead { color: rgba(255,255,255,.94); text-shadow: 0 2px 14px rgba(0,0,0,.5); }
+.cine-content .hero-arusha {
+  background: linear-gradient(100deg, #ffe9b0 0%, #e9a53a 45%, #f4c56a 100%);
+  -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; color: transparent;
+  filter: drop-shadow(0 6px 26px rgba(0,0,0,.55));
+}
+.cine-content .hero-script { display: inline-block; color: #f4d68a; text-shadow: 0 2px 12px rgba(0,0,0,.5); }
+.cine-content .hero-sub { margin: 10px auto 0; color: rgba(255,255,255,.9); text-shadow: 0 2px 12px rgba(0,0,0,.55); max-width: 620px; }
+.cine-content .hero-cta-row { justify-content: center; margin-top: 22px; }
+.cine-content .scroll-hint { margin-top: 26px; color: rgba(255,255,255,.85); }
+/* ghost button that stays readable on the dark hero */
+.btn-on-dark { color: #fff; border-color: rgba(255,255,255,.6); background: rgba(255,255,255,.06); backdrop-filter: blur(3px); }
+.btn-on-dark:hover { background: rgba(255,255,255,.16); border-color: #fff; color: #fff; }
+
+@media (prefers-reduced-motion: reduce) {
+  .cine-slide { animation: none; }
+  .cine-slide:first-child { opacity: 1; transform: none; }
+}
+@media (max-width: 560px) { .cine-hero { min-height: 78vh; min-height: 78dvh; } }

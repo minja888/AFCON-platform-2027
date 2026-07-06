@@ -214,6 +214,15 @@
     "1523805009345-7448845a9e53"  // giraffe at sunset
   ].map(id => `https://images.unsplash.com/photo-${id}?w=900&q=60&auto=format&fit=crop`);
 
+  /* ---------- cinematic 4K hero background (crossfading Ken-Burns slides) ---------- */
+  const CINE_SLIDES = [
+    "1535941339077-2dd1c7963098", // lions on the savanna
+    "1523805009345-7448845a9e53", // giraffe at golden hour
+    "1516426122078-c23e76319801", // elephant herd
+    "1547471080-7cc2caa01a7e",    // acacia + wildlife
+    "1464822759023-fed622ff2c3b"  // mountain / Kilimanjaro mood
+  ].map(id => `https://images.unsplash.com/photo-${id}?w=2560&q=70&auto=format&fit=crop`);
+
   let scrollHeroHandler = null;
   function stopScrollHero() {
     if (scrollHeroHandler) {
@@ -338,22 +347,24 @@
   function viewHome() {
     const featured = window.TRIPS.slice(0, 6);
     return `
-      <section class="scroll-hero" id="scrollHero">
-        <div class="scroll-hero-sticky">
-          <div class="bento-grid" id="bentoGrid" aria-hidden="true">
-            ${HERO_GALLERY.map(u => `<div class="bento-cell"><img src="${u}" alt="Arusha safari" loading="eager" decoding="async" /></div>`).join("")}
+      <section class="cine-hero" id="cineHero">
+        <div class="cine-bg" aria-hidden="true">
+          ${CINE_SLIDES.map((u, i) => `<div class="cine-slide" style="background-image:url('${u}');animation-delay:${(i * 6 - 2).toFixed(0)}s"></div>`).join("")}
+          <div class="cine-grain"></div>
+          <div class="cine-scrim"></div>
+        </div>
+        <div class="cine-content">
+          <span class="hero-kicker">${t("hero_kicker")}</span>
+          <p class="hero-lead">${t("hero_lead")}</p>
+          <h1 class="hero-arusha">Arusha</h1>
+          <p class="hero-script">${t("hero_script")}</p>
+          <p class="hero-sub">${t("hero_sub")}</p>
+          <div class="hero-cta-row">
+            ${primaryCta("btn btn-primary")}
+            <a href="#/trips" class="btn btn-ghost btn-on-dark">${t("hero_cta")}</a>
           </div>
-          <div class="scroll-hero-content" id="scrollHeroContent">
-            <span class="hero-kicker">${t("hero_kicker")}</span>
-            <p class="hero-lead">${t("hero_lead")}</p>
-            <h1 class="hero-arusha">Arusha</h1>
-            <p class="hero-script">${t("hero_script")}</p>
-            <p class="hero-sub">${t("hero_sub")}</p>
-            <div class="hero-cta-row">
-              ${primaryCta("btn btn-primary")}
-              <a href="#/trips" class="btn btn-ghost">${t("hero_cta")}</a>
-            </div>
-            <div class="scroll-hint" aria-hidden="true">↓</div>
+          <div class="scroll-hint" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"/><path d="m6 13 6 6 6-6"/></svg>
           </div>
         </div>
       </section>
