@@ -306,6 +306,116 @@ window.DASHBOARD = {
   ]
 };
 
+/* ---------- EAC MEMBER STATES (for the EAC / Non-EAC registration portal) ---------- */
+window.EAC = [
+  { c: "TZ", d: 255, n: "Tanzania" },
+  { c: "KE", d: 254, n: "Kenya" },
+  { c: "UG", d: 256, n: "Uganda" },
+  { c: "RW", d: 250, n: "Rwanda" },
+  { c: "BI", d: 257, n: "Burundi" },
+  { c: "SS", d: 211, n: "South Sudan" },
+  { c: "CD", d: 243, n: "DR Congo" },
+  { c: "SO", d: 252, n: "Somalia" }
+];
+
+/* ---------- EXPLORE ARUSHA — every attraction with real GPS coordinates.
+   cat: park | mountain | museum | culture | nature  (used by map filters) ---------- */
+window.ATTRACTIONS = [
+  { id: "ngorongoro",   cat: "park",     icon: "🦁", lat: -3.1725, lng: 35.5876,
+    name: { en: "Ngorongoro Crater", sw: "Kreta ya Ngorongoro" },
+    desc: { en: "UNESCO World Heritage — the world's largest intact caldera. Big Five in one day.", sw: "Urithi wa Dunia (UNESCO) — kreta kubwa zaidi duniani. Big Five kwa siku moja." } },
+  { id: "serengeti",    cat: "park",     icon: "🌍", lat: -2.3333, lng: 34.8333,
+    name: { en: "Serengeti National Park", sw: "Hifadhi ya Taifa Serengeti" },
+    desc: { en: "Endless plains and the Great Migration — 2M+ wildebeest.", sw: "Tambarare zisizo na mwisho na Uhamiaji Mkuu — nyumbu 2M+." } },
+  { id: "tarangire",    cat: "park",     icon: "🐘", lat: -3.8333, lng: 36.0000,
+    name: { en: "Tarangire National Park", sw: "Hifadhi ya Taifa Tarangire" },
+    desc: { en: "Giant baobabs and the biggest elephant herds in the north.", sw: "Mibuyu mikubwa na makundi makubwa zaidi ya tembo kaskazini." } },
+  { id: "manyara",      cat: "park",     icon: "🦩", lat: -3.4999, lng: 35.7500,
+    name: { en: "Lake Manyara National Park", sw: "Hifadhi ya Ziwa Manyara" },
+    desc: { en: "Tree-climbing lions, hippos and pink flamingos under the Rift wall.", sw: "Simba wapandao miti, viboko na heroe chini ya ukuta wa Bonde la Ufa." } },
+  { id: "arusha-np",    cat: "park",     icon: "🦒", lat: -3.2500, lng: 36.8500,
+    name: { en: "Arusha National Park", sw: "Hifadhi ya Taifa Arusha" },
+    desc: { en: "Giraffes, colobus monkeys and the Momella Lakes — 30 min from town.", sw: "Twiga, mbega na Maziwa ya Momella — dakika 30 kutoka mjini." } },
+  { id: "mt-meru",      cat: "mountain", icon: "⛰️", lat: -3.2367, lng: 36.7456,
+    name: { en: "Mount Meru (4,566 m)", sw: "Mlima Meru (m 4,566)" },
+    desc: { en: "Tanzania's 2nd-highest peak — a spectacular 3-4 day trek above Arusha.", sw: "Kilele cha pili Tanzania — mlima wa kuvutia wa siku 3-4 juu ya Arusha." } },
+  { id: "kilimanjaro",  cat: "mountain", icon: "🗻", lat: -3.0674, lng: 37.3556,
+    name: { en: "Mount Kilimanjaro (5,895 m)", sw: "Mlima Kilimanjaro (m 5,895)" },
+    desc: { en: "Africa's rooftop — day hikes on the lower routes from Arusha.", sw: "Paa la Afrika — matembezi ya siku kwenye njia za chini kutoka Arusha." } },
+  { id: "ol-doinyo",    cat: "mountain", icon: "🌋", lat: -2.7646, lng: 35.9147,
+    name: { en: "Ol Doinyo Lengai", sw: "Ol Doinyo Lengai" },
+    desc: { en: "The Maasai 'Mountain of God' — the world's only active natrocarbonatite volcano.", sw: "'Mlima wa Mungu' wa Kimaasai — volkano hai ya kipekee duniani." } },
+  { id: "lake-natron",  cat: "nature",   icon: "🦢", lat: -2.4160, lng: 36.0450,
+    name: { en: "Lake Natron", sw: "Ziwa Natron" },
+    desc: { en: "Crimson soda lake — breeding ground for 2.5M lesser flamingos.", sw: "Ziwa jekundu la soda — mazalia ya heroe milioni 2.5." } },
+  { id: "lake-duluti",  cat: "nature",   icon: "🛶", lat: -3.3853, lng: 36.7904,
+    name: { en: "Lake Duluti", sw: "Ziwa Duluti" },
+    desc: { en: "Volcanic crater lake minutes from town — canoeing and forest walks.", sw: "Ziwa la kreta dakika chache kutoka mjini — makasia na matembezi msituni." } },
+  { id: "chemka",       cat: "nature",   icon: "💧", lat: -3.4358, lng: 37.2831,
+    name: { en: "Chemka (Kikuletwa) Hot Springs", sw: "Chemchemi za Chemka (Kikuletwa)" },
+    desc: { en: "Turquoise natural pools under fig trees — a perfect rest-day swim.", sw: "Madimbwi ya asili ya bluu chini ya mikuyu — kuogelea siku ya mapumziko." } },
+  { id: "themi-falls",  cat: "nature",   icon: "🏞️", lat: -3.3475, lng: 36.7048,
+    name: { en: "Themi Waterfalls", sw: "Maporomoko ya Themi" },
+    desc: { en: "A hidden waterfall hike inside Arusha city's green edge.", sw: "Maporomoko yaliyofichika pembezoni mwa kijani mwa jiji la Arusha." } },
+  { id: "decl-museum",  cat: "museum",   icon: "🏛️", lat: -3.3722, lng: 36.6889,
+    name: { en: "Arusha Declaration Museum", sw: "Makumbusho ya Azimio la Arusha" },
+    desc: { en: "Where Mwalimu Nyerere's 1967 Arusha Declaration story is kept alive.", sw: "Historia ya Azimio la Arusha la 1967 la Mwalimu Nyerere." } },
+  { id: "nat-history",  cat: "museum",   icon: "🦴", lat: -3.3672, lng: 36.6822,
+    name: { en: "Natural History Museum (Old Boma)", sw: "Makumbusho ya Historia Asilia (Boma la Kale)" },
+    desc: { en: "A German-era boma with human-origins exhibits from Olduvai Gorge.", sw: "Boma la enzi za Kijerumani na maonyesho ya chimbuko la binadamu (Olduvai)." } },
+  { id: "tanzanite-mus",cat: "museum",   icon: "💎", lat: -3.3660, lng: 36.6830,
+    name: { en: "The Tanzanite Experience Museum", sw: "Makumbusho ya Tanzanite Experience" },
+    desc: { en: "The story of Tanzanite — found ONLY in Mererani, near Arusha.", sw: "Historia ya Tanzanite — inapatikana Mererani PEKEE, karibu na Arusha." } },
+  { id: "cultural-ctr", cat: "culture",  icon: "🎨", lat: -3.3941, lng: 36.6353,
+    name: { en: "Cultural Heritage Centre", sw: "Kituo cha Urithi wa Utamaduni" },
+    desc: { en: "Africa's largest art & craft centre — carvings, gems and a spiral gallery.", sw: "Kituo kikubwa zaidi Afrika cha sanaa — vinyago, vito na jumba la sanaa." } },
+  { id: "maasai-mkt",   cat: "culture",  icon: "🧺", lat: -3.3681, lng: 36.6875,
+    name: { en: "Maasai Market Curios", sw: "Soko la Kimaasai la Kumbukumbu" },
+    desc: { en: "Beadwork, fabrics and souvenirs straight from local makers.", sw: "Shanga, vitambaa na zawadi moja kwa moja kutoka kwa watengenezaji." } },
+  { id: "meserani",     cat: "culture",  icon: "🐍", lat: -3.4092, lng: 36.4633,
+    name: { en: "Meserani Snake Park & Maasai Museum", sw: "Meserani Snake Park na Makumbusho ya Kimaasai" },
+    desc: { en: "Reptile park, free Maasai cultural museum and camel rides.", sw: "Hifadhi ya wanyama watambaao, makumbusho ya Kimaasai na kupanda ngamia." } },
+  { id: "longido",      cat: "culture",  icon: "🛖", lat: -2.7290, lng: 36.6970,
+    name: { en: "Longido Cultural Tourism", sw: "Utalii wa Utamaduni Longido" },
+    desc: { en: "Walk with Maasai warriors under Mount Longido — real village life.", sw: "Tembea na morani chini ya Mlima Longido — maisha halisi ya kijiji." } },
+  { id: "mulala",       cat: "culture",  icon: "🌱", lat: -3.2660, lng: 36.8830,
+    name: { en: "Mulala Cultural Village", sw: "Kijiji cha Utamaduni Mulala" },
+    desc: { en: "A women-run village experience on Meru's slopes — cheese, coffee, farms.", sw: "Kijiji kinachoongozwa na akina mama miteremko ya Meru — jibini, kahawa, mashamba." } }
+];
+
+/* ---------- INVEST IN ARUSHA — sectors shown inside the registered-tourist area ---------- */
+window.INVESTMENTS = {
+  sectors: [
+    { id: "tourism",  icon: "🦁",
+      name: { en: "Tourism & Hospitality", sw: "Utalii na Ukarimu" },
+      stat: { en: "1.8M+ int'l visitors to Tanzania/year — the northern circuit starts in Arusha", sw: "Wageni 1.8M+ wa kimataifa kwa mwaka — mzunguko wa kaskazini unaanzia Arusha" },
+      desc: { en: "Lodges, hotels, tour operations, eco-camps and adventure products around Serengeti, Ngorongoro and Kilimanjaro. AFCON 2027 adds a continental spotlight.", sw: "Loji, hoteli, kampuni za safari na kambi za kiikolojia kuzunguka Serengeti, Ngorongoro na Kilimanjaro. AFCON 2027 inaongeza umaarufu wa kibara." } },
+    { id: "agri",     icon: "🌾",
+      name: { en: "Agriculture & Horticulture", sw: "Kilimo na Kilimo-bustani" },
+      stat: { en: "Arusha exports coffee, flowers & vegetable seeds — #1 seed-producing region", sw: "Arusha inasafirisha kahawa, maua na mbegu — mkoa #1 kwa uzalishaji wa mbegu" },
+      desc: { en: "Fertile volcanic soils on Meru's slopes: coffee estates, avocado, floriculture greenhouses and seed multiplication with direct air-freight via KIA.", sw: "Udongo wa volkano wenye rutuba: mashamba ya kahawa, parachichi, maua ya kijani-nyumba na uzalishaji wa mbegu — usafirishaji wa moja kwa moja kupitia KIA." } },
+    { id: "tanzanite",icon: "💎",
+      name: { en: "Tanzanite & Mining", sw: "Tanzanite na Madini" },
+      stat: { en: "Tanzanite exists in ONE place on Earth: Mererani, Arusha region", sw: "Tanzanite inapatikana sehemu MOJA tu duniani: Mererani, mkoa wa Arusha" },
+      desc: { en: "Value-addition is the opportunity: cutting, polishing, certification and jewellery — supported by the Mererani controlled trading hub.", sw: "Fursa ni kuongeza thamani: ukataji, ung'arishaji, uthibitisho na usonara — ikisaidiwa na soko rasmi la Mererani." } },
+    { id: "mice",     icon: "🏢",
+      name: { en: "Conference Tourism & Real Estate (MICE)", sw: "Utalii wa Mikutano na Majengo (MICE)" },
+      stat: { en: "Arusha hosts the EAC HQ & AICC — East Africa's diplomatic capital", sw: "Arusha ni makao makuu ya EAC na AICC — mji wa kidiplomasia wa Afrika Mashariki" },
+      desc: { en: "International conferences, serviced apartments, hotels and mixed-use property serving diplomats, NGOs and business travellers year-round.", sw: "Mikutano ya kimataifa, apartments, hoteli na majengo ya biashara yanayohudumia wanadiplomasia, NGOs na wafanyabiashara mwaka mzima." } },
+    { id: "agroproc", icon: "🏭",
+      name: { en: "Agro-processing & Manufacturing", sw: "Usindikaji wa Mazao na Viwanda" },
+      stat: { en: "Raw coffee, meat, dairy & grains ready for local value-addition", sw: "Kahawa, nyama, maziwa na nafaka vinasubiri kuongezwa thamani hapa hapa" },
+      desc: { en: "Process what the region grows: coffee roasting, dairy, animal feed, packaging — with the SGR/road corridor linking to Dar port and EAC markets.", sw: "Sindika kinachozalishwa mkoani: kukaanga kahawa, maziwa, chakula cha mifugo, ufungashaji — barabara na reli kuunganisha bandari ya Dar na soko la EAC." } }
+  ],
+  safety: [
+    { icon: "🕊️", en: "Decades of peace & political stability — Tanzania is among Africa's most stable nations", sw: "Miongo ya amani na utulivu wa kisiasa — Tanzania ni miongoni mwa nchi tulivu zaidi Afrika" },
+    { icon: "🏛️", en: "TIC one-stop centre: investor visas, permits and land access in one office", sw: "Kituo kimoja cha TIC: visa za wawekezaji, vibali na upatikanaji wa ardhi ofisi moja" },
+    { icon: "🌍", en: "EAC headquarters city — direct access to a 300M+ person market", sw: "Mji wa makao makuu ya EAC — soko la watu 300M+ moja kwa moja" },
+    { icon: "✈️", en: "Kilimanjaro International Airport (KIA) 40 min away, direct EU & Gulf flights", sw: "Uwanja wa ndege wa KIA dakika 40, safari za moja kwa moja Ulaya na Ghuba" },
+    { icon: "⚖️", en: "Investment protected by law (Tanzania Investment Act) & int'l guarantees (MIGA)", sw: "Uwekezaji unalindwa kisheria (Sheria ya Uwekezaji) na dhamana za kimataifa (MIGA)" }
+  ]
+};
+
 /* ---------- TRIP PHOTOS ----------
    Verified safari imagery (Unsplash). The card gradient shows while the image
    loads or if it ever fails, so the site still looks intentional offline. */

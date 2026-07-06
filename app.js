@@ -82,7 +82,7 @@
           },
           body: JSON.stringify({
             name: rec.name, country: rec.country, country_code: rec.countryCode,
-            dial: rec.dial || null, phone: rec.phone || null,
+            dial: rec.dial || null, phone: rec.phone || null, zone: rec.zone || null,
             email: rec.email || null, interest: rec.interest || null, lang: rec.lang
           })
         }).catch(() => {});
@@ -213,10 +213,11 @@
       const rect = sec.getBoundingClientRect();
       const total = rect.height - window.innerHeight;
       const p = total > 0 ? Math.min(Math.max(-rect.top / total, 0), 1) : 0;
-      const tx = lerp(p, 0.1, 0.9, -35, 0);   // slide in from the right
-      const sc = lerp(p, 0, 0.9, 0.5, 1);      // grow into the bento grid
-      const tf = `translateX(${tx.toFixed(2)}%) scale(${sc.toFixed(3)})`;
-      for (const c of cells) c.style.transform = tf;
+      // gentle zoom + fade (the old sideways slide felt jarring on phones)
+      const sc = lerp(p, 0, 0.85, 0.92, 1);    // soft grow into place
+      const op = lerp(p, 0, 0.4, 0.45, 1);     // fade the gallery in
+      const tf = `scale(${sc.toFixed(3)})`;
+      for (const c of cells) { c.style.transform = tf; c.style.opacity = op.toFixed(3); }
       const cScale = lerp(p, 0, 0.5, 1, 0);    // hero text shrinks…
       const cOpac = lerp(p, 0, 0.45, 1, 0);    // …and fades out
       content.style.transform = `translate(-50%, -50%) scale(${cScale.toFixed(3)})`;
@@ -371,6 +372,21 @@
           <a href="#/operators" class="link-more">${t("nav_operators")} →</a>
         </div>
         <div class="card-grid">${window.OPERATORS.slice(0, 4).map(operatorCard).join("")}</div>
+      </section>
+
+      <section class="container section">
+        <div class="home-explore">
+          <div class="home-explore-text">
+            <span class="trips-kicker">${t("exp_home_kicker")}</span>
+            <h2>${t("exp_home_title")}</h2>
+            <p class="muted">${t("exp_home_sub")}</p>
+            <div class="exp-teaser">
+              ${(window.ATTRACTIONS || []).slice(0, 6).map(a => `<span class="exp-teaser-chip">${a.icon} ${esc(L(a.name))}</span>`).join("")}
+              <span class="exp-teaser-chip more">+${Math.max(0, (window.ATTRACTIONS || []).length - 6)}…</span>
+            </div>
+            <a href="#/explore" class="btn btn-primary">${getCurrentUser() ? t("exp_home_cta_in") : t("exp_home_cta")} →</a>
+          </div>
+        </div>
       </section>
 
       <section class="container section">
@@ -673,6 +689,166 @@
   }
 
   /* ===================================================================
+     VIEW: EXPLORE ARUSHA (attractions + interactive map + investment)
+     Public visitors see a locked teaser; registered tourists get the
+     full Leaflet/OpenStreetMap experience — as requested by RAS.
+     =================================================================== */
+  let leafletPromise = null;
+  function loadLeaflet() {                 // lazy-load Leaflet ONLY when the map page opens
+    if (window.L) return Promise.resolve();
+    if (leafletPromise) return leafletPromise;
+    leafletPromise = new Promise((resolve, reject) => {
+      const css = document.createElement("link");
+      css.rel = "stylesheet";
+      css.href = "https://unpkg.com/leaflet@1.9.4/dist/leaflet.css";
+      document.head.appendChild(css);
+      const js = document.createElement("script");
+      js.src = "https://unpkg.com/leaflet@1.9.4/dist/leaflet.js";
+      js.onload = resolve; js.onerror = reject;
+      document.head.appendChild(js);
+    });
+    return leafletPromise;
+  }
+  const ATT_CATS = ["all", "park", "mountain", "museum", "culture", "nature"];
+  const attCard = (a) => `
+    <button class="card att-card" data-att="${a.id}" type="button">
+      <div class="att-top"><span class="att-icon">${a.icon}</span><span class="att-cat-pill">${t("att_" + a.cat)}</span></div>
+      <h3>${esc(L(a.name))}</h3>
+      <p class="muted">${esc(L(a.desc))}</p>
+      <span class="att-locate">📍 ${t("exp_show_map")}</span>
+    </button>`;
+  function viewExplore() {
+    const u = getCurrentUser();
+    const atts = window.ATTRACTIONS || [];
+    if (!u || !u.name) {
+      // locked teaser — names only, everything else invites registration
+      const teaser = atts.slice(0, 8).map(a => `<span class="exp-teaser-chip">${a.icon} ${esc(L(a.name))}</span>`).join("");
+      return `
+        <section class="detail-hero grad-green">
+          <div class="container"><h1>${t("exp_title")}</h1><p class="detail-meta">${t("exp_lead")}</p></div>
+        </section>
+        <section class="container section">
+          <div class="exp-lock">
+            <div class="exp-lock-map" aria-hidden="true">🗺️</div>
+            <h2>${t("exp_lock_title")}</h2>
+            <p class="muted">${t("exp_lock_sub")}</p>
+            <div class="exp-teaser">${teaser}<span class="exp-teaser-chip more">+${Math.max(0, atts.length - 8)}…</span></div>
+            <div class="hero-cta-row" style="justify-content:center">
+              <a class="btn btn-primary btn-lg" href="#/register">${t("home_reg_cta")} →</a>
+              <a class="btn btn-ghost" href="#/login">${t("login_btn")}</a>
+            </div>
+          </div>
+        </section>`;
+    }
+    const chips = ATT_CATS.map(c =>
+      `<button class="chip ${c === "all" ? "active" : ""}" data-attcat="${c}">${t("att_" + c)}</button>`).join("");
+    const inv = window.INVESTMENTS || { sectors: [], safety: [] };
+    return `
+      <section class="detail-hero grad-green">
+        <div class="container"><h1>${t("exp_title")}</h1><p class="detail-meta">${t("exp_lead_in")}</p></div>
+      </section>
+      <section class="container section">
+        <div class="chips" id="attFilters">${chips}</div>
+        <div id="attMap" class="att-map" role="application" aria-label="${t("exp_map_label")}"></div>
+        <div class="card-grid att-grid" id="attGrid">${atts.map(attCard).join("")}</div>
+      </section>
+      <section class="container section inv-section" id="invest">
+        <div class="section-head"><div>
+          <span class="trips-kicker">${t("inv_kicker")}</span>
+          <h2>${t("inv_title")}</h2>
+          <p class="muted">${t("inv_sub")}</p>
+        </div></div>
+        <div class="inv-grid">
+          ${inv.sectors.map(s => `
+            <div class="card inv-card">
+              <span class="inv-icon">${s.icon}</span>
+              <h3>${esc(L(s.name))}</h3>
+              <p class="inv-stat">${esc(L(s.stat))}</p>
+              <p class="muted">${esc(L(s.desc))}</p>
+            </div>`).join("")}
+        </div>
+        <div class="inv-safe">
+          <h3>${t("inv_safe_title")}</h3>
+          <ul class="inv-safe-list">
+            ${inv.safety.map(x => `<li><span>${x.icon}</span> ${esc(lang === "sw" ? x.sw : x.en)}</li>`).join("")}
+          </ul>
+        </div>
+        <form class="inv-form" id="invForm" novalidate>
+          <h3>${t("inv_cta_title")}</h3>
+          <p class="muted small">${t("inv_cta_sub")}</p>
+          <textarea class="acct-msg" id="invMsg" rows="3" placeholder="${t("inv_ph")}"></textarea>
+          <div class="form-ok" id="invOk" hidden>✓ ${t("acct_sent")}</div>
+          <button class="btn btn-gold" type="submit">${t("inv_send")}</button>
+        </form>
+      </section>`;
+  }
+  let attMap = null, attMarkers = {};
+  function bindExplore() {
+    attMap = null; attMarkers = {};
+    const mapEl = document.getElementById("attMap");
+    if (!mapEl) return;                     // locked teaser — nothing to bind
+    loadLeaflet().then(() => {
+      if (!document.getElementById("attMap")) return;   // user navigated away
+      attMap = window.L.map("attMap", { scrollWheelZoom: false }).setView([-3.2, 36.3], 8);
+      window.L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        maxZoom: 18, attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+      }).addTo(attMap);
+      (window.ATTRACTIONS || []).forEach(a => {
+        const mk = window.L.marker([a.lat, a.lng], {
+          icon: window.L.divIcon({ className: "att-pin", html: `<span>${a.icon}</span>`, iconSize: [34, 34], iconAnchor: [17, 30] })
+        }).addTo(attMap);
+        mk.bindPopup(`<strong>${a.icon} ${esc(L(a.name))}</strong><br><small>${esc(L(a.desc))}</small>`);
+        attMarkers[a.id] = mk;
+      });
+    }).catch(() => { mapEl.innerHTML = `<p class="muted" style="padding:2rem;text-align:center">${t("exp_map_err")}</p>`; });
+
+    // category filter: cards + pins together
+    const filters = document.getElementById("attFilters");
+    if (filters) filters.addEventListener("click", (e) => {
+      const b = e.target.closest("[data-attcat]"); if (!b) return;
+      filters.querySelectorAll(".chip").forEach(c => c.classList.remove("active"));
+      b.classList.add("active");
+      const cat = b.dataset.attcat;
+      const grid = document.getElementById("attGrid");
+      const list = (window.ATTRACTIONS || []).filter(a => cat === "all" || a.cat === cat);
+      if (grid) grid.innerHTML = list.map(attCard).join("");
+      Object.keys(attMarkers).forEach(id => {
+        const a = window.ATTRACTIONS.find(x => x.id === id);
+        const show = cat === "all" || (a && a.cat === cat);
+        if (attMap) { if (show) attMarkers[id].addTo(attMap); else attMap.removeLayer(attMarkers[id]); }
+      });
+    });
+    // tap a card → fly the map to that attraction
+    document.addEventListener("click", attCardJump);
+    function attCardJump(e) {
+      const c = e.target.closest("[data-att]"); if (!c) return;
+      if (!document.getElementById("attMap")) { document.removeEventListener("click", attCardJump); return; }
+      const a = (window.ATTRACTIONS || []).find(x => x.id === c.dataset.att);
+      if (!a || !attMap) return;
+      document.getElementById("attMap").scrollIntoView({ behavior: "smooth", block: "center" });
+      attMap.flyTo([a.lat, a.lng], 11, { duration: 1.2 });
+      if (attMarkers[a.id]) attMarkers[a.id].openPopup();
+    }
+    // investment enquiry — saved centrally, tagged [INVEST]
+    const invForm = document.getElementById("invForm");
+    if (invForm) invForm.addEventListener("submit", (e) => {
+      e.preventDefault();
+      const msg = (document.getElementById("invMsg").value || "").trim();
+      if (!msg) return;
+      const u = getCurrentUser() || {};
+      const btn = invForm.querySelector("button[type=submit]"); btn.disabled = true;
+      sbInsert("submissions", {
+        type: "enquiry", name: u.name || null, email: u.email || null, phone: u.phone || null,
+        country: u.country || null, rating: null, lang, message: "[INVEST] " + msg
+      }).then(() => {
+        addActivity({ type: "enquiry", message: "[INVEST] " + msg });
+        document.getElementById("invOk").hidden = false;
+        document.getElementById("invMsg").value = ""; btn.disabled = false;
+      }).catch(() => { btn.disabled = false; alert(t("acct_err")); });
+    });
+  }
+
+  /* ===================================================================
      VIEW: ABOUT
      =================================================================== */
   function viewAbout() {
@@ -724,6 +900,7 @@
     const countries = window.COUNTRIES || [];
     const dialOpts = countries.map(c =>
       `<option value="+${c.d}" data-c="${c.c}"${c.c === "TZ" ? " selected" : ""}>${flag(c.c)} +${c.d}</option>`).join("");
+    const eacFlags = (window.EAC || []).map(c => flagImg(c.c, "zone-flag")).join("");
     const interestOpts = `<option value="">${t("reg_interest_ph")}</option>` +
       ["safari", "culture", "stay", "food", "trek"].map(k => `<option value="${t("cat_" + k)}">${t("cat_" + k)}</option>`).join("");
 
@@ -747,6 +924,19 @@
           </aside>
           <div class="reg-formcol">
         <form id="regForm" class="reg-form" novalidate>
+          <div class="field">
+            <label>${t("reg_zone")} <span class="req">*</span></label>
+            <div class="zone-pick" id="zonePick" role="radiogroup" aria-label="${t("reg_zone")}">
+              <button type="button" class="zone-opt active" data-zone="eac" aria-pressed="true">
+                <span class="zone-flags">${eacFlags}</span>
+                <b>${t("reg_zone_eac")}</b><small>${t("reg_zone_eac_sub")}</small>
+              </button>
+              <button type="button" class="zone-opt" data-zone="intl" aria-pressed="false">
+                <span class="zone-globe">🌍</span>
+                <b>${t("reg_zone_intl")}</b><small>${t("reg_zone_intl_sub")}</small>
+              </button>
+            </div>
+          </div>
           <div class="field">
             <label for="regName">${t("reg_name")} <span class="req">*</span></label>
             <input id="regName" type="text" autocomplete="name" placeholder="${t("reg_name_ph")}" />
@@ -807,6 +997,33 @@
     const dial = document.getElementById("regDial");
     const err = document.getElementById("regError");
 
+    /* EAC vs Non-EAC portal: EAC citizens register with their own country phone code */
+    let zone = "eac";
+    const EAC_SET = new Set((window.EAC || []).map(c => c.c));
+    const zoneCountries = () => zone === "eac"
+      ? window.COUNTRIES.filter(c => EAC_SET.has(c.c))
+      : window.COUNTRIES;
+    function rebuildDial() {
+      dial.innerHTML = zoneCountries().map(c =>
+        `<option value="+${c.d}" data-c="${c.c}"${c.c === "TZ" ? " selected" : ""}>${flag(c.c)} +${c.d}</option>`).join("");
+      const opt = dial.selectedOptions[0];
+      if (opt) setDialFlag(opt.getAttribute("data-c"));
+    }
+    const zonePick = document.getElementById("zonePick");
+    if (zonePick) zonePick.addEventListener("click", (e) => {
+      const b = e.target.closest(".zone-opt"); if (!b) return;
+      zone = b.dataset.zone;
+      zonePick.querySelectorAll(".zone-opt").forEach(x => {
+        const on = x === b; x.classList.toggle("active", on); x.setAttribute("aria-pressed", on);
+      });
+      rebuildDial();
+      // reset the chosen country if it no longer fits the zone
+      const hiddenC = document.getElementById("regCountry");
+      if (zone === "eac" && hiddenC.value && !EAC_SET.has(hiddenC.value)) {
+        hiddenC.value = ""; document.getElementById("regCountrySearch").value = "";
+      }
+    });
+
     /* searchable country combobox — type to filter, pick to auto-set the phone code */
     const combo = document.getElementById("regCountryCombo");
     const search = document.getElementById("regCountrySearch");
@@ -814,7 +1031,7 @@
     const list = document.getElementById("regCountryList");
     function renderCountryList(q) {
       const query = (q || "").trim().toLowerCase();
-      const matches = window.COUNTRIES
+      const matches = zoneCountries()
         .filter(c => !query || c.n.toLowerCase().includes(query) || ("+" + c.d).startsWith(query))
         .slice(0, 80);
       list.innerHTML = matches.length
@@ -850,6 +1067,7 @@
       else if (e.key === "Escape") closeCountryList();
     });
     document.addEventListener("click", (e) => { if (!combo.contains(e.target)) closeCountryList(); });
+    rebuildDial();                                   // start in the EAC portal
     form.addEventListener("submit", (e) => {
       e.preventDefault();
       const name = document.getElementById("regName").value.trim();
@@ -874,11 +1092,11 @@
       const fullPhone = phone ? dial.value + " " + phone : "";
       const ts = new Date().toISOString();
       saveReg({
-        ts, name, countryCode, country: countryName,
+        ts, name, countryCode, country: countryName, zone,
         dial: phone ? dial.value : "", phone: fullPhone,
         email, interest, lang, pass: hashPass(pass)
       });
-      setCurrentUser({ name, email, phone: fullPhone, country: countryName, interest, ts });  // auto sign-in
+      setCurrentUser({ name, email, phone: fullPhone, country: countryName, interest, zone, ts });  // auto sign-in
       addActivity({ type: "register", message: t("act_registered") });
       updateAuthNav();
       form.hidden = true;
@@ -1201,6 +1419,11 @@
       </section>
       <section class="container section">
         ${profileCard}
+        <a class="acct-explore" href="#/explore">
+          <span class="acct-explore-ic">🗺️</span>
+          <span class="acct-explore-tx"><strong>${t("acct_explore_t")}</strong><small>${t("acct_explore_s")}</small></span>
+          <span class="acct-explore-go">→</span>
+        </a>
         <h2 class="acct-section-h">${t("acct_activity_h")}</h2>
         ${activityList}
         <h2 class="acct-section-h">${t("acct_tools_h")}</h2>
@@ -1553,6 +1776,7 @@
       case "login": html = viewLogin(); break;
       case "account": html = viewAccount(); break;
       case "admin": html = viewAdmin(); break;
+      case "explore": html = viewExplore(); break;
       case "about": html = viewAbout(); break;
       case "pay-ok": html = viewPayOk(); break;
       default: html = notFound();
@@ -1588,6 +1812,7 @@
     if (route === "login") bindLogin();
     if (route === "account") bindAccount();
     if (route === "admin") bindAdminPage();
+    if (route === "explore") bindExplore();
     if (route === "home") buildScrollHero(); else stopScrollHero();
     setupReveal();
   }
