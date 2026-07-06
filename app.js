@@ -176,6 +176,33 @@
     localStorage.setItem(ACT_KEY, JSON.stringify(a.slice(0, 100)));      // keep it bounded
   }
 
+  /* ---------- inline SVG icon set (Lucide-style, stroke = currentColor) ----------
+     Real photos carry the imagery; these clean line icons replace decorative
+     emoji for structure, so everything renders identically on every device. */
+  const ICONS = {
+    pin:      '<path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="2.6"/>',
+    map:      '<path d="m9 4 6 2 6-2v14l-6 2-6-2-6 2V6z"/><path d="M9 4v14M15 6v14"/>',
+    mountain: '<path d="m3 19 6-11 4 6 2-3 6 8z"/>',
+    tree:     '<path d="M12 3 7 11h3l-3 5h4v5h2v-5h4l-3-5h3z"/>',
+    building: '<path d="M4 21V6l8-3 8 3v15"/><path d="M9 21v-5h6v5M8 9h.01M12 9h.01M16 9h.01M8 13h.01M16 13h.01"/>',
+    users:    '<circle cx="9" cy="8" r="3"/><path d="M4 20a5 5 0 0 1 10 0"/><path d="M16 6a3 3 0 0 1 0 6"/><path d="M20 20a5 5 0 0 0-3-4.6"/>',
+    water:    '<path d="M12 3s6 6.5 6 11a6 6 0 0 1-12 0c0-4.5 6-11 6-11z"/>',
+    camera:   '<path d="M4 8h3l2-2h6l2 2h3v11H4z"/><circle cx="12" cy="13.5" r="3.5"/>',
+    sprout:   '<path d="M12 21v-9"/><path d="M12 12a5 5 0 0 1 5-5 5 5 0 0 1-5 5z"/><path d="M12 14a5 5 0 0 0-5-5 5 5 0 0 0 5 5z"/>',
+    gem:      '<path d="M6 3h12l3 6-9 12L3 9z"/><path d="M3 9h18M9 3 7 9l5 12 5-12-2-6"/>',
+    factory:  '<path d="M3 21V10l6 4V10l6 4V6l6 4v11z"/><path d="M3 21h18"/>',
+    shield:   '<path d="M12 3 5 6v6c0 4.5 3.2 7.5 7 9 3.8-1.5 7-4.5 7-9V6z"/><path d="m9 12 2 2 4-4"/>',
+    globe:    '<circle cx="12" cy="12" r="9"/><path d="M3 12h18"/><path d="M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/>',
+    plane:    '<path d="M21 3 3 10l6 3 3 6z"/><path d="m13 13 4 8 4-18"/>',
+    dove:     '<path d="M12 21s-7-4.5-7-10a4 4 0 0 1 7-2 4 4 0 0 1 7 2c0 5.5-7 10-7 10z"/>'
+  };
+  function svgIcon(name, size) {
+    const s = size || 22;
+    return `<svg class="ic" viewBox="0 0 24 24" width="${s}" height="${s}" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICONS[name] || ICONS.pin}</svg>`;
+  }
+  const CAT_ICON  = { park: "tree", mountain: "mountain", museum: "building", culture: "users", nature: "water" };
+  const CAT_COLOR = { park: "#4d5f28", mountain: "#3a4a1e", museum: "#8a6a44", culture: "#c0552b", nature: "#4a7c59" };
+
   const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
   /* ---------- scroll-gallery hero (vanilla port of the bento scroll-animation) ---------- */
@@ -382,7 +409,7 @@
             <h2>${t("exp_home_title")}</h2>
             <p class="muted">${t("exp_home_sub")}</p>
             <div class="exp-teaser">
-              ${(window.ATTRACTIONS || []).slice(0, 6).map(a => `<span class="exp-teaser-chip">${a.icon} ${esc(L(a.name))}</span>`).join("")}
+              ${(window.ATTRACTIONS || []).slice(0, 6).map(a => `<span class="exp-teaser-chip">${svgIcon(CAT_ICON[a.cat] || "pin", 14)} ${esc(L(a.name))}</span>`).join("")}
               <span class="exp-teaser-chip more">+${Math.max(0, (window.ATTRACTIONS || []).length - 6)}…</span>
             </div>
             <a href="#/explore" class="btn btn-primary">${getCurrentUser() ? t("exp_home_cta_in") : t("exp_home_cta")} →</a>
@@ -715,10 +742,9 @@
   const attCard = (a) => `
     <button class="card att-card" data-att="${a.id}" type="button" aria-label="${esc(L(a.name))} — ${t("exp_show_map")}">
       <span class="att-media ${a.grad || "grad-green"}">
-        ${a.img ? `<img class="att-img" src="${a.img}" alt="${esc(L(a.name))}" loading="lazy" decoding="async" onerror="this.remove()" />` : ""}
+        ${a.img ? `<img class="att-img" src="${a.img}" alt="${esc(L(a.name))}" loading="lazy" decoding="async" onerror="this.remove()" />` : `<span class="att-media-fallback">${svgIcon(CAT_ICON[a.cat] || "pin", 40)}</span>`}
         <span class="att-scrim"></span>
-        <span class="att-media-icon" aria-hidden="true">${a.icon}</span>
-        <span class="att-cat-pill">${t("att_" + a.cat)}</span>
+        <span class="att-cat-pill">${svgIcon(CAT_ICON[a.cat] || "pin", 14)} ${t("att_" + a.cat)}</span>
       </span>
       <span class="att-body">
         <span class="att-name">${esc(L(a.name))}</span>
@@ -734,7 +760,7 @@
     const atts = window.ATTRACTIONS || [];
     if (!u || !u.name) {
       // locked teaser — names only, everything else invites registration
-      const teaser = atts.slice(0, 8).map(a => `<span class="exp-teaser-chip">${a.icon} ${esc(L(a.name))}</span>`).join("");
+      const teaser = atts.slice(0, 8).map(a => `<span class="exp-teaser-chip">${svgIcon(CAT_ICON[a.cat] || "pin", 14)} ${esc(L(a.name))}</span>`).join("");
       return `
         <section class="detail-hero grad-green">
           <div class="container"><h1>${t("exp_title")}</h1><p class="detail-meta">${t("exp_lead")}</p></div>
@@ -742,7 +768,7 @@
         <section class="container section">
           <div class="exp-lock">
             <div class="exp-lock-photos" aria-hidden="true">
-              ${atts.slice(0, 4).map(a => `<span class="exp-lock-photo ${a.grad || "grad-green"}">${a.img ? `<img src="${a.img}" alt="" loading="lazy" decoding="async" onerror="this.remove()" />` : `<span class="exp-lock-photo-ic">${a.icon}</span>`}</span>`).join("")}
+              ${atts.slice(0, 4).map(a => `<span class="exp-lock-photo ${a.grad || "grad-green"}">${a.img ? `<img src="${a.img}" alt="" loading="lazy" decoding="async" onerror="this.remove()" />` : `<span class="exp-lock-photo-ic">${svgIcon(CAT_ICON[a.cat] || "pin", 26)}</span>`}</span>`).join("")}
               <span class="exp-lock-lockbadge">
                 <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="4" y="10" width="16" height="10" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg>
               </span>
@@ -783,7 +809,7 @@
         <div class="inv-grid">
           ${inv.sectors.map(s => `
             <div class="card inv-card">
-              <span class="inv-icon">${s.icon}</span>
+              <span class="inv-icon">${svgIcon(s.ic, 26)}</span>
               <h3>${esc(L(s.name))}</h3>
               <p class="inv-stat">${esc(L(s.stat))}</p>
               <p class="muted">${esc(L(s.desc))}</p>
@@ -792,7 +818,7 @@
         <div class="inv-safe">
           <h3>${t("inv_safe_title")}</h3>
           <ul class="inv-safe-list">
-            ${inv.safety.map(x => `<li><span>${x.icon}</span> ${esc(lang === "sw" ? x.sw : x.en)}</li>`).join("")}
+            ${inv.safety.map(x => `<li><span class="inv-safe-ic">${svgIcon(x.ic, 20)}</span> ${esc(lang === "sw" ? x.sw : x.en)}</li>`).join("")}
           </ul>
         </div>
         <form class="inv-form" id="invForm" novalidate>
@@ -816,10 +842,12 @@
         maxZoom: 18, attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
       }).addTo(attMap);
       (window.ATTRACTIONS || []).forEach(a => {
+        const col = CAT_COLOR[a.cat] || "#4d5f28";
+        const pinSvg = `<svg viewBox="0 0 32 40" width="32" height="40" aria-hidden="true"><path d="M16 1C8.3 1 2 7.1 2 14.7 2 25 16 39 16 39s14-14 14-24.3C30 7.1 23.7 1 16 1Z" fill="${col}" stroke="#fff" stroke-width="2"/><circle cx="16" cy="14.5" r="5.2" fill="#fff"/></svg>`;
         const mk = window.L.marker([a.lat, a.lng], {
-          icon: window.L.divIcon({ className: "att-pin", html: `<span>${a.icon}</span>`, iconSize: [34, 34], iconAnchor: [17, 30] })
+          icon: window.L.divIcon({ className: "att-pin", html: pinSvg, iconSize: [32, 40], iconAnchor: [16, 39], popupAnchor: [0, -34] })
         }).addTo(attMap);
-        mk.bindPopup(`<strong>${a.icon} ${esc(L(a.name))}</strong><br><small>${esc(L(a.desc))}</small>`);
+        mk.bindPopup(`<strong style="color:${col}">${esc(L(a.name))}</strong><br><small>${esc(L(a.desc))}</small>`);
         attMarkers[a.id] = mk;
       });
     }).catch(() => { mapEl.innerHTML = `<p class="muted" style="padding:2rem;text-align:center">${t("exp_map_err")}</p>`; });
@@ -1442,7 +1470,7 @@
       <section class="container section">
         ${profileCard}
         <a class="acct-explore" href="#/explore">
-          <span class="acct-explore-ic">🗺️</span>
+          <span class="acct-explore-ic">${svgIcon("map", 26)}</span>
           <span class="acct-explore-tx"><strong>${t("acct_explore_t")}</strong><small>${t("acct_explore_s")}</small></span>
           <span class="acct-explore-go">→</span>
         </a>

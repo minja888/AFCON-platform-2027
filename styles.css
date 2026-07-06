@@ -989,3 +989,17 @@ img { max-width: 100%; display: block; }
 
 /* soften the in-page section title on Explore (was heavy uppercase Anton) */
 .inv-section .section-head h2 { font-family: var(--display); font-weight: 700; letter-spacing: -.01em; text-transform: none; font-size: clamp(1.5rem, 3.6vw, 2rem); }
+
+/* ---- SVG icon alignment (replaces decorative emoji, v28) ---- */
+.ic { display: inline-block; vertical-align: middle; flex: 0 0 auto; }
+.att-cat-pill { display: inline-flex; align-items: center; gap: 5px; }
+.att-cat-pill .ic { color: var(--green-deep); }
+.att-media-fallback { position: absolute; inset: 0; display: grid; place-items: center; color: rgba(255,255,255,.9); }
+.exp-teaser-chip { display: inline-flex; align-items: center; gap: 6px; }
+.exp-teaser-chip .ic { color: var(--green); }
+.home-explore .exp-teaser-chip .ic { color: var(--gold); }
+.exp-lock-photo-ic { color: rgba(255,255,255,.92); }
+.inv-icon { display: inline-flex; align-items: center; justify-content: center; width: 46px; height: 46px; border-radius: 12px; background: linear-gradient(135deg, rgba(224,165,46,.18), rgba(224,165,46,.06)); color: var(--gold-deep); }
+.inv-safe-ic { display: inline-flex; align-items: center; justify-content: center; width: 34px; height: 34px; border-radius: 9px; background: rgba(77,95,40,.1); color: var(--green); }
+.inv-safe-list li { align-items: center; }
+.acct-explore-ic { display: inline-flex; align-items: center; justify-content: center; width: 44px; height: 44px; border-radius: 12px; background: rgba(255,255,255,.14); color: var(--gold); }

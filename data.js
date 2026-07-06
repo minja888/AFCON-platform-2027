@@ -421,33 +421,33 @@ window.ATTRACTIONS = [
 /* ---------- INVEST IN ARUSHA — sectors shown inside the registered-tourist area ---------- */
 window.INVESTMENTS = {
   sectors: [
-    { id: "tourism",  icon: "🦁",
+    { id: "tourism",  ic: "camera",
       name: { en: "Tourism & Hospitality", sw: "Utalii na Ukarimu" },
       stat: { en: "1.8M+ int'l visitors to Tanzania/year — the northern circuit starts in Arusha", sw: "Wageni 1.8M+ wa kimataifa kwa mwaka — mzunguko wa kaskazini unaanzia Arusha" },
       desc: { en: "Lodges, hotels, tour operations, eco-camps and adventure products around Serengeti, Ngorongoro and Kilimanjaro. AFCON 2027 adds a continental spotlight.", sw: "Loji, hoteli, kampuni za safari na kambi za kiikolojia kuzunguka Serengeti, Ngorongoro na Kilimanjaro. AFCON 2027 inaongeza umaarufu wa kibara." } },
-    { id: "agri",     icon: "🌾",
+    { id: "agri",     ic: "sprout",
       name: { en: "Agriculture & Horticulture", sw: "Kilimo na Kilimo-bustani" },
       stat: { en: "Arusha exports coffee, flowers & vegetable seeds — #1 seed-producing region", sw: "Arusha inasafirisha kahawa, maua na mbegu — mkoa #1 kwa uzalishaji wa mbegu" },
       desc: { en: "Fertile volcanic soils on Meru's slopes: coffee estates, avocado, floriculture greenhouses and seed multiplication with direct air-freight via KIA.", sw: "Udongo wa volkano wenye rutuba: mashamba ya kahawa, parachichi, maua ya kijani-nyumba na uzalishaji wa mbegu — usafirishaji wa moja kwa moja kupitia KIA." } },
-    { id: "tanzanite",icon: "💎",
+    { id: "tanzanite",ic: "gem",
       name: { en: "Tanzanite & Mining", sw: "Tanzanite na Madini" },
       stat: { en: "Tanzanite exists in ONE place on Earth: Mererani, Arusha region", sw: "Tanzanite inapatikana sehemu MOJA tu duniani: Mererani, mkoa wa Arusha" },
       desc: { en: "Value-addition is the opportunity: cutting, polishing, certification and jewellery — supported by the Mererani controlled trading hub.", sw: "Fursa ni kuongeza thamani: ukataji, ung'arishaji, uthibitisho na usonara — ikisaidiwa na soko rasmi la Mererani." } },
-    { id: "mice",     icon: "🏢",
+    { id: "mice",     ic: "building",
       name: { en: "Conference Tourism & Real Estate (MICE)", sw: "Utalii wa Mikutano na Majengo (MICE)" },
       stat: { en: "Arusha hosts the EAC HQ & AICC — East Africa's diplomatic capital", sw: "Arusha ni makao makuu ya EAC na AICC — mji wa kidiplomasia wa Afrika Mashariki" },
       desc: { en: "International conferences, serviced apartments, hotels and mixed-use property serving diplomats, NGOs and business travellers year-round.", sw: "Mikutano ya kimataifa, apartments, hoteli na majengo ya biashara yanayohudumia wanadiplomasia, NGOs na wafanyabiashara mwaka mzima." } },
-    { id: "agroproc", icon: "🏭",
+    { id: "agroproc", ic: "factory",
       name: { en: "Agro-processing & Manufacturing", sw: "Usindikaji wa Mazao na Viwanda" },
       stat: { en: "Raw coffee, meat, dairy & grains ready for local value-addition", sw: "Kahawa, nyama, maziwa na nafaka vinasubiri kuongezwa thamani hapa hapa" },
       desc: { en: "Process what the region grows: coffee roasting, dairy, animal feed, packaging — with the SGR/road corridor linking to Dar port and EAC markets.", sw: "Sindika kinachozalishwa mkoani: kukaanga kahawa, maziwa, chakula cha mifugo, ufungashaji — barabara na reli kuunganisha bandari ya Dar na soko la EAC." } }
   ],
   safety: [
-    { icon: "🕊️", en: "Decades of peace & political stability — Tanzania is among Africa's most stable nations", sw: "Miongo ya amani na utulivu wa kisiasa — Tanzania ni miongoni mwa nchi tulivu zaidi Afrika" },
-    { icon: "🏛️", en: "TIC one-stop centre: investor visas, permits and land access in one office", sw: "Kituo kimoja cha TIC: visa za wawekezaji, vibali na upatikanaji wa ardhi ofisi moja" },
-    { icon: "🌍", en: "EAC headquarters city — direct access to a 300M+ person market", sw: "Mji wa makao makuu ya EAC — soko la watu 300M+ moja kwa moja" },
-    { icon: "✈️", en: "Kilimanjaro International Airport (KIA) 40 min away, direct EU & Gulf flights", sw: "Uwanja wa ndege wa KIA dakika 40, safari za moja kwa moja Ulaya na Ghuba" },
-    { icon: "⚖️", en: "Investment protected by law (Tanzania Investment Act) & int'l guarantees (MIGA)", sw: "Uwekezaji unalindwa kisheria (Sheria ya Uwekezaji) na dhamana za kimataifa (MIGA)" }
+    { ic: "dove", en: "Decades of peace & political stability — Tanzania is among Africa's most stable nations", sw: "Miongo ya amani na utulivu wa kisiasa — Tanzania ni miongoni mwa nchi tulivu zaidi Afrika" },
+    { ic: "building", en: "TIC one-stop centre: investor visas, permits and land access in one office", sw: "Kituo kimoja cha TIC: visa za wawekezaji, vibali na upatikanaji wa ardhi ofisi moja" },
+    { ic: "globe", en: "EAC headquarters city — direct access to a 300M+ person market", sw: "Mji wa makao makuu ya EAC — soko la watu 300M+ moja kwa moja" },
+    { ic: "plane", en: "Kilimanjaro International Airport (KIA) 40 min away, direct EU & Gulf flights", sw: "Uwanja wa ndege wa KIA dakika 40, safari za moja kwa moja Ulaya na Ghuba" },
+    { ic: "shield", en: "Investment protected by law (Tanzania Investment Act) & int'l guarantees (MIGA)", sw: "Uwekezaji unalindwa kisheria (Sheria ya Uwekezaji) na dhamana za kimataifa (MIGA)" }
   ]
 };
 
