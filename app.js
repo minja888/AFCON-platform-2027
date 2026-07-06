@@ -732,6 +732,11 @@
             <div class="exp-lock-map" aria-hidden="true">🗺️</div>
             <h2>${t("exp_lock_title")}</h2>
             <p class="muted">${t("exp_lock_sub")}</p>
+            <div class="exp-lock-stats">
+              <div><strong>${atts.length}</strong><span>${t("exp_stat_att")}</span></div>
+              <div><strong>5</strong><span>${t("exp_stat_cat")}</span></div>
+              <div><strong>${t("exp_stat_free_n")}</strong><span>${t("exp_stat_free")}</span></div>
+            </div>
             <div class="exp-teaser">${teaser}<span class="exp-teaser-chip more">+${Math.max(0, atts.length - 8)}…</span></div>
             <div class="hero-cta-row" style="justify-content:center">
               <a class="btn btn-primary btn-lg" href="#/register">${t("home_reg_cta")} →</a>
