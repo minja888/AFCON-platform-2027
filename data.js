@@ -383,6 +383,41 @@ window.ATTRACTIONS = [
     desc: { en: "A women-run village experience on Meru's slopes — cheese, coffee, farms.", sw: "Kijiji kinachoongozwa na akina mama miteremko ya Meru — jibini, kahawa, mashamba." } }
 ];
 
+/* ---------- attach a real photo + fallback gradient to every attraction ----------
+   If an image ever fails to load, the gradient + emoji still shows, so a card
+   never looks broken. Photos are lazy-loaded (performance). */
+(function () {
+  const base = "https://images.unsplash.com/photo-";
+  const q = "?w=800&q=60&auto=format&fit=crop";
+  const meta = {
+    ngorongoro:   ["1535941339077-2dd1c7963098", "grad-gold"],  // lions
+    serengeti:    ["1469474968028-56623f02e42e", "grad-teal"],  // plains
+    tarangire:    ["1516426122078-c23e76319801", "grad-green"], // elephants
+    manyara:      ["1549366021-9f761d450615",    "grad-gold"],  // wildlife
+    "arusha-np":  ["1547471080-7cc2caa01a7e",    "grad-teal"],  // giraffe
+    "mt-meru":    ["1464822759023-fed622ff2c3b", "grad-green"], // mountain
+    kilimanjaro:  ["1523805009345-7448845a9e53", "grad-teal"],  // savanna + peak
+    "ol-doinyo":  ["1462331940025-496dfbfc7564", "grad-red"],   // volcano
+    "lake-natron":["1552083375-1447ce886485",    "grad-red"],   // flamingos
+    "lake-duluti":["1439066615861-d1af74d74000", "grad-teal"],  // lake forest
+    chemka:       ["1437482078695-73f5ca6c96e2", "grad-teal"],  // turquoise water
+    "themi-falls":["1432405972618-c60b0225b8f9", "grad-green"], // waterfall
+    "decl-museum":["1554907984-15263bfd63bd",    "grad-brown"], // museum interior
+    "nat-history":["1566127992631-137a642a90f4", "grad-brown"], // old building
+    "tanzanite-mus":["1515562141207-7a88fb7ce338","grad-gold"], // gemstone
+    "cultural-ctr":["1578321272176-b7bbc0679853", "grad-red"],  // african art
+    "maasai-mkt": ["1528301040-b204c9b4c4b6",    "grad-red"],   // beadwork market
+    meserani:     ["1516426122078-c23e76319801", "grad-brown"], // (reuse) wildlife
+    longido:      ["1523805009345-7448845a9e53", "grad-red"],   // maasai land
+    mulala:       ["1500382017468-9049fed747ef", "grad-green"]  // farms
+  };
+  (window.ATTRACTIONS || []).forEach(a => {
+    const m = meta[a.id];
+    a.grad = (m && m[1]) || "grad-green";
+    if (m && m[0] && m[0].indexOf(" ") === -1) a.img = base + m[0] + q;
+  });
+})();
+
 /* ---------- INVEST IN ARUSHA — sectors shown inside the registered-tourist area ---------- */
 window.INVESTMENTS = {
   sectors: [

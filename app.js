@@ -711,11 +711,21 @@
   }
   const ATT_CATS = ["all", "park", "mountain", "museum", "culture", "nature"];
   const attCard = (a) => `
-    <button class="card att-card" data-att="${a.id}" type="button">
-      <div class="att-top"><span class="att-icon">${a.icon}</span><span class="att-cat-pill">${t("att_" + a.cat)}</span></div>
-      <h3>${esc(L(a.name))}</h3>
-      <p class="muted">${esc(L(a.desc))}</p>
-      <span class="att-locate">📍 ${t("exp_show_map")}</span>
+    <button class="card att-card" data-att="${a.id}" type="button" aria-label="${esc(L(a.name))} — ${t("exp_show_map")}">
+      <span class="att-media ${a.grad || "grad-green"}">
+        ${a.img ? `<img class="att-img" src="${a.img}" alt="${esc(L(a.name))}" loading="lazy" decoding="async" onerror="this.remove()" />` : ""}
+        <span class="att-scrim"></span>
+        <span class="att-media-icon" aria-hidden="true">${a.icon}</span>
+        <span class="att-cat-pill">${t("att_" + a.cat)}</span>
+      </span>
+      <span class="att-body">
+        <span class="att-name">${esc(L(a.name))}</span>
+        <span class="att-desc">${esc(L(a.desc))}</span>
+        <span class="att-locate">
+          <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 10c0 7-9 12-9 12s-9-5-9-12a9 9 0 0 1 18 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+          ${t("exp_show_map")}
+        </span>
+      </span>
     </button>`;
   function viewExplore() {
     const u = getCurrentUser();
@@ -729,7 +739,12 @@
         </section>
         <section class="container section">
           <div class="exp-lock">
-            <div class="exp-lock-map" aria-hidden="true">🗺️</div>
+            <div class="exp-lock-photos" aria-hidden="true">
+              ${atts.slice(0, 4).map(a => `<span class="exp-lock-photo ${a.grad || "grad-green"}">${a.img ? `<img src="${a.img}" alt="" loading="lazy" decoding="async" onerror="this.remove()" />` : `<span class="exp-lock-photo-ic">${a.icon}</span>`}</span>`).join("")}
+              <span class="exp-lock-lockbadge">
+                <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="4" y="10" width="16" height="10" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg>
+              </span>
+            </div>
             <h2>${t("exp_lock_title")}</h2>
             <p class="muted">${t("exp_lock_sub")}</p>
             <div class="exp-lock-stats">
