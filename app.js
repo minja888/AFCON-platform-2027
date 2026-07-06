@@ -358,6 +358,11 @@
         </div>
       </section>
 
+      <section class="container bounce-band" aria-label="${t("home_heart")}">
+        <h2 class="bounce-line">${t("home_heart").split(" ").map((w, i) =>
+          `<span class="bounce-word" style="animation-delay:${(i * 0.09).toFixed(2)}s">${esc(w)}</span>`).join(" ")}</h2>
+      </section>
+
       <section class="container hero-stats-band">
         <div class="hero-stats">
           <div><strong>${window.OPERATORS.length}+</strong><span>${t("hero_stat1")}</span></div>

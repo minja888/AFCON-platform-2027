@@ -1003,3 +1003,18 @@ img { max-width: 100%; display: block; }
 .inv-safe-ic { display: inline-flex; align-items: center; justify-content: center; width: 34px; height: 34px; border-radius: 9px; background: rgba(77,95,40,.1); color: var(--green); }
 .inv-safe-list li { align-items: center; }
 .acct-explore-ic { display: inline-flex; align-items: center; justify-content: center; width: 44px; height: 44px; border-radius: 12px; background: rgba(255,255,255,.14); color: var(--gold); }
+
+/* ---- bouncing "Arusha — the heart of Tanzania" tagline (v30) ---- */
+.bounce-band { text-align: center; padding: 30px 16px 6px; }
+.bounce-line { margin: 0; font-family: var(--display); font-weight: 800; letter-spacing: -.01em; line-height: 1.15; font-size: clamp(1.5rem, 5vw, 2.6rem); color: var(--green-deep); }
+.bounce-word { display: inline-block; animation: heart-bounce 2.4s cubic-bezier(.28,.84,.42,1) infinite; will-change: transform; }
+.bounce-word:nth-child(2) { color: var(--gold-deep); }        /* the em-dash-joined 2nd token */
+.bounce-line .bounce-word:last-child { color: var(--gold-deep); }
+@keyframes heart-bounce {
+  0%, 55%, 100% { transform: translateY(0); }
+  22% { transform: translateY(-14px); }
+  38% { transform: translateY(-4px); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .bounce-word { animation: none; }
+}
