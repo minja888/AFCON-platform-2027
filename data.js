@@ -20,7 +20,7 @@ window.CONFIG = {
   // If a video ever fails to load, the photo slideshow shows automatically.
   // (webm plays on Chrome/Edge/Firefox/Android; Safari/iOS fall back to the 4K photos.)
   // Multiple clips CROSS-ROTATE in the hero. Add your own Arusha/HeyGen mp4s here.
-  heroVideos: ["media/arusha-hero.webm", "media/arusha-hero-2.webm", "media/arusha-hero-3.webm"],
+  heroVideos: ["media/arusha-hero.webm", "media/arusha-hero-3.webm"],
   heroVideoRotate: 9000,                // ms each clip shows before crossfading to the next
   // Attribution for the Creative-Commons hero videos (shown small in the footer).
   heroVideoCredit: "Safari clips: Wikimedia Commons contributors · CC BY-SA",
