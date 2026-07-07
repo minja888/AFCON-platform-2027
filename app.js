@@ -417,16 +417,23 @@
         </div>
       </section>
 
-      <section class="container bounce-band" aria-label="${t("home_heart")}">
-        <h2 class="bounce-line">${t("home_heart").split(" ").map((w, i) =>
-          `<span class="bounce-word" style="animation-delay:${(i * 0.09).toFixed(2)}s">${esc(w)}</span>`).join(" ")}</h2>
-      </section>
-
       <section class="container hero-stats-band">
-        <div class="hero-stats">
-          <div><strong>${window.OPERATORS.length}+</strong><span>${t("hero_stat1")}</span></div>
-          <div><strong>${Object.keys(window.I18N).length}</strong><span>${t("hero_stat2")}</span></div>
-          <div><strong>${window.TRIPS.length}</strong><span>${t("hero_stat3")}</span></div>
+        <div class="stat-strip">
+          <div class="stat-item">
+            <span class="stat-ic">${svgIcon("shield", 22)}</span>
+            <strong class="stat-num">${window.OPERATORS.length}+</strong>
+            <span class="stat-lbl">${t("hero_stat1")}</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-ic">${svgIcon("globe", 22)}</span>
+            <strong class="stat-num">${Object.keys(window.I18N).length}</strong>
+            <span class="stat-lbl">${t("hero_stat2")}</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-ic">${svgIcon("map", 22)}</span>
+            <strong class="stat-num">${window.TRIPS.length}</strong>
+            <span class="stat-lbl">${t("hero_stat3")}</span>
+          </div>
         </div>
       </section>
 
