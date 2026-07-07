@@ -37,6 +37,8 @@
     document.documentElement.dir = RTL.includes(lang) ? "rtl" : "ltr";
     const footWa = document.getElementById("footerWhatsApp");
     if (footWa) footWa.href = waLink(window.CONFIG.visitorDeskWhatsApp, "the Visitor Desk");
+    const footCredit = document.getElementById("footerCredit");
+    if (footCredit && window.CONFIG.heroVideo && window.CONFIG.heroVideoCredit) footCredit.textContent = window.CONFIG.heroVideoCredit;
   }
 
   /* ---------- small DOM helper ---------- */
@@ -366,7 +368,7 @@
       <section class="cine-hero" id="cineHero">
         <div class="cine-bg" aria-hidden="true">
           ${CINE_SLIDES.map((u, i) => `<div class="cine-slide" style="background-image:url('${u}');animation-delay:${(i * 6 - 2).toFixed(0)}s"></div>`).join("")}
-          ${(window.CONFIG && window.CONFIG.heroVideo) ? `<video class="cine-video" id="cineVideo" autoplay muted loop playsinline preload="auto" poster="${CINE_SLIDES[0]}"><source src="${window.CONFIG.heroVideo}" type="video/mp4"></video>` : ""}
+          ${(window.CONFIG && window.CONFIG.heroVideo) ? `<video class="cine-video" id="cineVideo" autoplay muted loop playsinline preload="auto" poster="${CINE_SLIDES[0]}"><source src="${window.CONFIG.heroVideo}" type="${/\.webm(\?|$)/i.test(window.CONFIG.heroVideo) ? "video/webm" : "video/mp4"}"></video>` : ""}
           <div class="cine-grain"></div>
           <div class="cine-scrim"></div>
         </div>

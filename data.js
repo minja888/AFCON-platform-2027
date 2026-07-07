@@ -18,7 +18,10 @@ window.CONFIG = {
   // Paste a direct .mp4 URL (Supabase Storage / your CDN) OR a local path like
   // "media/arusha-hero.mp4". Leave "" to use the photo slideshow instead.
   // If the video ever fails to load, the photo slideshow shows automatically.
-  heroVideo: "",
+  // (webm plays on Chrome/Edge/Firefox/Android; Safari/iOS fall back to the 4K photos.)
+  heroVideo: "media/arusha-hero.webm",
+  // Attribution for a Creative-Commons hero video (shown small in the footer).
+  heroVideoCredit: "Safari video: Giles Laurent · CC BY-SA 4.0 · Wikimedia Commons",
   // Optional: paste a form endpoint URL (e.g. Formspree/Google Apps Script/Supabase) to
   // ALSO send registrations to a real server. Leave "" to store on-device only.
   registrationEndpoint: "",

@@ -1070,3 +1070,5 @@ img { max-width: 100%; display: block; }
   opacity: 0; transition: opacity .8s ease; pointer-events: none; }
 .cine-video.ready { opacity: 1; }
 .cine-grain, .cine-scrim { z-index: 1; }
+
+.footer-credit { display:block; margin-top:6px; font-size:.72rem; opacity:.6; }
