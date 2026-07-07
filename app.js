@@ -417,10 +417,22 @@
         </div>
       </section>
 
-      <section class="container bounce-band" aria-label="${t("home_heart")}">
-        <h2 class="bounce-line">${t("home_heart").split(" ").map((w, i) =>
-          `<span class="bounce-word" style="animation-delay:${(i * 0.09).toFixed(2)}s">${esc(w)}</span>`).join(" ")}</h2>
-      </section>
+      ${(function () {
+        const words = t("home_heart").split(" ");
+        const last = words.length - 1;
+        const heart = `<svg class="heart-ic" viewBox="0 0 24 24" width="1em" height="1em" fill="currentColor" aria-hidden="true"><path d="M12 21s-6.7-4.3-9.3-8.3C1 10 1.8 6.4 4.8 5.3 7 4.5 9.2 5.6 12 8.3c2.8-2.7 5-3.8 7.2-3 3 1.1 3.8 4.7 2.1 7.4C18.7 16.7 12 21 12 21Z"/></svg>`;
+        const parts = words.map((w, i) => {
+          if (w === "—" || w === "–" || w === "-") return `<span class="hb-heart" style="animation-delay:${(i * 0.08).toFixed(2)}s">${heart}</span>`;
+          const cls = i === last ? "hb-word hb-accent" : "hb-word";
+          return `<span class="${cls}" style="animation-delay:${(i * 0.08).toFixed(2)}s">${esc(w)}</span>`;
+        }).join(" ");
+        const flourish = `<svg class="heart-flourish" viewBox="0 0 300 20" fill="none" aria-hidden="true"><path d="M6 12c40-9 90-11 150-8 40 2 90 5 138-2" stroke="currentColor" stroke-width="3.5" stroke-linecap="round"/></svg>`;
+        return `
+      <section class="container heart-band" aria-label="${esc(t("home_heart"))}">
+        <h2 class="heart-line">${parts}</h2>
+        ${flourish}
+      </section>`;
+      })()}
 
       <section class="container section">
         <div class="section-head">

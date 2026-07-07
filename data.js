@@ -407,7 +407,7 @@ window.ATTRACTIONS = [
     "arusha-np":  ["1547471080-7cc2caa01a7e",    "grad-teal"],  // giraffe
     "mt-meru":    ["1464822759023-fed622ff2c3b", "grad-green"], // mountain
     kilimanjaro:  ["1523805009345-7448845a9e53", "grad-teal"],  // savanna + peak
-    "ol-doinyo":  ["1462331940025-496dfbfc7564", "grad-red"],   // volcano
+    "ol-doinyo":  ["https://upload.wikimedia.org/wikipedia/commons/thumb/5/53/Lengai_from_Natron.jpg/960px-Lengai_from_Natron.jpg", "grad-red"], // Ol Doinyo Lengai from Lake Natron
     "lake-natron":["1552083375-1447ce886485",    "grad-red"],   // flamingos
     "lake-duluti":["1439066615861-d1af74d74000", "grad-teal"],  // lake forest
     chemka:       ["1437482078695-73f5ca6c96e2", "grad-teal"],  // turquoise water
@@ -424,7 +424,9 @@ window.ATTRACTIONS = [
   (window.ATTRACTIONS || []).forEach(a => {
     const m = meta[a.id];
     a.grad = (m && m[1]) || "grad-green";
-    if (m && m[0] && m[0].indexOf(" ") === -1) a.img = base + m[0] + q;
+    if (m && m[0] && m[0].indexOf(" ") === -1) {
+      a.img = /^https?:\/\//.test(m[0]) ? m[0] : base + m[0] + q;   // allow full URLs (e.g. Wikimedia)
+    }
   });
 })();
 
