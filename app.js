@@ -38,7 +38,7 @@
     const footWa = document.getElementById("footerWhatsApp");
     if (footWa) footWa.href = waLink(window.CONFIG.visitorDeskWhatsApp, "the Visitor Desk");
     const footCredit = document.getElementById("footerCredit");
-    if (footCredit && window.CONFIG.heroVideo && window.CONFIG.heroVideoCredit) footCredit.textContent = window.CONFIG.heroVideoCredit;
+    if (footCredit && heroVideoList().length && window.CONFIG.heroVideoCredit) footCredit.textContent = window.CONFIG.heroVideoCredit;
   }
 
   /* ---------- small DOM helper ---------- */
@@ -225,20 +225,49 @@
     "1464822759023-fed622ff2c3b"  // mountain / Kilimanjaro mood
   ].map(id => `https://images.unsplash.com/photo-${id}?w=2560&q=70&auto=format&fit=crop`);
 
-  /* fade the hero video in only once it can actually play; on any failure the
-     photo slideshow underneath stays visible (never a broken/black hero). */
+  /* the configured list of hero videos (back-compat with the old single field) */
+  function heroVideoList() {
+    const c = window.CONFIG || {};
+    if (Array.isArray(c.heroVideos)) return c.heroVideos.filter(Boolean);
+    return c.heroVideo ? [c.heroVideo] : [];
+  }
+  /* Multiple hero clips that CROSS-ROTATE. Each fades in only once it can play;
+     any clip that fails removes itself. If none play, the photo slideshow shows. */
+  let cineTimer = null;
   function setupCineVideo() {
-    const v = document.getElementById("cineVideo");
-    if (!v) return;
-    if (reduceMotion) { v.removeAttribute("autoplay"); v.pause(); return; }
-    const reveal = () => v.classList.add("ready");
-    const fail = () => { v.classList.remove("ready"); v.remove(); };
-    v.addEventListener("playing", reveal);
-    v.addEventListener("canplay", () => { v.play().then(reveal).catch(() => {}); });
-    v.addEventListener("error", fail);
-    v.addEventListener("stalled", () => { if (!v.classList.contains("ready")) fail(); });
-    setTimeout(() => { if (!v.classList.contains("ready")) fail(); }, 9000); // give up → slideshow
-    try { v.play().catch(() => {}); } catch (e) {}
+    if (cineTimer) { clearInterval(cineTimer); cineTimer = null; }
+    let vids = Array.from(document.querySelectorAll(".cine-video"));
+    if (!vids.length) return;
+    if (reduceMotion) { vids.forEach(v => v.pause()); return; }
+
+    const play = (v) => { try { const p = v.play(); if (p && p.catch) p.catch(() => {}); } catch (e) {} };
+    vids.forEach(v => {
+      v.addEventListener("error", () => {                // drop a broken clip, keep the rest
+        v.classList.remove("ready"); v.remove();
+        vids = vids.filter(x => x !== v);
+      });
+      // per-clip safety net: if it never becomes playable, remove it
+      setTimeout(() => { if (v.isConnected && v.readyState < 2) { v.remove(); vids = vids.filter(x => x !== v); } }, 12000);
+    });
+
+    let idx = 0;
+    const show = (i) => {
+      if (!vids.length) return;
+      idx = (i + vids.length) % vids.length;
+      vids.forEach((v, n) => {
+        if (n === idx) { v.classList.add("ready"); play(v); }
+        else { v.classList.remove("ready"); setTimeout(() => { if (!v.classList.contains("ready")) v.pause(); }, 900); }
+      });
+    };
+    // reveal the first clip as soon as it can play
+    const first = vids[0];
+    first.addEventListener("canplay", () => first.classList.add("ready"), { once: true });
+    show(0);
+
+    if (vids.length > 1) {
+      const gap = (window.CONFIG && window.CONFIG.heroVideoRotate) || 9000;
+      cineTimer = setInterval(() => { if (document.getElementById("cineHero")) show(idx + 1); else { clearInterval(cineTimer); cineTimer = null; } }, gap);
+    }
   }
 
   let scrollHeroHandler = null;
@@ -368,7 +397,7 @@
       <section class="cine-hero" id="cineHero">
         <div class="cine-bg" aria-hidden="true">
           ${CINE_SLIDES.map((u, i) => `<div class="cine-slide" style="background-image:url('${u}');animation-delay:${(i * 6 - 2).toFixed(0)}s"></div>`).join("")}
-          ${(window.CONFIG && window.CONFIG.heroVideo) ? `<video class="cine-video" id="cineVideo" autoplay muted loop playsinline preload="auto" poster="${CINE_SLIDES[0]}"><source src="${window.CONFIG.heroVideo}" type="${/\.webm(\?|$)/i.test(window.CONFIG.heroVideo) ? "video/webm" : "video/mp4"}"></video>` : ""}
+          ${heroVideoList().map((src, i) => `<video class="cine-video" data-vi="${i}" muted loop playsinline preload="${i === 0 ? "auto" : "metadata"}" poster="${CINE_SLIDES[0]}"><source src="${src}" type="${/\.webm(\?|$)/i.test(src) ? "video/webm" : "video/mp4"}"></video>`).join("")}
           <div class="cine-grain"></div>
           <div class="cine-scrim"></div>
         </div>

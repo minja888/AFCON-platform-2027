@@ -17,11 +17,13 @@ window.CONFIG = {
   // Cinematic hero background VIDEO of Arusha (mp4, landscape, plays muted).
   // Paste a direct .mp4 URL (Supabase Storage / your CDN) OR a local path like
   // "media/arusha-hero.mp4". Leave "" to use the photo slideshow instead.
-  // If the video ever fails to load, the photo slideshow shows automatically.
+  // If a video ever fails to load, the photo slideshow shows automatically.
   // (webm plays on Chrome/Edge/Firefox/Android; Safari/iOS fall back to the 4K photos.)
-  heroVideo: "media/arusha-hero.webm",
-  // Attribution for a Creative-Commons hero video (shown small in the footer).
-  heroVideoCredit: "Safari video: Giles Laurent · CC BY-SA 4.0 · Wikimedia Commons",
+  // Multiple clips CROSS-ROTATE in the hero. Add your own Arusha/HeyGen mp4s here.
+  heroVideos: ["media/arusha-hero.webm", "media/arusha-hero-2.webm", "media/arusha-hero-3.webm"],
+  heroVideoRotate: 9000,                // ms each clip shows before crossfading to the next
+  // Attribution for the Creative-Commons hero videos (shown small in the footer).
+  heroVideoCredit: "Safari clips: Wikimedia Commons contributors · CC BY-SA",
   // Optional: paste a form endpoint URL (e.g. Formspree/Google Apps Script/Supabase) to
   // ALSO send registrations to a real server. Leave "" to store on-device only.
   registrationEndpoint: "",
