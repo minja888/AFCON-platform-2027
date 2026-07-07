@@ -14,6 +14,11 @@ window.CONFIG = {
   // Mobile-money merchant the tourist sends money to (M-Pesa Lipa Namba / Tigo / Airtel /
   // HaloPesa merchant, or a personal number). Leave "" to hide the "Send to" box.
   mobileMoney: { name: "VELLAT COMPANY LIMITED", till: "M-Pesa Lipa 51219278" },
+  // Cinematic hero background VIDEO of Arusha (mp4, landscape, plays muted).
+  // Paste a direct .mp4 URL (Supabase Storage / your CDN) OR a local path like
+  // "media/arusha-hero.mp4". Leave "" to use the photo slideshow instead.
+  // If the video ever fails to load, the photo slideshow shows automatically.
+  heroVideo: "",
   // Optional: paste a form endpoint URL (e.g. Formspree/Google Apps Script/Supabase) to
   // ALSO send registrations to a real server. Leave "" to store on-device only.
   registrationEndpoint: "",
