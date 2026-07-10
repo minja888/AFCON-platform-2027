@@ -1206,3 +1206,44 @@ img { max-width: 100%; display: block; }
 .svc-card .btn { align-self: flex-start; margin-top: 4px; }
 .admin-actions-cell { white-space: nowrap; }
 .admin-actions-cell .btn + .btn { margin-left: 6px; }
+
+/* ---- nav dropdown groups (v40) ---- */
+.nav-group { position: relative; }
+.nav-group-btn { font: inherit; font-weight: 600; cursor: pointer; background: none; border: none; color: inherit;
+  padding: 8px 12px; border-radius: var(--radius-sm); min-height: 40px; }
+.nav-group-btn:hover, .nav-group-btn.active { background: var(--cream-2); color: var(--green-deep); }
+.nav-drop { position: absolute; top: calc(100% + 6px); left: 0; min-width: 190px; display: none; z-index: 60;
+  background: var(--white); border: 1px solid var(--line); border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-lg); padding: 6px; }
+.nav-group.open .nav-drop { display: grid; }
+.nav-drop a { display: block; padding: 10px 14px; border-radius: 8px; }
+.nav-drop a:hover, .nav-drop a.active { background: var(--cream-2); }
+@media (max-width: 860px) {
+  .nav-group { width: 100%; }
+  .nav-group-btn { width: 100%; text-align: left; padding: 12px 16px; }
+  .nav-drop { position: static; display: none; box-shadow: none; border: none; background: transparent; padding-left: 14px; }
+  .nav-group.open .nav-drop { display: grid; }
+}
+
+/* ---- events calendar ---- */
+.ev-list { display: grid; gap: 14px; margin-top: 16px; max-width: 760px; }
+.ev-item { display: flex; gap: 16px; background: var(--white); border: 1px solid var(--line); border-radius: var(--radius);
+  padding: 18px; box-shadow: var(--shadow); }
+.ev-date { flex: 0 0 auto; width: 62px; height: 68px; display: grid; place-content: center; text-align: center;
+  border-radius: var(--radius-sm); background: linear-gradient(160deg, var(--green), var(--green-deep)); color: #fff; }
+.ev-day { font-family: var(--poster); font-size: 1.6rem; line-height: 1; }
+.ev-mon { font-size: .72rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: #fcd116; }
+.ev-body { display: grid; gap: 5px; min-width: 0; }
+.ev-top { display: flex; gap: 8px; flex-wrap: wrap; }
+.ev-type { display: inline-flex; align-items: center; gap: 5px; font-size: .72rem; font-weight: 700; letter-spacing: .05em;
+  text-transform: uppercase; padding: 4px 10px; border-radius: 999px; background: var(--cream-2); color: var(--green-deep); }
+.ev-type-afcon { background: rgba(0,163,221,.12); color: #00679c; }
+.ev-type-sports { background: rgba(30,181,58,.12); color: #14702a; }
+.ev-type-conference { background: rgba(224,165,46,.15); color: var(--gold-deep); }
+.ev-type-culture { background: rgba(192,85,43,.12); color: #93401f; }
+.ev-tbc { font-size: .72rem; font-weight: 700; padding: 4px 10px; border-radius: 999px;
+  background: rgba(252,209,22,.2); color: #7a5d00; border: 1px dashed rgba(252,209,22,.7); }
+.ev-body h3 { margin: 0; font-size: 1.05rem; color: var(--green-deep); }
+.ev-meta { display: flex; align-items: center; gap: 6px; font-size: .85rem; color: var(--ink-soft); }
+.ev-meta .ic { color: var(--gold-deep); }
+@media (max-width: 520px) { .ev-item { flex-direction: column; } .ev-date { width: 100%; height: auto; padding: 8px; grid-auto-flow: column; gap: 8px; } }

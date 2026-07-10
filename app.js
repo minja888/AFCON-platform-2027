@@ -202,8 +202,8 @@
     const s = size || 22;
     return `<svg class="ic" viewBox="0 0 24 24" width="${s}" height="${s}" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICONS[name] || ICONS.pin}</svg>`;
   }
-  const CAT_ICON  = { park: "tree", mountain: "mountain", museum: "building", culture: "users", nature: "water" };
-  const CAT_COLOR = { park: "#4d5f28", mountain: "#3a4a1e", museum: "#8a6a44", culture: "#c0552b", nature: "#4a7c59" };
+  const CAT_ICON  = { park: "tree", mountain: "mountain", museum: "building", culture: "users", nature: "water", conference: "building" };
+  const CAT_COLOR = { park: "#4d5f28", mountain: "#3a4a1e", museum: "#8a6a44", culture: "#c0552b", nature: "#4a7c59", conference: "#00a3dd" };
 
   const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
@@ -833,7 +833,7 @@
     });
     return leafletPromise;
   }
-  const ATT_CATS = ["all", "park", "mountain", "museum", "culture", "nature"];
+  const ATT_CATS = ["all", "park", "mountain", "museum", "culture", "nature", "conference"];
   const attCard = (a) => `
     <button class="card att-card" data-att="${a.id}" type="button" aria-label="${esc(L(a.name))} — ${t("exp_show_map")}">
       <span class="att-media ${a.grad || "grad-green"}">
@@ -994,12 +994,59 @@
   }
 
   /* ===================================================================
+     VIEW: EVENTS (marathons · sports · conferences · culture — per RAS)
+     =================================================================== */
+  const EV_TYPES = ["all", "afcon", "sports", "conference", "culture"];
+  const EV_ICON = { afcon: "globe", sports: "users", conference: "building", culture: "camera" };
+  function viewEvents(filter) {
+    const f = filter || "all";
+    const list = (window.EVENTS || [])
+      .filter(e2 => f === "all" || e2.type === f)
+      .slice().sort((a, b) => a.date.localeCompare(b.date));
+    const chips = EV_TYPES.map(c =>
+      `<button class="chip ${c === f ? "active" : ""}" data-evtype="${c}">${t("ev_" + c)}</button>`).join("");
+    const fmt = (d) => new Date(d + "T00:00:00").toLocaleDateString(lang === "sw" ? "sw-TZ" : lang, { weekday: "short", day: "numeric", month: "long", year: "numeric" });
+    return `
+      <section class="detail-hero grad-green tz-band">
+        <div class="container"><h1>${t("ev_title")}</h1><p class="detail-meta">${t("ev_lead")}</p></div>
+      </section>
+      <section class="container section">
+        <div class="chips" id="evFilters">${chips}</div>
+        <div class="ev-list">
+          ${list.map(e2 => `
+            <article class="ev-item">
+              <div class="ev-date"><span class="ev-day">${new Date(e2.date + "T00:00:00").getDate()}</span><span class="ev-mon">${new Date(e2.date + "T00:00:00").toLocaleDateString(lang === "sw" ? "sw-TZ" : "en", { month: "short" })}</span></div>
+              <div class="ev-body">
+                <div class="ev-top">
+                  <span class="ev-type ev-type-${e2.type}">${svgIcon(EV_ICON[e2.type] || "globe", 13)} ${t("ev_" + e2.type)}</span>
+                  ${e2.tbc ? `<span class="ev-tbc">${t("ev_tbc")}</span>` : ""}
+                </div>
+                <h3>${esc(L(e2.name))}</h3>
+                <p class="muted">${esc(L(e2.desc))}</p>
+                <p class="ev-meta">${svgIcon("pin", 13)} ${esc(e2.venue)} · ${fmt(e2.date)}</p>
+                ${e2.link ? `<a class="link-inline" href="${e2.link}">${t("ev_more")} →</a>` : ""}
+              </div>
+            </article>`).join("") || `<p class="muted">${t("ev_none")}</p>`}
+        </div>
+        <p class="muted small center mt">${t("ev_note")}</p>
+      </section>`;
+  }
+  function bindEvents() {
+    const f = document.getElementById("evFilters");
+    if (f) f.onclick = (e) => {
+      const b = e.target.closest("[data-evtype]"); if (!b) return;
+      app.innerHTML = viewEvents(b.dataset.evtype);
+      bindEvents(); setupReveal();
+    };
+  }
+
+  /* ===================================================================
      BECOME A PARTNER — landing, signup (PDF verification), portal, services
      Backend: Supabase RPCs (bcrypt) + private storage bucket partner-docs.
      =================================================================== */
   function sbRpcNamed(fn, body) { return sbRpc(fn, body); }
-  const P_TYPES = ["tour_operator", "private_guide", "photographer", "transport", "accommodation", "food", "other"];
-  const P_ICON = { tour_operator: "map", private_guide: "users", photographer: "camera", transport: "plane", accommodation: "building", food: "sprout", other: "globe" };
+  const P_TYPES = ["tour_operator", "private_guide", "photographer", "transport", "rental_car", "accommodation", "conference", "food", "events", "other"];
+  const P_ICON = { tour_operator: "map", private_guide: "users", photographer: "camera", transport: "plane", rental_car: "plane", accommodation: "building", conference: "building", food: "sprout", events: "globe", other: "globe" };
   const P_KEY = "ka_partner";
   const getPartner = () => { try { return JSON.parse(sessionStorage.getItem(P_KEY)); } catch (e) { return null; } };
   const setPartner = (p) => sessionStorage.setItem(P_KEY, JSON.stringify(p));
@@ -1011,7 +1058,6 @@
       ["shield",  t("pw_b2_t"), t("pw_b2_d")],
       ["users",   t("pw_b3_t"), t("pw_b3_d")],
       ["map",     t("pw_b4_t"), t("pw_b4_d")],
-      ["camera",  t("pw_b5_t"), t("pw_b5_d")],
       ["building",t("pw_b6_t"), t("pw_b6_d")]
     ];
     const steps = [t("pw_s1"), t("pw_s2"), t("pw_s3"), t("pw_s4"), t("pw_s5")];
@@ -1066,6 +1112,9 @@
             <input id="pPhone" type="tel" inputmode="tel" placeholder="+255 7xx xxx xxx" /></div>
           <div class="field"><label for="pTin">${t("ps_tin")}</label>
             <input id="pTin" type="text" placeholder="e.g. 123-456-789" /></div>
+          <div class="field"><label for="pTinDoc">${t("ps_tin_doc")}</label>
+            <input id="pTinDoc" type="file" accept="application/pdf" />
+            <p class="field-note">${t("ps_tin_doc_note")}</p></div>
           <div class="field"><label for="pLicense">${t("ps_license")}</label>
             <input id="pLicense" type="text" placeholder="e.g. TALA-AR-2026-001" /></div>
           <div class="field"><label for="pDoc">${t("ps_doc")} <span class="req">*</span></label>
@@ -1103,7 +1152,9 @@
       const err = document.getElementById("pErr"); err.hidden = true;
       const val = (id) => (document.getElementById(id).value || "").trim();
       const file = document.getElementById("pDoc").files[0];
+      const tinFile = document.getElementById("pTinDoc").files[0];
       const problems = [];
+      if (tinFile && (tinFile.type !== "application/pdf" || tinFile.size > 10 * 1024 * 1024)) problems.push(t("ps_err_tin_pdf"));
       if (!val("pCompany")) problems.push(t("ps_err_company"));
       if (!val("pContact")) problems.push(t("reg_err_name"));
       if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val("pEmail"))) problems.push(t("reg_err_email"));
@@ -1126,11 +1177,23 @@
           body: file
         });
         if (!up.ok) throw new Error("upload");
+        // 1b) optional TIN certificate PDF
+        let tinPath = null;
+        if (tinFile) {
+          tinPath = "tin-" + crypto.randomUUID() + ".pdf";
+          const up2 = await fetch(`${sb.url}/storage/v1/object/partner-docs/${tinPath}`, {
+            method: "POST",
+            headers: { "apikey": sb.anonKey, "Authorization": "Bearer " + sb.anonKey, "Content-Type": "application/pdf" },
+            body: tinFile
+          });
+          if (!up2.ok) throw new Error("upload-tin");
+        }
         // 2) register the partner (server hashes the password with bcrypt)
         await sbRpcNamed("partner_register", {
           p_ptype: ptype, p_entity: entity, p_company: val("pCompany"), p_contact: val("pContact"),
           p_email: val("pEmail"), p_phone: val("pPhone"), p_tin: val("pTin") || null,
-          p_license: val("pLicense") || null, p_pass: val("pPass"), p_doc_path: path, p_lang: lang
+          p_license: val("pLicense") || null, p_pass: val("pPass"), p_doc_path: path,
+          p_lang: lang, p_tin_doc_path: tinPath
         });
         form.hidden = true; document.getElementById("pOk").hidden = false;
       } catch (ex) {
@@ -1821,7 +1884,8 @@
           <td>${t("pt_" + p.ptype)}</td>
           <td>${esc(p.email)}<br><small>${esc(p.phone)}</small></td>
           <td>${esc(p.tin || "—")}<br><small>${esc(p.license_no || "—")}</small></td>
-          <td>${p.doc_path ? `<button class="btn btn-small" data-doc="${esc(p.doc_path)}">📄 ${t("admin_view_doc")}</button>` : "—"}</td>
+          <td>${p.doc_path ? `<button class="btn btn-small" data-doc="${esc(p.doc_path)}">📄 ${t("admin_view_doc")}</button>` : "—"}
+              ${p.tin_doc_path ? `<br><button class="btn btn-small" data-doc="${esc(p.tin_doc_path)}" style="margin-top:4px">🧾 TIN</button>` : ""}</td>
           <td>${stPill(p.status)}<br><small class="muted">${p.services} ${t("admin_services_n")}</small></td>
           <td class="admin-actions-cell">
             ${p.status !== "approved" ? `<button class="btn btn-small btn-gold" data-pstat="approved" data-pid="${p.id}">✓ ${t("admin_approve")}</button>` : ""}
@@ -2342,6 +2406,7 @@
       case "partner-signup": html = viewPartnerSignup(); break;
       case "partner": html = viewPartnerPortal(); break;
       case "services": html = viewServices(); break;
+      case "events": html = viewEvents(); break;
       case "about": html = viewAbout(); break;
       case "pay-ok": html = viewPayOk(); break;
       default: html = notFound();
@@ -2382,6 +2447,7 @@
     if (route === "partner-signup") bindPartnerSignup();
     if (route === "partner") bindPartnerPortal();
     if (route === "services") bindServices();
+    if (route === "events") bindEvents();
     if (route === "home") { buildScrollHero(); setupCineVideo(); } else stopScrollHero();
     setupReveal();
   }
@@ -2401,6 +2467,11 @@
       const r = a.getAttribute("href").replace("#/", "");
       a.classList.toggle("active", r === route || (route === "trip" && r === "trips") || (route === "operator" && r === "operators"));
     });
+    // highlight a group button when one of its children is the active page
+    document.querySelectorAll(".nav-group").forEach(g => {
+      g.querySelector(".nav-group-btn").classList.toggle("active", !!g.querySelector(".nav-drop a.active"));
+      g.classList.remove("open");
+    });
   }
 
   /* ---------- language switch ---------- */
@@ -2411,6 +2482,21 @@
     localStorage.setItem("ka_lang", lang);
     applyStaticI18n();
     render();
+  });
+
+  /* ---------- nav dropdown groups (Discover / Plan a trip) ---------- */
+  document.querySelectorAll(".nav-group-btn").forEach(btn => {
+    btn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      const g = btn.parentElement;
+      const open = !g.classList.contains("open");
+      document.querySelectorAll(".nav-group").forEach(x => { x.classList.remove("open"); x.querySelector(".nav-group-btn").setAttribute("aria-expanded", "false"); });
+      g.classList.toggle("open", open);
+      btn.setAttribute("aria-expanded", open);
+    });
+  });
+  document.addEventListener("click", (e) => {
+    if (!e.target.closest(".nav-group")) document.querySelectorAll(".nav-group").forEach(x => x.classList.remove("open"));
   });
 
   /* ---------- mobile nav toggle ---------- */

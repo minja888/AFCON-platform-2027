@@ -401,7 +401,19 @@ window.ATTRACTIONS = [
     desc: { en: "Walk with Maasai warriors under Mount Longido — real village life.", sw: "Tembea na morani chini ya Mlima Longido — maisha halisi ya kijiji." } },
   { id: "mulala",       cat: "culture",  icon: "🌱", lat: -3.2660, lng: 36.8830,
     name: { en: "Mulala Cultural Village", sw: "Kijiji cha Utamaduni Mulala" },
-    desc: { en: "A women-run village experience on Meru's slopes — cheese, coffee, farms.", sw: "Kijiji kinachoongozwa na akina mama miteremko ya Meru — jibini, kahawa, mashamba." } }
+    desc: { en: "A women-run village experience on Meru's slopes — cheese, coffee, farms.", sw: "Kijiji kinachoongozwa na akina mama miteremko ya Meru — jibini, kahawa, mashamba." } },
+  { id: "aicc",         cat: "conference", icon: "🏢", lat: -3.3667, lng: 36.6959,
+    name: { en: "AICC — Arusha Int'l Conference Centre", sw: "AICC — Kituo cha Mikutano cha Kimataifa Arusha" },
+    desc: { en: "East Africa's diplomatic hub — conferences, summits and the EAC neighbourhood.", sw: "Kitovu cha kidiplomasia cha Afrika Mashariki — mikutano, makongamano na eneo la EAC." } },
+  { id: "mtmeru-hotel", cat: "conference", icon: "🏨", lat: -3.3546, lng: 36.7000,
+    name: { en: "Mount Meru Hotel — conference & stay", sw: "Hoteli ya Mount Meru — mikutano na malazi" },
+    desc: { en: "Landmark 5-star hotel with large conference halls facing Mount Meru.", sw: "Hoteli maarufu ya nyota 5 yenye kumbi kubwa za mikutano ikitazama Mlima Meru." } },
+  { id: "gran-melia",   cat: "conference", icon: "🏨", lat: -3.3770, lng: 36.6790,
+    name: { en: "Gran Meliá Arusha — conference & stay", sw: "Gran Meliá Arusha — mikutano na malazi" },
+    desc: { en: "Luxury hotel and event venue in coffee-farm gardens above the city.", sw: "Hoteli ya kifahari na kumbi za matukio ndani ya bustani za kahawa juu ya jiji." } },
+  { id: "arusha-hotel", cat: "conference", icon: "🏨", lat: -3.3707, lng: 36.6873,
+    name: { en: "The Arusha Hotel — meetings & stay", sw: "The Arusha Hotel — vikao na malazi" },
+    desc: { en: "Historic city-centre hotel with boardrooms and banquet halls since 1894.", sw: "Hoteli ya kihistoria katikati ya jiji yenye vyumba vya vikao tangu 1894." } }
 ];
 
 /* ---------- attach a real photo + fallback gradient to every attraction ----------
@@ -430,7 +442,11 @@ window.ATTRACTIONS = [
     "maasai-mkt": ["1528301040-b204c9b4c4b6",    "grad-red"],   // beadwork market
     meserani:     ["1516426122078-c23e76319801", "grad-brown"], // (reuse) wildlife
     longido:      ["1523805009345-7448845a9e53", "grad-red"],   // maasai land
-    mulala:       ["1500382017468-9049fed747ef", "grad-green"]  // farms
+    mulala:       ["1500382017468-9049fed747ef", "grad-green"], // farms
+    aicc:         ["1587825140708-dfaf72ae4b04", "grad-teal"],  // conference hall
+    "mtmeru-hotel":["1566073771259-6a8506099945", "grad-gold"], // hotel
+    "gran-melia": ["1582719508461-905c673771fd", "grad-gold"],  // luxury hotel
+    "arusha-hotel":["1551882547-ff40c63fe5fa",   "grad-brown"]  // classic hotel
   };
   (window.ATTRACTIONS || []).forEach(a => {
     const m = meta[a.id];
@@ -440,6 +456,32 @@ window.ATTRACTIONS = [
     }
   });
 })();
+
+/* ---------- EVENTS CALENDAR (marathons, sports, conferences, culture — per RAS) ----------
+   tbc: true = date awaiting official confirmation (shown with a TBC badge). */
+window.EVENTS = [
+  { id: "afcon-groupc-1", type: "afcon", date: "2027-06-21", tbc: false, venue: "Samia Suluhu Hassan Stadium",
+    name: { en: "AFCON: Tanzania vs Algeria", sw: "AFCON: Tanzania vs Algeria" },
+    desc: { en: "Group C opener in Arusha — kick-off 16:00.", sw: "Ufunguzi wa Kundi C Arusha — saa 16:00." }, link: "#/matches" },
+  { id: "arusha-marathon", type: "sports", date: "2027-06-27", tbc: true, venue: "Arusha City",
+    name: { en: "Arusha City Marathon", sw: "Mbio za Marathon za Jiji la Arusha" },
+    desc: { en: "5K fun run, 21K and full marathon through the city under Mount Meru.", sw: "Mbio za 5K, 21K na marathon kamili kupitia jiji chini ya Mlima Meru." } },
+  { id: "fanzone-opening", type: "culture", date: "2027-06-19", tbc: true, venue: "City Fan Zone",
+    name: { en: "AFCON Fan Zone opening festival", sw: "Tamasha la ufunguzi la Fan Zone" },
+    desc: { en: "Live music, food stalls and big screens — every match day.", sw: "Muziki, chakula na skrini kubwa — kila siku ya mechi." } },
+  { id: "site-expo", type: "conference", date: "2027-06-24", tbc: true, venue: "AICC",
+    name: { en: "S!TE — Swahili Int'l Tourism Expo (Arusha edition)", sw: "S!TE — Maonyesho ya Utalii ya Kimataifa (Arusha)" },
+    desc: { en: "Tourism trade expo: operators, investors and buyers at the AICC.", sw: "Maonyesho ya biashara ya utalii: waendeshaji, wawekezaji na wanunuzi AICC." } },
+  { id: "cultural-week", type: "culture", date: "2027-07-01", tbc: true, venue: "Cultural Heritage Centre",
+    name: { en: "Arusha Cultural Week", sw: "Wiki ya Utamaduni Arusha" },
+    desc: { en: "Maasai dance, crafts, Tanzanite exhibitions and food of the region.", sw: "Ngoma za Kimaasai, sanaa, maonyesho ya Tanzanite na vyakula vya mkoa." } },
+  { id: "investor-forum", type: "conference", date: "2027-07-06", tbc: true, venue: "Mount Meru Hotel",
+    name: { en: "Invest in Arusha Forum", sw: "Kongamano la Wekeza Arusha" },
+    desc: { en: "TIC, RAS Arusha and sector leaders on tourism, agri & Tanzanite value-addition.", sw: "TIC, RAS Arusha na viongozi wa sekta: utalii, kilimo na uongezaji thamani wa Tanzanite." } },
+  { id: "afcon-quarter", type: "afcon", date: "2027-07-10", tbc: false, venue: "Samia Suluhu Hassan Stadium",
+    name: { en: "AFCON Quarter-final in Arusha", sw: "Robo fainali ya AFCON Arusha" },
+    desc: { en: "Quarter-final night — kick-off 19:00.", sw: "Usiku wa robo fainali — saa 19:00." }, link: "#/matches" }
+];
 
 /* ---------- SUGGESTED ITINERARIES (Destination-Tanzania style, Arusha edition) ----------
    Day-by-day plans timed around AFCON match gaps. Prices = our real trip prices
