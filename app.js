@@ -994,6 +994,326 @@
   }
 
   /* ===================================================================
+     BECOME A PARTNER — landing, signup (PDF verification), portal, services
+     Backend: Supabase RPCs (bcrypt) + private storage bucket partner-docs.
+     =================================================================== */
+  function sbRpcNamed(fn, body) { return sbRpc(fn, body); }
+  const P_TYPES = ["tour_operator", "private_guide", "photographer", "transport", "accommodation", "food", "other"];
+  const P_ICON = { tour_operator: "map", private_guide: "users", photographer: "camera", transport: "plane", accommodation: "building", food: "sprout", other: "globe" };
+  const P_KEY = "ka_partner";
+  const getPartner = () => { try { return JSON.parse(sessionStorage.getItem(P_KEY)); } catch (e) { return null; } };
+  const setPartner = (p) => sessionStorage.setItem(P_KEY, JSON.stringify(p));
+  const clearPartner = () => sessionStorage.removeItem(P_KEY);
+
+  function viewPartners() {
+    const why = [
+      ["globe",   t("pw_b1_t"), t("pw_b1_d")],
+      ["shield",  t("pw_b2_t"), t("pw_b2_d")],
+      ["users",   t("pw_b3_t"), t("pw_b3_d")],
+      ["map",     t("pw_b4_t"), t("pw_b4_d")],
+      ["camera",  t("pw_b5_t"), t("pw_b5_d")],
+      ["building",t("pw_b6_t"), t("pw_b6_d")]
+    ];
+    const steps = [t("pw_s1"), t("pw_s2"), t("pw_s3"), t("pw_s4"), t("pw_s5")];
+    return `
+      <section class="detail-hero grad-green tz-band">
+        <div class="container">
+          <h1>${t("pw_title")}</h1>
+          <p class="detail-meta">${t("pw_lead")}</p>
+        </div>
+      </section>
+      <section class="container section">
+        <h2 class="page-title" style="text-transform:none">${t("pw_why")}</h2>
+        <div class="pw-grid">
+          ${why.map(w => `<div class="card pw-card"><span class="inv-icon">${svgIcon(w[0], 24)}</span><h3>${w[1]}</h3><p class="muted">${w[2]}</p></div>`).join("")}
+        </div>
+        <h2 class="page-title mt" style="text-transform:none">${t("pw_how")}</h2>
+        <div class="pw-steps">
+          ${steps.map((s, i) => `<div class="pw-step"><span class="pw-step-n">${i + 1}</span><strong>${s.split("—")[0]}</strong><small>${(s.split("—")[1] || "").trim()}</small></div>`).join("")}
+        </div>
+        <div class="center mt hero-cta-row" style="justify-content:center">
+          <a class="btn btn-primary btn-lg" href="#/partner-signup">${t("pw_cta")}</a>
+          <a class="btn btn-ghost" href="#/partner">${t("pw_login")}</a>
+        </div>
+      </section>`;
+  }
+
+  function viewPartnerSignup() {
+    const typeCards = P_TYPES.map((ty, i) => `
+      <button type="button" class="ptype-opt${i === 0 ? " active" : ""}" data-ptype="${ty}">
+        ${svgIcon(P_ICON[ty], 20)}<span>${t("pt_" + ty)}</span>
+      </button>`).join("");
+    return `
+      <section class="detail-hero grad-gold tz-band">
+        <div class="container"><h1>${t("ps_title")}</h1><p class="detail-meta">${t("ps_lead")}</p></div>
+      </section>
+      <section class="container reg-wrap">
+        <form id="pForm" class="reg-form pform" novalidate>
+          <div class="field"><label>${t("ps_type")} <span class="req">*</span></label>
+            <div class="ptype-grid" id="pTypes">${typeCards}</div></div>
+          <div class="field"><label>${t("ps_entity")} <span class="req">*</span></label>
+            <div class="zone-pick" id="pEntity">
+              <button type="button" class="zone-opt active" data-ent="company"><b>${t("ps_ent_company")}</b><small>${t("ps_ent_company_s")}</small></button>
+              <button type="button" class="zone-opt" data-ent="private"><b>${t("ps_ent_private")}</b><small>${t("ps_ent_private_s")}</small></button>
+            </div></div>
+          <div class="field"><label for="pCompany">${t("ps_company")} <span class="req">*</span></label>
+            <input id="pCompany" type="text" placeholder="${t("ps_company_ph")}" /></div>
+          <div class="field"><label for="pContact">${t("ps_contact")} <span class="req">*</span></label>
+            <input id="pContact" type="text" autocomplete="name" /></div>
+          <div class="field"><label for="pEmail">${t("reg_email")} <span class="req">*</span></label>
+            <input id="pEmail" type="email" inputmode="email" autocomplete="email" /></div>
+          <div class="field"><label for="pPhone">${t("ps_phone")} <span class="req">*</span></label>
+            <input id="pPhone" type="tel" inputmode="tel" placeholder="+255 7xx xxx xxx" /></div>
+          <div class="field"><label for="pTin">${t("ps_tin")}</label>
+            <input id="pTin" type="text" placeholder="e.g. 123-456-789" /></div>
+          <div class="field"><label for="pLicense">${t("ps_license")}</label>
+            <input id="pLicense" type="text" placeholder="e.g. TALA-AR-2026-001" /></div>
+          <div class="field"><label for="pDoc">${t("ps_doc")} <span class="req">*</span></label>
+            <input id="pDoc" type="file" accept="application/pdf" />
+            <p class="field-note">${t("ps_doc_note")}</p></div>
+          <div class="field"><label for="pPass">${t("ps_pass")} <span class="req">*</span></label>
+            <div class="pass-wrap"><input id="pPass" type="password" autocomplete="new-password" /><button type="button" class="pass-toggle" aria-label="${t("pass_show")}">👁</button></div></div>
+          <div id="pErr" class="form-error" role="alert" hidden></div>
+          <button type="submit" class="btn btn-primary btn-block">${t("ps_submit")}</button>
+          <p class="muted small reg-privacy">${t("ps_privacy")}</p>
+        </form>
+        <div id="pOk" class="reg-success" hidden>
+          <div class="reg-success-mark">✓</div>
+          <p class="reg-success-msg">${t("ps_success")}</p>
+          <a class="btn btn-primary" href="#/partner">${t("pw_login")}</a>
+        </div>
+      </section>`;
+  }
+  function bindPartnerSignup() {
+    const form = document.getElementById("pForm");
+    if (!form) return;
+    let ptype = P_TYPES[0], entity = "company";
+    document.getElementById("pTypes").addEventListener("click", (e) => {
+      const b = e.target.closest(".ptype-opt"); if (!b) return;
+      ptype = b.dataset.ptype;
+      document.querySelectorAll(".ptype-opt").forEach(x => x.classList.toggle("active", x === b));
+    });
+    document.getElementById("pEntity").addEventListener("click", (e) => {
+      const b = e.target.closest(".zone-opt"); if (!b) return;
+      entity = b.dataset.ent;
+      document.querySelectorAll("#pEntity .zone-opt").forEach(x => x.classList.toggle("active", x === b));
+    });
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const err = document.getElementById("pErr"); err.hidden = true;
+      const val = (id) => (document.getElementById(id).value || "").trim();
+      const file = document.getElementById("pDoc").files[0];
+      const problems = [];
+      if (!val("pCompany")) problems.push(t("ps_err_company"));
+      if (!val("pContact")) problems.push(t("reg_err_name"));
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val("pEmail"))) problems.push(t("reg_err_email"));
+      if (!val("pPhone")) problems.push(t("ps_err_phone"));
+      if (!file) problems.push(t("ps_err_doc"));
+      else if (file.type !== "application/pdf") problems.push(t("ps_err_pdf"));
+      else if (file.size > 10 * 1024 * 1024) problems.push(t("ps_err_size"));
+      if (val("pPass").length < 6) problems.push(t("ps_err_pass"));
+      if (problems.length) { err.innerHTML = problems.map(p => `<div>• ${esc(p)}</div>`).join(""); err.hidden = false; return; }
+
+      const btn = form.querySelector("button[type=submit]");
+      btn.disabled = true; btn.textContent = "⏳ " + t("ps_uploading");
+      const sb = window.CONFIG.supabase;
+      try {
+        // 1) upload the verification PDF to the PRIVATE bucket
+        const path = crypto.randomUUID() + ".pdf";
+        const up = await fetch(`${sb.url}/storage/v1/object/partner-docs/${path}`, {
+          method: "POST",
+          headers: { "apikey": sb.anonKey, "Authorization": "Bearer " + sb.anonKey, "Content-Type": "application/pdf" },
+          body: file
+        });
+        if (!up.ok) throw new Error("upload");
+        // 2) register the partner (server hashes the password with bcrypt)
+        await sbRpcNamed("partner_register", {
+          p_ptype: ptype, p_entity: entity, p_company: val("pCompany"), p_contact: val("pContact"),
+          p_email: val("pEmail"), p_phone: val("pPhone"), p_tin: val("pTin") || null,
+          p_license: val("pLicense") || null, p_pass: val("pPass"), p_doc_path: path, p_lang: lang
+        });
+        form.hidden = true; document.getElementById("pOk").hidden = false;
+      } catch (ex) {
+        err.textContent = /email_exists/.test(String(ex)) ? t("ps_err_exists") : t("ps_err_fail");
+        err.hidden = false; btn.disabled = false; btn.textContent = t("ps_submit");
+      }
+    });
+  }
+
+  /* ---- partner portal (login → status → add services with map pin) ---- */
+  function viewPartnerPortal() {
+    const p = getPartner();
+    if (!p) {
+      return `
+        <section class="container auth-wrap">
+          <form id="pLoginForm" class="auth-card" novalidate>
+            <div class="auth-icon">🤝</div>
+            <h1 class="auth-title">${t("pp_login_title")}</h1>
+            <p class="auth-sub">${t("pp_login_sub")}</p>
+            <div class="field"><label for="plEmail">${t("reg_email")}</label>
+              <input id="plEmail" type="email" autocomplete="username" /></div>
+            <div class="field"><label for="plPass">${t("ps_pass")}</label>
+              <div class="pass-wrap"><input id="plPass" type="password" autocomplete="current-password" /><button type="button" class="pass-toggle" aria-label="${t("pass_show")}">👁</button></div></div>
+            <div id="plErr" class="form-error" role="alert" hidden></div>
+            <button type="submit" class="btn btn-primary btn-block">${t("login_btn")}</button>
+            <p class="muted small auth-alt">${t("pp_no_acct")} <a href="#/partner-signup" class="link-inline">${t("pw_cta")}</a></p>
+          </form>
+        </section>`;
+    }
+    const stBadge = { pending: `<span class="pstat pstat-pending">⏳ ${t("pp_st_pending")}</span>`,
+                      approved: `<span class="pstat pstat-approved">✓ ${t("pp_st_approved")}</span>`,
+                      rejected: `<span class="pstat pstat-rejected">✕ ${t("pp_st_rejected")}</span>` }[p.status] || "";
+    const catOpts = P_TYPES.map(tt => `<option value="${tt}">${t("pt_" + tt)}</option>`).join("");
+    return `
+      <section class="detail-hero grad-green tz-band">
+        <div class="container">
+          <h1>${esc(p.company)}</h1>
+          <p class="detail-meta">${t("pt_" + p.ptype)} · ${stBadge}</p>
+        </div>
+      </section>
+      <section class="container section">
+        ${p.status !== "approved" ? `<div class="exp-lock" style="max-width:560px"><h2>${p.status === "rejected" ? t("pp_rejected_t") : t("pp_pending_t")}</h2><p class="muted">${p.status === "rejected" ? t("pp_rejected_d") : t("pp_pending_d")}</p></div>` : `
+        <h2 class="acct-section-h">${t("pp_add_h")}</h2>
+        <form id="svcForm" class="reg-form pform" novalidate>
+          <div class="field"><label for="sTitle">${t("pp_s_title")} <span class="req">*</span></label>
+            <input id="sTitle" type="text" placeholder="${t("pp_s_title_ph")}" /></div>
+          <div class="field"><label for="sCat">${t("ps_type")}</label>
+            <select id="sCat">${catOpts}</select></div>
+          <div class="field"><label for="sDesc">${t("pp_s_desc")}</label>
+            <textarea id="sDesc" rows="3" class="acct-msg"></textarea></div>
+          <div class="field"><label for="sPrice">${t("pp_s_price")}</label>
+            <div class="pg-input"><span>$</span><input id="sPrice" type="number" min="0" step="1" /></div></div>
+          <div class="field"><label for="sArea">${t("pp_s_area")} <span class="req">*</span></label>
+            <input id="sArea" type="text" placeholder="${t("pp_s_area_ph")}" />
+            <p class="field-note">${t("pp_s_map_note")}</p>
+            <div id="svcMap" class="att-map" style="height:280px"></div>
+            <input type="hidden" id="sLat" /><input type="hidden" id="sLng" /></div>
+          <div class="field"><label for="sWa">${t("pp_s_wa")} <span class="req">*</span></label>
+            <input id="sWa" type="tel" placeholder="255XXXXXXXXX" /></div>
+          <div id="sErr" class="form-error" role="alert" hidden></div>
+          <div class="form-ok" id="sOk" hidden>✓ ${t("pp_s_ok")}</div>
+          <button type="submit" class="btn btn-primary">${t("pp_s_add")}</button>
+        </form>
+        <h2 class="acct-section-h">${t("pp_mine_h")}</h2>
+        <div id="mySvcs"><p class="muted">${t("admin_loading")}</p></div>`}
+        <div class="center mt"><button class="btn btn-ghost" id="pLogout">${t("admin_logout")}</button></div>
+      </section>`;
+  }
+  function bindPartnerPortal() {
+    const loginF = document.getElementById("pLoginForm");
+    if (loginF) {
+      loginF.addEventListener("submit", (e) => {
+        e.preventDefault();
+        const em = document.getElementById("plEmail").value.trim();
+        const pw = document.getElementById("plPass").value;
+        const er = document.getElementById("plErr");
+        const btn = loginF.querySelector("button[type=submit]"); btn.disabled = true;
+        sbRpcNamed("partner_login", { p_email: em, p_pass: pw })
+          .then(d => { setPartner(Object.assign({ email: em, pass: pw }, d)); render(); })
+          .catch(() => { er.textContent = t("pp_login_err"); er.hidden = false; btn.disabled = false; });
+      });
+      return;
+    }
+    const out = document.getElementById("pLogout");
+    if (out) out.addEventListener("click", () => { clearPartner(); render(); });
+    const p = getPartner(); if (!p || p.status !== "approved") return;
+
+    // map: tap to drop the service-area pin
+    loadLeaflet().then(() => {
+      const el2 = document.getElementById("svcMap"); if (!el2) return;
+      const m = window.L.map("svcMap", { scrollWheelZoom: false }).setView([-3.37, 36.68], 11);
+      window.L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", { maxZoom: 18, attribution: "&copy; OpenStreetMap" }).addTo(m);
+      let mk = null;
+      m.on("click", (ev) => {
+        document.getElementById("sLat").value = ev.latlng.lat.toFixed(5);
+        document.getElementById("sLng").value = ev.latlng.lng.toFixed(5);
+        if (mk) mk.setLatLng(ev.latlng); else mk = window.L.marker(ev.latlng).addTo(m);
+      });
+    }).catch(() => {});
+
+    const list = document.getElementById("mySvcs");
+    const loadMine = () => sbRpcNamed("partner_my_services", { p_email: p.email, p_pass: p.pass })
+      .then(rows => {
+        list.innerHTML = (rows && rows.length) ? `<div class="table-wrap"><table class="reg-table">
+          <thead><tr><th>${t("pp_s_title")}</th><th>${t("ps_type")}</th><th>${t("pp_s_price")}</th><th>${t("pp_s_area")}</th><th></th></tr></thead>
+          <tbody>${rows.map(s => `<tr><td>${esc(s.title)}</td><td>${t("pt_" + s.category)}</td><td>${s.price_from ? "$" + s.price_from : "—"}</td><td>${esc(s.area_name || "—")}</td>
+            <td><button class="btn btn-small" data-del-svc="${s.id}">🗑</button></td></tr>`).join("")}</tbody></table></div>`
+          : `<p class="muted">${t("pp_none")}</p>`;
+        list.querySelectorAll("[data-del-svc]").forEach(b => b.addEventListener("click", () => {
+          if (!confirm(t("pp_del_confirm"))) return;
+          sbRpcNamed("partner_delete_service", { p_email: p.email, p_pass: p.pass, p_id: +b.dataset.delSvc }).then(loadMine).catch(() => {});
+        }));
+      }).catch(() => { list.innerHTML = `<p class="form-error">${t("acct_err")}</p>`; });
+    loadMine();
+
+    const f = document.getElementById("svcForm");
+    if (f) f.addEventListener("submit", (e) => {
+      e.preventDefault();
+      const err = document.getElementById("sErr"); err.hidden = true;
+      const v = (id) => (document.getElementById(id).value || "").trim();
+      if (!v("sTitle") || !v("sArea") || !v("sWa")) { err.textContent = t("pp_s_err"); err.hidden = false; return; }
+      const btn = f.querySelector("button[type=submit]"); btn.disabled = true;
+      sbRpcNamed("partner_add_service", {
+        p_email: p.email, p_pass: p.pass, p_title: v("sTitle"), p_category: v("sCat"),
+        p_description: v("sDesc") || null, p_price: v("sPrice") ? +v("sPrice") : null, p_currency: "USD",
+        p_area: v("sArea"), p_lat: v("sLat") ? +v("sLat") : null, p_lng: v("sLng") ? +v("sLng") : null,
+        p_whatsapp: v("sWa").replace(/\D/g, "")
+      }).then(() => {
+        document.getElementById("sOk").hidden = false; btn.disabled = false;
+        ["sTitle", "sDesc", "sPrice", "sArea", "sWa"].forEach(id => document.getElementById(id).value = "");
+        loadMine();
+      }).catch(() => { err.textContent = t("acct_err"); err.hidden = false; btn.disabled = false; });
+    });
+  }
+
+  /* ---- public services marketplace (approved partners only) ---- */
+  function viewServices() {
+    const chips = ["all"].concat(P_TYPES).map(c =>
+      `<button class="chip ${c === "all" ? "active" : ""}" data-svccat="${c}">${c === "all" ? t("att_all") : t("pt_" + c)}</button>`).join("");
+    return `
+      <section class="detail-hero grad-gold tz-band">
+        <div class="container"><h1>${t("sv_title")}</h1><p class="detail-meta">${t("sv_lead")}</p></div>
+      </section>
+      <section class="container section">
+        <div class="chips" id="svcFilters">${chips}</div>
+        <div class="card-grid" id="svcGrid"><p class="muted">${t("admin_loading")}</p></div>
+        <p class="muted small center mt">${t("sv_note")}</p>
+      </section>`;
+  }
+  let svcCache = null;
+  function bindServices() {
+    const grid = document.getElementById("svcGrid");
+    if (!grid) return;
+    const card = (s) => `
+      <div class="card svc-card">
+        <div class="att-top"><span class="inv-icon">${svgIcon(P_ICON[s.category] || "globe", 22)}</span>
+          <span class="att-cat-pill">${t("pt_" + (s.category || "other"))}</span></div>
+        <h3>${esc(s.title)}</h3>
+        <p class="muted small">${esc(s.company_name)} · ${t("pt_" + s.ptype)}</p>
+        ${s.description ? `<p class="muted">${esc(s.description)}</p>` : ""}
+        <div class="svc-meta">
+          ${s.area_name ? `<span>${svgIcon("pin", 14)} ${esc(s.area_name)}</span>` : ""}
+          ${s.price_from ? `<span class="price">${t("from")} <strong>$${s.price_from}</strong></span>` : ""}
+        </div>
+        ${s.whatsapp ? `<a class="btn btn-small btn-gold" target="_blank" rel="noopener" href="https://wa.me/${esc(s.whatsapp)}?text=${encodeURIComponent(t("wa_msg") + s.title)}">💬 ${t("contact_whatsapp")}</a>` : ""}
+      </div>`;
+    const show = (cat) => {
+      const rows = (svcCache || []).filter(s => cat === "all" || s.category === cat);
+      grid.innerHTML = rows.length ? rows.map(card).join("") : `<p class="muted">${t("sv_none")}</p>`;
+    };
+    const sb = window.CONFIG.supabase;
+    fetch(`${sb.url}/rest/v1/public_services?select=*&order=created_at.desc`, {
+      headers: { "apikey": sb.anonKey, "Authorization": "Bearer " + sb.anonKey }
+    }).then(r => r.json()).then(rows => { svcCache = Array.isArray(rows) ? rows : []; show("all"); })
+      .catch(() => { grid.innerHTML = `<p class="form-error">${t("acct_err")}</p>`; });
+    document.getElementById("svcFilters").addEventListener("click", (e) => {
+      const b = e.target.closest("[data-svccat]"); if (!b) return;
+      document.querySelectorAll("#svcFilters .chip").forEach(c => c.classList.remove("active"));
+      b.classList.add("active"); show(b.dataset.svccat);
+    });
+  }
+
+  /* ===================================================================
      VIEW: ITINERARIES (Destination-Tanzania style, Arusha edition)
      =================================================================== */
   function itinCard(it) {
@@ -1361,6 +1681,7 @@
         <button class="admin-tab" data-tab="enq">📨 ${t("admin_sum_enq")} (${enq.length})</button>
         <button class="admin-tab" data-tab="rev">⭐ ${t("admin_sum_rev")} (${rev.length})</button>
         <button class="admin-tab" data-tab="chal">⚠️ ${t("admin_sum_chal")} (${chal.length})</button>
+        <button class="admin-tab" data-tab="partners">🤝 ${t("admin_sum_partners")}</button>
       </div>
       <div class="admin-cat" data-cat="reg">
         <div class="admin-head"><h3>${t("admin_sum_reg")}</h3><div class="admin-actions"><button class="btn btn-small" id="regExport"${regs.length ? "" : " disabled"}>⬇ ${t("admin_export")}</button></div></div>
@@ -1368,7 +1689,8 @@
       </div>
       <div class="admin-cat" data-cat="enq" hidden><h3>📨 ${t("admin_sum_enq")}</h3>${msgTable(enq)}</div>
       <div class="admin-cat" data-cat="rev" hidden><h3>⭐ ${t("admin_sum_rev")}</h3>${revTable}</div>
-      <div class="admin-cat" data-cat="chal" hidden><h3>⚠️ ${t("admin_sum_chal")}</h3>${msgTable(chal)}</div>`;
+      <div class="admin-cat" data-cat="chal" hidden><h3>⚠️ ${t("admin_sum_chal")}</h3>${msgTable(chal)}</div>
+      <div class="admin-cat" data-cat="partners" hidden><h3>🤝 ${t("admin_sum_partners")}</h3><div id="adminPartners"><p class="muted">${t("admin_loading")}</p></div></div>`;
   }
   function exportCentralCSV(rows) {
     const head = ["Registered", "Name", "Country", "Phone", "Email", "Interest", "Lang"];
@@ -1476,11 +1798,49 @@
         });
         const exp = document.getElementById("regExport");
         if (exp) exp.addEventListener("click", () => exportCentralCSV(data.registrations || []));
+        loadAdminPartners(pass);
       })
       .catch(() => {
         sessionStorage.removeItem("ka_admin_pass");
         if (container) container.innerHTML = `<p class="form-error">${t("admin_login_err")}</p>`;
       });
+  }
+
+  /* ---- admin: partner verification queue (approve / reject / view PDF) ---- */
+  function loadAdminPartners(pass) {
+    const host = document.getElementById("adminPartners");
+    if (!host) return;
+    sbRpc("admin_partners", { p_pass: pass }).then(d => {
+      const rows = (d && d.partners) || [];
+      if (!rows.length) { host.innerHTML = `<p class="muted admin-empty">${t("admin_none")}</p>`; return; }
+      const stPill = (s) => `<span class="pstat pstat-${s}">${s === "approved" ? "✓" : s === "rejected" ? "✕" : "⏳"} ${t("pp_st_" + s)}</span>`;
+      host.innerHTML = `<div class="table-wrap"><table class="reg-table">
+        <thead><tr><th>${t("ps_company")}</th><th>${t("ps_type")}</th><th>${t("admin_contact")}</th><th>TIN / ${t("ps_license")}</th><th>PDF</th><th>${t("admin_status")}</th><th></th></tr></thead>
+        <tbody>${rows.map(p => `<tr>
+          <td><strong>${esc(p.company_name)}</strong><br><small class="muted">${esc(p.contact_name)} · ${p.entity}</small></td>
+          <td>${t("pt_" + p.ptype)}</td>
+          <td>${esc(p.email)}<br><small>${esc(p.phone)}</small></td>
+          <td>${esc(p.tin || "—")}<br><small>${esc(p.license_no || "—")}</small></td>
+          <td>${p.doc_path ? `<button class="btn btn-small" data-doc="${esc(p.doc_path)}">📄 ${t("admin_view_doc")}</button>` : "—"}</td>
+          <td>${stPill(p.status)}<br><small class="muted">${p.services} ${t("admin_services_n")}</small></td>
+          <td class="admin-actions-cell">
+            ${p.status !== "approved" ? `<button class="btn btn-small btn-gold" data-pstat="approved" data-pid="${p.id}">✓ ${t("admin_approve")}</button>` : ""}
+            ${p.status !== "rejected" ? `<button class="btn btn-small" data-pstat="rejected" data-pid="${p.id}">✕ ${t("admin_reject")}</button>` : ""}
+          </td></tr>`).join("")}</tbody></table></div>`;
+      host.querySelectorAll("[data-pstat]").forEach(b => b.addEventListener("click", () => {
+        b.disabled = true;
+        sbRpc("admin_partner_status", { p_pass: pass, p_id: b.dataset.pid, p_status: b.dataset.pstat })
+          .then(() => loadAdminPartners(pass)).catch(() => { b.disabled = false; alert(t("acct_err")); });
+      }));
+      host.querySelectorAll("[data-doc]").forEach(b => b.addEventListener("click", () => {
+        b.disabled = true;
+        fetch(window.CONFIG.supabase.url + "/functions/v1/partner-doc", {
+          method: "POST", headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ pass, path: b.dataset.doc })
+        }).then(r => r.json()).then(d2 => { b.disabled = false; if (d2 && d2.url) window.open(d2.url, "_blank", "noopener"); else alert(t("acct_err")); })
+          .catch(() => { b.disabled = false; alert(t("acct_err")); });
+      }));
+    }).catch(() => { host.innerHTML = `<p class="form-error">${t("acct_err")}</p>`; });
   }
 
   /* ===================================================================
@@ -1978,6 +2338,10 @@
       case "admin": html = viewAdmin(); break;
       case "explore": html = viewExplore(); break;
       case "itineraries": html = viewItineraries(); break;
+      case "partners": html = viewPartners(); break;
+      case "partner-signup": html = viewPartnerSignup(); break;
+      case "partner": html = viewPartnerPortal(); break;
+      case "services": html = viewServices(); break;
       case "about": html = viewAbout(); break;
       case "pay-ok": html = viewPayOk(); break;
       default: html = notFound();
@@ -2015,6 +2379,9 @@
     if (route === "admin") bindAdminPage();
     if (route === "explore") bindExplore();
     if (route === "itineraries") bindItineraries();
+    if (route === "partner-signup") bindPartnerSignup();
+    if (route === "partner") bindPartnerPortal();
+    if (route === "services") bindServices();
     if (route === "home") { buildScrollHero(); setupCineVideo(); } else stopScrollHero();
     setupReveal();
   }
