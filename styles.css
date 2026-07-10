@@ -1247,3 +1247,14 @@ img { max-width: 100%; display: block; }
 .ev-meta { display: flex; align-items: center; gap: 6px; font-size: .85rem; color: var(--ink-soft); }
 .ev-meta .ic { color: var(--gold-deep); }
 @media (max-width: 520px) { .ev-item { flex-direction: column; } .ev-date { width: 100%; height: auto; padding: 8px; grid-auto-flow: column; gap: 8px; } }
+
+/* ---- UI/UX audit fixes (v41): touch targets, focus rings, tap latency, contrast ---- */
+.chip { min-height: 44px; display: inline-flex; align-items: center; }
+button, .btn, .chip, a.btn, .nav-group-btn, .att-card, .zone-opt, .ptype-opt, .amt-chip, .mm-prov, .pg-tab, .acct-tab, .admin-tab, .pass-toggle, .star { touch-action: manipulation; }
+.chip:focus-visible, .nav-group-btn:focus-visible, .btn:focus-visible, .acct-tab:focus-visible,
+.admin-tab:focus-visible, .pg-tab:focus-visible, .amt-chip:focus-visible, .mm-prov:focus-visible,
+.nav-drop a:focus-visible, .main-nav a:focus-visible, .itin-plan summary:focus-visible {
+  outline: 3px solid var(--gold); outline-offset: 2px; border-radius: 8px;
+}
+.ev-type-conference { color: #7a5308; }   /* was 3.4:1 on its tint — now ≥4.5:1 */
+.ev-tbc { color: #6b5200; }

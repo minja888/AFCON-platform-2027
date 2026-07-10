@@ -2498,6 +2498,12 @@
   document.addEventListener("click", (e) => {
     if (!e.target.closest(".nav-group")) document.querySelectorAll(".nav-group").forEach(x => x.classList.remove("open"));
   });
+  document.addEventListener("keydown", (e) => {           // Escape closes any open dropdown
+    if (e.key === "Escape") document.querySelectorAll(".nav-group.open").forEach(x => {
+      x.classList.remove("open");
+      x.querySelector(".nav-group-btn").setAttribute("aria-expanded", "false");
+    });
+  });
 
   /* ---------- mobile nav toggle ---------- */
   document.getElementById("navToggle").addEventListener("click", () => {
