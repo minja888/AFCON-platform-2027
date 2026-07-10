@@ -20,8 +20,19 @@ window.CONFIG = {
   // If a video ever fails to load, the photo slideshow shows automatically.
   // (webm plays on Chrome/Edge/Firefox/Android; Safari/iOS fall back to the 4K photos.)
   // Multiple clips CROSS-ROTATE in the hero. Add your own Arusha/HeyGen mp4s here.
-  heroVideos: ["media/arusha-hero.webm", "media/arusha-hero-3.webm"],
-  heroVideoRotate: 9000,                // ms each clip shows before crossfading to the next
+  // Each clip has a caption card + a time-of-day window (24h) when it leads.
+  heroVideos: [
+    { src: "media/arusha-v1.mp4", from: 5,  to: 12,
+      title: { en: "Napuru Waterfalls", sw: "Maporomoko ya Napuru" },
+      note:  { en: "A hidden gem minutes from Arusha city", sw: "Kito kilichofichika dakika chache kutoka mjini Arusha" } },
+    { src: "media/arusha-v2.mp4", from: 12, to: 17,
+      title: { en: "The Great Migration — Serengeti", sw: "Uhamiaji Mkuu — Serengeti" },
+      note:  { en: "2M+ wildebeest, a day-trip from Arusha", sw: "Nyumbu 2M+, safari ya siku kutoka Arusha" } },
+    { src: "media/arusha-v3.mp4", from: 17, to: 5,
+      title: { en: "Golden hour at the waterhole", sw: "Jioni ya dhahabu kisimani" },
+      note:  { en: "Giraffes at dusk — Tarangire & Arusha NP", sw: "Twiga machweo — Tarangire na Arusha NP" } }
+  ],
+  heroVideoRotate: 12000,               // ms each clip shows before crossfading to the next
   // Attribution for the Creative-Commons hero videos (shown small in the footer).
   heroVideoCredit: "Safari clips: Wikimedia Commons contributors · CC BY-SA",
   // Optional: paste a form endpoint URL (e.g. Formspree/Google Apps Script/Supabase) to
@@ -429,6 +440,88 @@ window.ATTRACTIONS = [
     }
   });
 })();
+
+/* ---------- SUGGESTED ITINERARIES (Destination-Tanzania style, Arusha edition) ----------
+   Day-by-day plans timed around AFCON match gaps. Prices = our real trip prices
+   bundled ("from $X per person"); balance always paid to licensed operators. */
+window.ITINERARIES = [
+  {
+    id: "matchday-escape-1d", days: 1, priceFrom: 110, icon: "🦒", grad: "grad-teal",
+    photoId: "1547471080-7cc2caa01a7e",
+    tags: ["wildlife", "family", "half-day"],
+    name: { en: "Match-Day Escape · 1 Day", sw: "Pumziko la Siku ya Mechi · Siku 1" },
+    summary: { en: "One free day? Morning game drive in Arusha National Park, Cultural Heritage Centre after lunch — back before kick-off.",
+               sw: "Una siku moja? Mzunguko wa asubuhi Hifadhi ya Arusha, Kituo cha Urithi mchana — urudi kabla ya mechi." },
+    plan: {
+      en: ["07:00 Pick-up — Arusha NP game drive (giraffes, colobus, Momella Lakes)",
+           "12:30 Lunch with Mount Meru views",
+           "14:00 Cultural Heritage Centre — art, Tanzanite gallery, souvenirs",
+           "17:00 Back in the city / stadium zone"],
+      sw: ["07:00 Kuchukuliwa — mzunguko Hifadhi ya Arusha (twiga, mbega, Maziwa ya Momella)",
+           "12:30 Chakula cha mchana ukiona Mlima Meru",
+           "14:00 Kituo cha Urithi — sanaa, Tanzanite, kumbukumbu",
+           "17:00 Kurudi mjini / uwanjani"]
+    }
+  },
+  {
+    id: "between-matches-3d", days: 3, priceFrom: 720, icon: "🌍", grad: "grad-gold",
+    photoId: "1535941339077-2dd1c7963098",
+    tags: ["safari", "bucket-list", "overnight"],
+    name: { en: "Between Two Matches · 3 Days", sw: "Kati ya Mechi Mbili · Siku 3" },
+    summary: { en: "The classic gap-filler: Serengeti plains, the Great Migration in season, and the Ngorongoro Crater finale.",
+               sw: "Mpango maarufu: tambarare za Serengeti, Uhamiaji Mkuu kwa msimu, na Kreta ya Ngorongoro mwishoni." },
+    plan: {
+      en: ["Day 1 — Drive to Serengeti via Ngorongoro highlands; afternoon game drive",
+           "Day 2 — Full Serengeti day: migration herds, big cats, sunset at camp",
+           "Day 3 — Dawn in Ngorongoro Crater (Big Five), back in Arusha by evening"],
+      sw: ["Siku 1 — Kwenda Serengeti kupitia nyanda za Ngorongoro; mzunguko wa jioni",
+           "Siku 2 — Siku nzima Serengeti: makundi ya uhamiaji, simba, machweo kambini",
+           "Siku 3 — Alfajiri Kreta ya Ngorongoro (Big Five), kurudi Arusha jioni"]
+    }
+  },
+  {
+    id: "afcon-week-5d", days: 5, priceFrom: 1050, icon: "🦁", grad: "grad-green",
+    photoId: "1516426122078-c23e76319801",
+    tags: ["safari", "culture", "waterfalls"],
+    name: { en: "AFCON Week Explorer · 5 Days", sw: "Wiki ya AFCON · Siku 5" },
+    summary: { en: "Wildlife + culture + waterfalls around your fixtures: Tarangire, Ngorongoro, Materuni, a Maasai boma and Napuru falls.",
+               sw: "Wanyamapori + utamaduni + maporomoko kuzunguka mechi zako: Tarangire, Ngorongoro, Materuni, boma la Kimaasai na Napuru." },
+    plan: {
+      en: ["Day 1 — Tarangire: baobabs & the great elephant herds",
+           "Day 2 — Ngorongoro Crater day safari",
+           "Day 3 — Match day: Napuru waterfalls hike + Maasai Market (city day)",
+           "Day 4 — Materuni waterfalls & Chagga coffee experience",
+           "Day 5 — Maasai boma morning, afternoon at leisure / fan zone"],
+      sw: ["Siku 1 — Tarangire: mibuyu na makundi makubwa ya tembo",
+           "Siku 2 — Safari ya Kreta ya Ngorongoro",
+           "Siku 3 — Siku ya mechi: Napuru + Soko la Kimaasai (mjini)",
+           "Siku 4 — Materuni na kahawa ya Kichaga",
+           "Siku 5 — Boma la Kimaasai asubuhi, mchana fan zone"]
+    }
+  },
+  {
+    id: "grand-arusha-7d", days: 7, priceFrom: 1490, icon: "⛰️", grad: "grad-brown",
+    photoId: "1464822759023-fed622ff2c3b",
+    tags: ["safari", "trek", "culture", "premium"],
+    name: { en: "Grand Arusha Circuit · 7 Days", sw: "Mzunguko Mkuu wa Arusha · Siku 7" },
+    summary: { en: "After the group stage: the full northern circuit — Serengeti, Ngorongoro, Tarangire, Lake Natron & Ol Doinyo Lengai country, plus Meru foothills.",
+               sw: "Baada ya group stage: mzunguko mzima wa kaskazini — Serengeti, Ngorongoro, Tarangire, Ziwa Natron na Ol Doinyo Lengai, pamoja na miteremko ya Meru." },
+    plan: {
+      en: ["Day 1 — Arusha NP warm-up drive + Lake Duluti canoe",
+           "Day 2 — Tarangire elephants",
+           "Day 3-4 — Serengeti (overnight): migration & big cats",
+           "Day 5 — Ngorongoro Crater sunrise safari",
+           "Day 6 — Lake Natron flamingos, Ol Doinyo Lengai views, Maasai villages",
+           "Day 7 — Meru waterfalls & coffee farewell, transfer to KIA/stadium"],
+      sw: ["Siku 1 — Hifadhi ya Arusha + makasia Ziwa Duluti",
+           "Siku 2 — Tembo wa Tarangire",
+           "Siku 3-4 — Serengeti (kulala): uhamiaji na simba",
+           "Siku 5 — Kreta ya Ngorongoro alfajiri",
+           "Siku 6 — Heroe wa Ziwa Natron, Ol Doinyo Lengai, vijiji vya Kimaasai",
+           "Siku 7 — Maporomoko ya Meru na kahawa, kuaga — KIA/uwanjani"]
+    }
+  }
+];
 
 /* ---------- INVEST IN ARUSHA — sectors shown inside the registered-tourist area ---------- */
 window.INVESTMENTS = {

@@ -225,11 +225,18 @@
     "1464822759023-fed622ff2c3b"  // mountain / Kilimanjaro mood
   ].map(id => `https://images.unsplash.com/photo-${id}?w=2560&q=70&auto=format&fit=crop`);
 
-  /* the configured list of hero videos (back-compat with the old single field) */
+  /* the configured list of hero videos — normalised to {src,title,note,from,to} */
   function heroVideoList() {
     const c = window.CONFIG || {};
-    if (Array.isArray(c.heroVideos)) return c.heroVideos.filter(Boolean);
-    return c.heroVideo ? [c.heroVideo] : [];
+    const raw = Array.isArray(c.heroVideos) ? c.heroVideos : (c.heroVideo ? [c.heroVideo] : []);
+    return raw.filter(Boolean).map(v => typeof v === "string" ? { src: v } : v);
+  }
+  /* which clip should LEAD right now, from its time-of-day window (handles 17→5 wrap) */
+  function heroLeadIndex(list) {
+    const h = new Date().getHours();
+    const i = list.findIndex(v => v.from != null &&
+      (v.from <= v.to ? (h >= v.from && h < v.to) : (h >= v.from || h < v.to)));
+    return i === -1 ? 0 : i;
   }
   /* Multiple hero clips that CROSS-ROTATE. Each fades in only once it can play;
      any clip that fails removes itself. If none play, the photo slideshow shows. */
@@ -250,19 +257,32 @@
       setTimeout(() => { if (v.isConnected && v.readyState < 2) { v.remove(); vids = vids.filter(x => x !== v); } }, 12000);
     });
 
+    const meta = heroVideoList();
+    const cap = document.getElementById("cineCaption");
+    const setCaption = (vi) => {
+      const m = meta[vi];
+      if (!cap) return;
+      if (!m || !m.title) { cap.hidden = true; return; }
+      document.getElementById("cineCapTitle").textContent = L(m.title);
+      document.getElementById("cineCapNote").textContent = L(m.note) || "";
+      cap.hidden = false;
+      cap.classList.remove("swap"); void cap.offsetWidth; cap.classList.add("swap");
+    };
     let idx = 0;
     const show = (i) => {
       if (!vids.length) return;
       idx = (i + vids.length) % vids.length;
       vids.forEach((v, n) => {
-        if (n === idx) { v.classList.add("ready"); play(v); }
+        if (n === idx) { v.classList.add("ready"); play(v); setCaption(+v.dataset.vi); }
         else { v.classList.remove("ready"); setTimeout(() => { if (!v.classList.contains("ready")) v.pause(); }, 900); }
       });
     };
-    // reveal the first clip as soon as it can play
-    const first = vids[0];
+    // start with the clip that matches the CURRENT TIME OF DAY (morning falls,
+    // midday migration, golden-hour giraffes), then keep rotating from there
+    const lead = vids.findIndex(v => +v.dataset.vi === heroLeadIndex(meta));
+    const first = vids[lead === -1 ? 0 : lead];
     first.addEventListener("canplay", () => first.classList.add("ready"), { once: true });
-    show(0);
+    show(lead === -1 ? 0 : lead);
 
     if (vids.length > 1) {
       const gap = (window.CONFIG && window.CONFIG.heroVideoRotate) || 9000;
@@ -397,9 +417,16 @@
       <section class="cine-hero" id="cineHero">
         <div class="cine-bg" aria-hidden="true">
           ${CINE_SLIDES.map((u, i) => `<div class="cine-slide" style="background-image:url('${u}');animation-delay:${(i * 6 - 2).toFixed(0)}s"></div>`).join("")}
-          ${heroVideoList().map((src, i) => `<video class="cine-video" data-vi="${i}" muted loop playsinline preload="${i === 0 ? "auto" : "metadata"}" poster="${CINE_SLIDES[0]}"><source src="${src}" type="${/\.webm(\?|$)/i.test(src) ? "video/webm" : "video/mp4"}"></video>`).join("")}
+          ${heroVideoList().map((v, i) => `<video class="cine-video" data-vi="${i}" muted loop playsinline preload="${i === 0 ? "auto" : "metadata"}" poster="${CINE_SLIDES[0]}"><source src="${v.src}" type="${/\.webm(\?|$)/i.test(v.src) ? "video/webm" : "video/mp4"}"></video>`).join("")}
           <div class="cine-grain"></div>
           <div class="cine-scrim"></div>
+        </div>
+        <div class="cine-caption" id="cineCaption" hidden>
+          <span class="cine-caption-dot" aria-hidden="true"></span>
+          <span class="cine-caption-tx">
+            <strong id="cineCapTitle"></strong>
+            <small id="cineCapNote"></small>
+          </span>
         </div>
         <div class="cine-content">
           <span class="hero-kicker">${t("hero_kicker")}</span>
@@ -964,6 +991,61 @@
         document.getElementById("invMsg").value = ""; btn.disabled = false;
       }).catch(() => { btn.disabled = false; alert(t("acct_err")); });
     });
+  }
+
+  /* ===================================================================
+     VIEW: ITINERARIES (Destination-Tanzania style, Arusha edition)
+     =================================================================== */
+  function itinCard(it) {
+    const img = it.photoId ? `https://images.unsplash.com/photo-${it.photoId}?w=800&q=60&auto=format&fit=crop` : "";
+    const plan = (L(it.plan) || []);
+    return `
+      <article class="card itin-card">
+        <div class="itin-media ${it.grad}">
+          ${img ? `<img src="${img}" alt="${esc(L(it.name))}" loading="lazy" decoding="async" onerror="this.remove()" />` : ""}
+          <span class="att-scrim"></span>
+          <span class="itin-days">${it.days} ${it.days > 1 ? t("days") : t("day")}</span>
+        </div>
+        <div class="itin-body">
+          <h3>${esc(L(it.name))}</h3>
+          <p class="muted">${esc(L(it.summary))}</p>
+          <details class="itin-plan">
+            <summary>${t("itin_view_plan")}</summary>
+            <ol class="itin-steps">${plan.map(s => `<li>${esc(s)}</li>`).join("")}</ol>
+          </details>
+          <div class="card-foot">
+            <span class="price">${t("from")} <strong>$${it.priceFrom}</strong> <small class="muted">${t("per_person")}</small></span>
+            <button class="btn btn-small btn-gold" data-book-itin="${it.id}">${t("itin_enquire")}</button>
+          </div>
+        </div>
+      </article>`;
+  }
+  function viewItineraries() {
+    const list = window.ITINERARIES || [];
+    return `
+      <section class="detail-hero grad-green tz-band">
+        <div class="container">
+          <h1>${t("itin_title")}</h1>
+          <p class="detail-meta">${t("itin_lead")}</p>
+        </div>
+      </section>
+      <section class="container section">
+        <div class="card-grid itin-grid">${list.map(itinCard).join("")}</div>
+        <p class="muted small center mt">${t("itin_note")}</p>
+      </section>`;
+  }
+  function bindItineraries() {
+    document.querySelectorAll("[data-book-itin]").forEach(b => b.addEventListener("click", () => {
+      const it = (window.ITINERARIES || []).find(x => x.id === b.dataset.bookItin);
+      if (!it) return;
+      const u = getCurrentUser() || {};
+      const msg = `${t("itin_wa_msg")} "${L(it.name)}" (${it.days}d, ${t("from")} $${it.priceFrom} pp)`;
+      sbInsert("submissions", {
+        type: "enquiry", name: u.name || null, email: u.email || null, phone: u.phone || null,
+        country: u.country || null, rating: null, lang, message: "[ITINERARY] " + msg
+      }).catch(() => {});
+      window.open(`https://wa.me/${window.CONFIG.visitorDeskWhatsApp}?text=${encodeURIComponent(msg)}`, "_blank", "noopener");
+    }));
   }
 
   /* ===================================================================
@@ -1895,6 +1977,7 @@
       case "account": html = viewAccount(); break;
       case "admin": html = viewAdmin(); break;
       case "explore": html = viewExplore(); break;
+      case "itineraries": html = viewItineraries(); break;
       case "about": html = viewAbout(); break;
       case "pay-ok": html = viewPayOk(); break;
       default: html = notFound();
@@ -1931,6 +2014,7 @@
     if (route === "account") bindAccount();
     if (route === "admin") bindAdminPage();
     if (route === "explore") bindExplore();
+    if (route === "itineraries") bindItineraries();
     if (route === "home") { buildScrollHero(); setupCineVideo(); } else stopScrollHero();
     setupReveal();
   }

@@ -1126,3 +1126,48 @@ img { max-width: 100%; display: block; }
   .hb-heart .heart-ic { animation: none; }
   .heart-flourish path { stroke-dashoffset: 0; animation: none; }
 }
+
+/* =====================================================================
+   v38 — hero video caption card · Tanzania flag accents · itineraries
+   ===================================================================== */
+
+/* ---- Tanzania flag ribbon (green · yellow · black · yellow · blue) ---- */
+.flag-ribbon, .site-header::after { content: ""; display: block; height: 4px; width: 100%;
+  background: linear-gradient(90deg, #1eb53a 0 30%, #fcd116 30% 34%, #000 34% 66%, #fcd116 66% 70%, #00a3dd 70% 100%); }
+.site-header { position: relative; }
+.detail-hero.tz-band { position: relative; }
+.detail-hero.tz-band::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 6px;
+  background: linear-gradient(180deg, #1eb53a 0 30%, #fcd116 30% 36%, #000 36% 64%, #fcd116 64% 70%, #00a3dd 70% 100%); }
+
+/* ---- hero video caption (bottom-left info card) ---- */
+.cine-caption { position: absolute; left: 18px; bottom: 18px; z-index: 2; display: flex; align-items: center; gap: 10px;
+  max-width: min(78vw, 380px); padding: 10px 16px 10px 12px; border-radius: 14px;
+  background: rgba(14,17,10,.55); border: 1px solid rgba(255,255,255,.16); backdrop-filter: blur(8px);
+  color: #fff; box-shadow: 0 8px 24px rgba(0,0,0,.35); }
+.cine-caption-dot { width: 9px; height: 9px; border-radius: 50%; flex: 0 0 auto;
+  background: #fcd116; box-shadow: 0 0 0 0 rgba(252,209,22,.6); animation: capPulse 2s ease-out infinite; }
+@keyframes capPulse { 0% { box-shadow: 0 0 0 0 rgba(252,209,22,.55); } 70% { box-shadow: 0 0 0 9px rgba(252,209,22,0); } 100% { box-shadow: 0 0 0 0 rgba(252,209,22,0); } }
+.cine-caption-tx { display: grid; gap: 1px; min-width: 0; }
+.cine-caption-tx strong { font-size: .95rem; font-weight: 700; letter-spacing: .01em; }
+.cine-caption-tx small { font-size: .76rem; color: rgba(255,255,255,.78); }
+.cine-caption.swap .cine-caption-tx { animation: capIn .5s cubic-bezier(.2,.8,.3,1); }
+@keyframes capIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+
+/* ---- itineraries ---- */
+.itin-grid { grid-template-columns: repeat(auto-fill, minmax(290px, 1fr)); }
+.itin-card { display: flex; flex-direction: column; overflow: hidden; padding: 0; }
+.itin-media { position: relative; aspect-ratio: 16 / 9; overflow: hidden; }
+.itin-media img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; transition: transform .4s ease; }
+.itin-card:hover .itin-media img { transform: scale(1.05); }
+.itin-days { position: absolute; top: 10px; left: 10px; font-size: .74rem; font-weight: 800; letter-spacing: .05em;
+  text-transform: uppercase; color: var(--green-deep); background: #fcd116; padding: 6px 11px; border-radius: 999px;
+  box-shadow: 0 3px 8px rgba(0,0,0,.25); }
+.itin-body { display: flex; flex-direction: column; gap: 8px; padding: 16px 18px 18px; flex: 1; }
+.itin-body h3 { margin: 0; font-size: 1.06rem; color: var(--green-deep); }
+.itin-body > .muted { flex: 0 0 auto; }
+.itin-plan { border: 1px solid var(--line); border-radius: var(--radius-sm); background: var(--sand); }
+.itin-plan summary { cursor: pointer; padding: 10px 14px; font-weight: 600; font-size: .88rem; color: var(--green-deep); min-height: 44px; display: flex; align-items: center; }
+.itin-plan[open] summary { border-bottom: 1px solid var(--line); }
+.itin-steps { margin: 0; padding: 12px 16px 14px 32px; display: grid; gap: 8px; font-size: .88rem; line-height: 1.5; }
+.itin-steps li::marker { color: var(--gold-deep); font-weight: 700; }
+.itin-card .card-foot { margin-top: auto; }
