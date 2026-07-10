@@ -61,7 +61,7 @@ window.TRIPS = [
     duration: 1,
     icon: "🦁",
     grad: "grad-gold",
-    priceFrom: 180,
+    priceFrom: 320,
     rating: 4.9,
     tags: ["safari", "wildlife", "unesco"],
     name: { en: "Ngorongoro Crater Day Safari", sw: "Safari ya Siku Moja Kreta ya Ngorongoro" },
@@ -79,7 +79,7 @@ window.TRIPS = [
     duration: 1,
     icon: "🐘",
     grad: "grad-green",
-    priceFrom: 150,
+    priceFrom: 280,
     rating: 4.8,
     tags: ["safari", "wildlife", "family"],
     name: { en: "Tarangire National Park Day Safari", sw: "Safari ya Siku Moja Hifadhi ya Tarangire" },
@@ -97,7 +97,7 @@ window.TRIPS = [
     duration: 1,
     icon: "🦒",
     grad: "grad-teal",
-    priceFrom: 110,
+    priceFrom: 220,
     rating: 4.7,
     tags: ["safari", "family", "nearby"],
     name: { en: "Arusha National Park Day Trip", sw: "Safari ya Siku Moja Hifadhi ya Arusha" },
@@ -115,7 +115,7 @@ window.TRIPS = [
     duration: 1,
     icon: "☕",
     grad: "grad-brown",
-    priceFrom: 65,
+    priceFrom: 200,
     rating: 4.9,
     tags: ["culture", "nature", "food"],
     name: { en: "Materuni Waterfalls & Coffee Tour", sw: "Maporomoko ya Materuni na Ziara ya Kahawa" },
@@ -133,7 +133,7 @@ window.TRIPS = [
     duration: 1,
     icon: "🛖",
     grad: "grad-red",
-    priceFrom: 55,
+    priceFrom: 200,
     rating: 4.8,
     tags: ["culture", "community", "family"],
     name: { en: "Maasai Village & Cultural Boma", sw: "Kijiji cha Kimaasai na Boma la Utamaduni" },
@@ -151,7 +151,7 @@ window.TRIPS = [
     duration: 2,
     icon: "🦩",
     grad: "grad-gold",
-    priceFrom: 460,
+    priceFrom: 650,
     rating: 4.9,
     tags: ["safari", "wildlife", "overnight"],
     name: { en: "Lake Manyara + Ngorongoro · 2 Days", sw: "Ziwa Manyara + Ngorongoro · Siku 2" },
@@ -169,7 +169,7 @@ window.TRIPS = [
     duration: 2,
     icon: "🐃",
     grad: "grad-green",
-    priceFrom: 440,
+    priceFrom: 620,
     rating: 4.8,
     tags: ["safari", "wildlife", "overnight"],
     name: { en: "Tarangire + Ngorongoro · 2 Days", sw: "Tarangire + Ngorongoro · Siku 2" },
@@ -187,7 +187,7 @@ window.TRIPS = [
     duration: 3,
     icon: "🌍",
     grad: "grad-teal",
-    priceFrom: 720,
+    priceFrom: 1150,
     rating: 5.0,
     tags: ["safari", "wildlife", "bucket-list"],
     name: { en: "Serengeti + Ngorongoro · 3 Days", sw: "Serengeti + Ngorongoro · Siku 3" },
@@ -488,7 +488,7 @@ window.EVENTS = [
    bundled ("from $X per person"); balance always paid to licensed operators. */
 window.ITINERARIES = [
   {
-    id: "matchday-escape-1d", days: 1, priceFrom: 110, icon: "🦒", grad: "grad-teal",
+    id: "matchday-escape-1d", days: 1, priceFrom: 220, icon: "🦒", grad: "grad-teal",
     photoId: "1547471080-7cc2caa01a7e",
     tags: ["wildlife", "family", "half-day"],
     name: { en: "Match-Day Escape · 1 Day", sw: "Pumziko la Siku ya Mechi · Siku 1" },
@@ -506,7 +506,7 @@ window.ITINERARIES = [
     }
   },
   {
-    id: "between-matches-3d", days: 3, priceFrom: 720, icon: "🌍", grad: "grad-gold",
+    id: "between-matches-3d", days: 3, priceFrom: 1150, icon: "🌍", grad: "grad-gold",
     photoId: "1535941339077-2dd1c7963098",
     tags: ["safari", "bucket-list", "overnight"],
     name: { en: "Between Two Matches · 3 Days", sw: "Kati ya Mechi Mbili · Siku 3" },
@@ -522,7 +522,7 @@ window.ITINERARIES = [
     }
   },
   {
-    id: "afcon-week-5d", days: 5, priceFrom: 1050, icon: "🦁", grad: "grad-green",
+    id: "afcon-week-5d", days: 5, priceFrom: 1590, icon: "🦁", grad: "grad-green",
     photoId: "1516426122078-c23e76319801",
     tags: ["safari", "culture", "waterfalls"],
     name: { en: "AFCON Week Explorer · 5 Days", sw: "Wiki ya AFCON · Siku 5" },
@@ -542,7 +542,7 @@ window.ITINERARIES = [
     }
   },
   {
-    id: "grand-arusha-7d", days: 7, priceFrom: 1490, icon: "⛰️", grad: "grad-brown",
+    id: "grand-arusha-7d", days: 7, priceFrom: 2350, icon: "⛰️", grad: "grad-brown",
     photoId: "1464822759023-fed622ff2c3b",
     tags: ["safari", "trek", "culture", "premium"],
     name: { en: "Grand Arusha Circuit · 7 Days", sw: "Mzunguko Mkuu wa Arusha · Siku 7" },

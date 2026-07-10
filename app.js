@@ -218,10 +218,8 @@
 
   /* ---------- cinematic 4K hero background (crossfading Ken-Burns slides) ---------- */
   const CINE_SLIDES = [
-    "1535941339077-2dd1c7963098", // lions on the savanna
+    "1547471080-7cc2caa01a7e",    // acacia + giraffe savanna
     "1523805009345-7448845a9e53", // giraffe at golden hour
-    "1516426122078-c23e76319801", // elephant herd
-    "1547471080-7cc2caa01a7e",    // acacia + wildlife
     "1464822759023-fed622ff2c3b"  // mountain / Kilimanjaro mood
   ].map(id => `https://images.unsplash.com/photo-${id}?w=2560&q=70&auto=format&fit=crop`);
 
@@ -484,6 +482,16 @@
           <a href="#/trips" class="link-more">${t("nav_trips")} →</a>
         </div>
         <div class="card-grid trips-grid">${featured.map(tripCard).join("")}</div>
+        <div class="home-svcs" id="homeSvcs" hidden>
+          <div class="section-head" style="margin-top:34px">
+            <div>
+              <h2>${t("home_svc_t")}</h2>
+              <p class="muted">${t("home_svc_sub")}</p>
+            </div>
+            <a href="#/services" class="link-more">${t("nav_services")} →</a>
+          </div>
+          <div class="card-grid" id="homeSvcGrid"></div>
+        </div>
       </section>
 
       <section class="container section">
@@ -850,6 +858,25 @@
         </span>
       </span>
     </button>`;
+  /* short history of Arusha city + the Clock Tower (shown to everyone on Explore) */
+  function exploreHistoryBand() {
+    return `
+      <section class="container section hist-section">
+        <div class="hist-band">
+          <figure class="hist-photo">
+            <img src="media/clock-tower.jpg"
+                 alt="${t("hist_img_alt")}" loading="eager" decoding="async" onerror="this.parentElement.classList.add('noimg')" />
+            <figcaption>${t("hist_img_cap")}</figcaption>
+          </figure>
+          <div class="hist-text">
+            <span class="trips-kicker">${t("hist_kicker")}</span>
+            <h2>${t("hist_title")}</h2>
+            <p>${t("hist_p1")}</p>
+            <p>${t("hist_p2")}</p>
+          </div>
+        </div>
+      </section>`;
+  }
   function viewExplore() {
     const u = getCurrentUser();
     const atts = window.ATTRACTIONS || [];
@@ -860,6 +887,7 @@
         <section class="detail-hero grad-green">
           <div class="container"><h1>${t("exp_title")}</h1><p class="detail-meta">${t("exp_lead")}</p></div>
         </section>
+        ${exploreHistoryBand()}
         <section class="container section">
           <div class="exp-lock">
             <div class="exp-lock-photos" aria-hidden="true">
@@ -890,6 +918,7 @@
       <section class="detail-hero grad-green">
         <div class="container"><h1>${t("exp_title")}</h1><p class="detail-meta">${t("exp_lead_in")}</p></div>
       </section>
+      ${exploreHistoryBand()}
       <section class="container section">
         <div class="chips" id="attFilters">${chips}</div>
         <div id="attMap" class="att-map" role="application" aria-label="${t("exp_map_label")}"></div>
@@ -1327,6 +1356,32 @@
         loadMine();
       }).catch(() => { err.textContent = t("acct_err"); err.hidden = false; btn.disabled = false; });
     });
+  }
+
+  /* home: surface the latest partner services under the trips section */
+  function loadHomeServices() {
+    const wrap = document.getElementById("homeSvcs");
+    const grid = document.getElementById("homeSvcGrid");
+    if (!wrap || !grid) return;
+    const sb = window.CONFIG.supabase;
+    fetch(`${sb.url}/rest/v1/public_services?select=*&order=created_at.desc&limit=3`, {
+      headers: { "apikey": sb.anonKey, "Authorization": "Bearer " + sb.anonKey }
+    }).then(r => r.json()).then(rows => {
+      if (!Array.isArray(rows) || !rows.length) return;      // stays hidden until partners publish
+      grid.innerHTML = rows.map(s => `
+        <div class="card svc-card">
+          <div class="att-top"><span class="inv-icon">${svgIcon(P_ICON[s.category] || "globe", 22)}</span>
+            <span class="att-cat-pill">${t("pt_" + (s.category || "other"))}</span></div>
+          <h3>${esc(s.title)}</h3>
+          <p class="muted small">${esc(s.company_name)}</p>
+          <div class="svc-meta">
+            ${s.area_name ? `<span>${svgIcon("pin", 14)} ${esc(s.area_name)}</span>` : ""}
+            ${s.price_from ? `<span class="price">${t("from")} <strong>$${s.price_from}</strong></span>` : ""}
+          </div>
+          ${s.whatsapp ? `<a class="btn btn-small btn-gold" target="_blank" rel="noopener" href="https://wa.me/${esc(s.whatsapp)}?text=${encodeURIComponent(t("wa_msg") + s.title)}">💬 ${t("contact_whatsapp")}</a>` : ""}
+        </div>`).join("");
+      wrap.hidden = false;
+    }).catch(() => {});
   }
 
   /* ---- public services marketplace (approved partners only) ---- */
@@ -2448,7 +2503,7 @@
     if (route === "partner") bindPartnerPortal();
     if (route === "services") bindServices();
     if (route === "events") bindEvents();
-    if (route === "home") { buildScrollHero(); setupCineVideo(); } else stopScrollHero();
+    if (route === "home") { buildScrollHero(); setupCineVideo(); loadHomeServices(); } else stopScrollHero();
     setupReveal();
   }
 

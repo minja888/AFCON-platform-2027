@@ -1258,3 +1258,19 @@ button, .btn, .chip, a.btn, .nav-group-btn, .att-card, .zone-opt, .ptype-opt, .a
 }
 .ev-type-conference { color: #7a5308; }   /* was 3.4:1 on its tint — now ≥4.5:1 */
 .ev-tbc { color: #6b5200; }
+
+/* ---- Arusha history band with the Clock Tower (v42) ---- */
+.hist-section { padding-bottom: 6px; }
+.hist-band { display: grid; grid-template-columns: minmax(260px, 420px) 1fr; gap: 28px; align-items: center;
+  background: var(--white); border: 1px solid var(--line); border-radius: calc(var(--radius) + 6px);
+  padding: 26px; box-shadow: var(--shadow); }
+.hist-photo { margin: 0; position: relative; border-radius: var(--radius); overflow: hidden; aspect-ratio: 4 / 3; background: var(--sand); }
+.hist-photo img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.hist-photo figcaption { position: absolute; left: 0; right: 0; bottom: 0; padding: 22px 14px 10px; font-size: .78rem; color: #fff;
+  background: linear-gradient(transparent, rgba(14,17,10,.72)); }
+.hist-photo.noimg figcaption { position: static; background: none; color: var(--ink-soft); padding: 10px 4px; }
+.hist-text h2 { font-family: var(--display); font-weight: 700; text-transform: none; letter-spacing: -.01em;
+  font-size: clamp(1.3rem, 3.2vw, 1.8rem); color: var(--green-deep); margin: 6px 0 10px; }
+.hist-text p { line-height: 1.65; color: var(--ink); margin: 0 0 10px; max-width: 62ch; }
+@media (max-width: 760px) { .hist-band { grid-template-columns: 1fr; padding: 18px; } }
+.home-svcs .card-grid { grid-template-columns: repeat(auto-fill, minmax(255px, 1fr)); }

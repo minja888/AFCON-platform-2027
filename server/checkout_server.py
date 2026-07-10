@@ -26,14 +26,14 @@ MIN_PAY = 1                                            # tourists can pay any am
 
 # Server-side price list (USD) — the client can only pick a trip id.
 PRICES = {
-    "ngorongoro-day":          {"title": "Ngorongoro Crater Day Trip",      "price": 180},
-    "tarangire-day":           {"title": "Tarangire Day Safari",            "price": 150},
-    "arusha-np-day":           {"title": "Arusha National Park Day",        "price": 110},
-    "materuni-coffee":         {"title": "Materuni Waterfalls & Coffee",    "price": 65},
-    "maasai-boma":             {"title": "Maasai Boma Cultural Visit",      "price": 55},
-    "manyara-ngorongoro-2d":   {"title": "Manyara + Ngorongoro (2 days)",   "price": 460},
-    "tarangire-ngorongoro-2d": {"title": "Tarangire + Ngorongoro (2 days)", "price": 440},
-    "serengeti-ngorongoro-3d": {"title": "Serengeti + Ngorongoro (3 days)", "price": 720},
+    "ngorongoro-day":          {"title": "Ngorongoro Crater Day Trip",      "price": 320},
+    "tarangire-day":           {"title": "Tarangire Day Safari",            "price": 280},
+    "arusha-np-day":           {"title": "Arusha National Park Day",        "price": 220},
+    "materuni-coffee":         {"title": "Materuni Waterfalls & Coffee",    "price": 200},
+    "maasai-boma":             {"title": "Maasai Boma Cultural Visit",      "price": 200},
+    "manyara-ngorongoro-2d":   {"title": "Manyara + Ngorongoro (2 days)",   "price": 650},
+    "tarangire-ngorongoro-2d": {"title": "Tarangire + Ngorongoro (2 days)", "price": 620},
+    "serengeti-ngorongoro-3d": {"title": "Serengeti + Ngorongoro (3 days)", "price": 1150},
 }
 
 
