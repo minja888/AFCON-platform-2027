@@ -2451,6 +2451,7 @@
     localStorage.setItem("ka_lang", lang);
     applyStaticI18n();
     render();
+    window.dispatchEvent(new Event("ka-lang"));
   });
 
   /* ---------- nav dropdown groups (Discover / Plan a trip) ---------- */
@@ -2526,56 +2527,327 @@
     document.getElementById("mainNav").classList.remove("open");  // scrolling closes the menu
   }, { passive: true });
 
-  /* ---------- Help / FAQ assistant (closed-book, instant, EN+SW) ---------- */
-  const FAQ = [
-    { q: { en: "How do I book a safari or trip?", sw: "Nawezaje kuweka booking ya safari?" },
-      a: { en: "Browse Trips or Itineraries, then tap ‘Book on WhatsApp’ or ‘Enquire’. You’re connected directly to a licensed operator — Karibu Arusha never holds your money.", sw: "Angalia Safari au Ratiba, kisha bonyeza ‘Weka kwa WhatsApp’ au ‘Uliza’. Unaunganishwa moja kwa moja na mwendeshaji mwenye leseni — Karibu Arusha hatushiki pesa zako." } },
-    { q: { en: "How do I pay?", sw: "Nalipaje?" },
-      a: { en: "You pay the licensed operator directly (cash, mobile money or card) once you agree the details on WhatsApp. No payment is taken on this website.", sw: "Unalipa mwendeshaji mwenye leseni moja kwa moja (fedha, simu au kadi) mkishakubaliana WhatsApp. Hakuna malipo yanayochukuliwa kwenye tovuti hii." } },
-    { q: { en: "When and where is AFCON Pamoja 2027?", sw: "AFCON Pamoja 2027 ni lini na wapi?" },
-      a: { en: "19 June – 17 July 2027. Arusha matches are at the Samia Suluhu Hassan Stadium. See the Matches page for fixtures.", sw: "19 Juni – 17 Julai 2027. Mechi za Arusha ni Uwanja wa Samia Suluhu Hassan. Angalia ukurasa wa Mechi." } },
-    { q: { en: "What can I do between matches?", sw: "Nifanye nini kati ya mechi?" },
-      a: { en: "Arusha is the gateway to Serengeti, Ngorongoro, Kilimanjaro, Tarangire and more. Try a 1-day trip or a ready-made itinerary timed around the fixtures.", sw: "Arusha ni lango la Serengeti, Ngorongoro, Kilimanjaro, Tarangire na zaidi. Jaribu safari ya siku moja au ratiba iliyopangwa kuzunguka mechi." } },
-    { q: { en: "Do I need a visa for Tanzania?", sw: "Nahitaji visa kuja Tanzania?" },
-      a: { en: "Many nationalities get a visa on arrival or e-visa. Check the official immigration portal before you travel — we’ll add live details on the Events/Travel pages.", sw: "Mataifa mengi hupata visa ukifika au e-visa. Angalia tovuti rasmi ya uhamiaji kabla ya safari — tutaongeza taarifa kwenye kurasa za Matukio/Safari." } },
-    { q: { en: "How do I become a partner?", sw: "Nawezaje kuwa mshirika?" },
-      a: { en: "Go to ‘Become a Partner’, sign up, upload your licence (and TIN) as a PDF for verification. Once the admin approves you, add your services with photos and a map area.", sw: "Nenda ‘Kuwa Mshirika’, jisajili, pakia leseni (na TIN) kama PDF kwa uthibitisho. Msimamizi akiidhinisha, ongeza huduma zako na picha na eneo la ramani." } },
-    { q: { en: "I’m a partner — how do I add my services?", sw: "Mimi ni mshirika — naongezaje huduma?" },
-      a: { en: "Log in at ‘Become a Partner → Partner login’. Approved partners can publish services with up to 10 photos, a price, a map pin and a WhatsApp number — they appear on the Services page instantly.", sw: "Ingia kwenye ‘Kuwa Mshirika → Ingia’. Washirika walioidhinishwa wanaweza kuchapisha huduma na picha hadi 10, bei, pini ya ramani na namba ya WhatsApp — zinaonekana kwenye Huduma mara moja." } },
-    { q: { en: "I forgot my partner password", sw: "Nimesahau nenosiri la mshirika" },
-      a: { en: "On the partner login, tap ‘Forgot password’. A secure reset link is emailed (valid 24 hours). If you don’t receive it, the administrator can help.", sw: "Kwenye kuingia kwa mshirika, bonyeza ‘Nimesahau nenosiri’. Link salama ya kubadilisha inatumwa kwa barua pepe (masaa 24). Usipoipata, msimamizi atakusaidia." } },
-    { q: { en: "Are the operators trustworthy?", sw: "Waendeshaji wanaaminika?" },
-      a: { en: "Yes — every partner is document-verified by the Karibu Arusha team, with RAS Arusha oversight, and connections follow TATO-recognised practice.", sw: "Ndiyo — kila mshirika amekaguliwa nyaraka na timu ya Karibu Arusha, chini ya uangalizi wa RAS Arusha, na muunganiko unafuata utaratibu wa TATO." } },
-    { q: { en: "Can I invest in Arusha?", sw: "Naweza kuwekeza Arusha?" },
-      a: { en: "Yes — open the Explore Arusha page (Invest section) for tourism, agriculture, Tanzanite and MICE opportunities, then send an investment enquiry.", sw: "Ndiyo — fungua ukurasa wa Vinjari Arusha (sehemu ya Uwekezaji) kwa fursa za utalii, kilimo, Tanzanite na MICE, kisha tuma ombi la uwekezaji." } }
-  ];
-  function setupHelp() {
+  /* ===================================================================
+     WELCOME ARUSHA — chatbot (scripted "layered" bot now; Claude Haiku
+     auto-switches on once ANTHROPIC_API_KEY is set as a Supabase secret).
+     =================================================================== */
+  // A node = { m:{en,sw} hook, o:[{g:goto, l:{en,sw}}] }. goto: node id,
+  // "wa" (WhatsApp), "page:#/..." (navigate), or "root".
+  const WA = { g: "wa", l: { en: "💬 Talk to the Visitor Desk", sw: "💬 Ongea na Dawati la Wageni" } };
+  const HOME = { g: "root", l: { en: "↩︎ Back to start", sw: "↩︎ Rudi mwanzo" } };
+  const WELCOME_ARUSHA = {
+    root: {
+      m: { en: "Karibu sana! 🦒 You're at the gateway to the Northern Safari Circuit — a city humming with energy under the peak of Mount Meru. Wildlife, coffee, culture… Arusha has a rhythm you'll love.\n\nWhat vibe are you feeling today?",
+           sw: "Karibu sana! 🦒 Uko kwenye lango la Mzunguko wa Safari wa Kaskazini — jiji lenye msisimko chini ya Mlima Meru. Wanyamapori, kahawa, utamaduni… Arusha ina mdundo utakaoupenda.\n\nUnahisi vibe gani leo?" },
+      o: [
+        { g: "thrill", l: { en: "🏔️ Thrill seeker", sw: "🏔️ Mpenda msisimko" } },
+        { g: "culture", l: { en: "🪘 Culture lover", sw: "🪘 Mpenda utamaduni" } },
+        { g: "relax", l: { en: "🌿 Relaxation", sw: "🌿 Pumziko" } },
+        { g: "logistics", l: { en: "✈️ Getting there & around", sw: "✈️ Kufika na kuzunguka" } },
+        { g: "stay", l: { en: "🏨 Where to stay", sw: "🏨 Malazi" } },
+        { g: "eat", l: { en: "🍽️ Food & nightlife", sw: "🍽️ Chakula na burudani" } },
+        { g: "shop", l: { en: "🛍️ Shopping & Tanzanite", sw: "🛍️ Ununuzi na Tanzanite" } }
+      ]
+    },
+    thrill: {
+      m: { en: "Excellent choice! Arusha is base camp for the world-famous Serengeti migration and the Ngorongoro Crater, and for climbers there's the underrated Mount Meru — technically challenging with breathtaking sunrise views.",
+           sw: "Chaguo zuri! Arusha ni kambi ya uhamiaji maarufu wa Serengeti na Kreta ya Ngorongoro, na kwa wapandaji kuna Mlima Meru — wenye changamoto lakini machweo/mawio ya kupendeza." },
+      o: [
+        { g: "ngorongoro", l: { en: "🦁 Ngorongoro Crater — how long?", sw: "🦁 Kreta ya Ngorongoro — muda gani?" } },
+        { g: "serengeti", l: { en: "🦓 Serengeti safari — cost?", sw: "🦓 Safari ya Serengeti — bei?" } },
+        { g: "meru", l: { en: "⛰️ Is Meru harder than Kili?", sw: "⛰️ Meru ni ngumu kuliko Kili?" } }
+      ]
+    },
+    ngorongoro: {
+      m: { en: "The Ngorongoro Crater is a collapsed volcano — a natural amphitheatre packed with the Big Five, including the rare black rhino. It's about a 3-hour drive from Arusha; give it a full day so you're on the crater floor at dawn when the cats are active. A day trip starts around $320 pp (4x4, guide, park fees). Pair it with Lake Manyara or Tarangire for an overnight.",
+           sw: "Kreta ya Ngorongoro ni volkano iliyoporomoka — uwanja wa asili uliojaa Big Five, ikiwemo kifaru mweusi adimu. Ni takribani saa 3 kutoka Arusha; itenge siku nzima uwe ndani ya kreta alfajiri wanyama wakiwa hai. Safari ya siku huanzia $320 kwa mtu (4x4, kiongozi, ada). Iunganishe na Ziwa Manyara au Tarangire kwa kulala." },
+      o: [
+        { g: "page:#/itineraries", l: { en: "🗺️ See ready-made itineraries", sw: "🗺️ Ona ratiba tayari" } },
+        { g: "serengeti", l: { en: "🦓 And the Serengeti?", sw: "🦓 Na Serengeti?" } },
+        WA, HOME
+      ]
+    },
+    serengeti: {
+      m: { en: "The Serengeti is a 5–7 hour drive (or a short flight) from Arusha — endless plains and, in season, 2M+ wildebeest on the move. Most visitors do a 3-day Serengeti + Ngorongoro loop from about $1,150 pp (guide, 4x4, park fees, lodge/camp). The Great Migration river crossings peak roughly July–September in the north.",
+           sw: "Serengeti ni saa 5–7 kwa gari (au ndege fupi) kutoka Arusha — tambarare zisizo na mwisho na, kwa msimu, nyumbu 2M+ wakihama. Wengi hufanya mzunguko wa siku 3 Serengeti + Ngorongoro kuanzia $1,150 kwa mtu. Uvukaji wa mito wa Uhamiaji Mkuu hupamba moto Julai–Septemba kaskazini." },
+      o: [
+        { g: "page:#/trips", l: { en: "🎟️ Browse safari trips", sw: "🎟️ Angalia safari" } },
+        { g: "meru", l: { en: "⛰️ I'd rather climb", sw: "⛰️ Napendelea kupanda" } },
+        WA, HOME
+      ]
+    },
+    meru: {
+      m: { en: "Mount Meru (4,566 m) is Meru's quieter giant — usually 3–4 days via Momella. It's steeper and more technical near the summit than Kilimanjaro's gentler routes, so many climbers use it as the perfect acclimatisation warm-up before Kili. You go with an armed ranger (there's wildlife!) and the sunrise over Kilimanjaro from the summit is unforgettable.",
+           sw: "Mlima Meru (m 4,566) ni jitu tulivu — kawaida siku 3–4 kupitia Momella. Ni mwinuko na wenye ufundi zaidi karibu na kilele kuliko njia laini za Kilimanjaro, hivyo wengi huutumia kama maandalizi kabla ya Kili. Unaenda na askari (kuna wanyama!) na mawio juu ya Kilimanjaro ni ya kusahaulika." },
+      o: [
+        { g: "page:#/explore", l: { en: "🗺️ See it on the map", sw: "🗺️ Ione kwenye ramani" } },
+        WA, HOME
+      ]
+    },
+    culture: {
+      m: { en: "Arusha's soul is its people — Maasai, Chagga, Meru and more. You can roast your own Chagga coffee, dance at a Maasai boma, and browse East Africa's biggest art centre all in a day.",
+           sw: "Roho ya Arusha ni watu wake — Wamaasai, Wachaga, Wameru na wengine. Unaweza kukaanga kahawa yako ya Kichaga, kucheza kwenye boma la Kimaasai, na kutembelea kituo kikubwa cha sanaa Afrika Mashariki kwa siku moja." },
+      o: [
+        { g: "heritage", l: { en: "🎨 Cultural Heritage Centre", sw: "🎨 Kituo cha Urithi" } },
+        { g: "coffee", l: { en: "☕ Coffee & Materuni falls", sw: "☕ Kahawa na Materuni" } },
+        { g: "maasai", l: { en: "🪘 Maasai market & boma", sw: "🪘 Soko na boma la Kimaasai" } }
+      ]
+    },
+    heritage: {
+      m: { en: "The Cultural Heritage Centre is a landmark spiral gallery on the edge of town — Africa's largest, with Tingatinga paintings, Makonde carvings and a serious Tanzanite gallery. Entry is free; it's a great half-day and an easy taxi ride from the city centre.",
+           sw: "Kituo cha Urithi wa Utamaduni ni jumba la mviringo pembezoni mwa jiji — kikubwa zaidi Afrika, chenye michoro ya Tingatinga, vinyago vya Makonde na jumba kubwa la Tanzanite. Kuingia ni bure; ni nusu siku nzuri, teksi rahisi kutoka mjini." },
+      o: [ { g: "shop", l: { en: "🛍️ What should I buy?", sw: "🛍️ Ninunue nini?" } }, WA, HOME ]
+    },
+    coffee: {
+      m: { en: "On Kilimanjaro's foothills, Materuni village pairs an 80 m waterfall hike with a hands-on Chagga coffee experience — pick, roast and brew your own cup with a local family (about $200 pp for the day, income straight to the community). Closer to town, Napuru waterfalls make a lovely short escape.",
+           sw: "Miteremko ya Kilimanjaro, kijiji cha Materuni huunganisha maporomoko ya m 80 na uzoefu wa kahawa ya Kichaga — chuma, kaanga na tengeneza kikombe chako na familia (takriban $200 kwa mtu, kipato kwa jamii). Karibu na mji, maporomoko ya Napuru ni pumziko fupi zuri." },
+      o: [ { g: "page:#/trips", l: { en: "🎟️ Book a coffee tour", sw: "🎟️ Weka ziara ya kahawa" } }, WA, HOME ]
+    },
+    maasai: {
+      m: { en: "The Maasai Market is a burst of colour — beadwork, shukas and carvings. Bargaining is expected and friendly: greet first, offer around half, settle with a smile. For the real thing, a half-day at a Maasai boma (from ~$200) brings dances, warrior stories and homestead life, with income going straight to the community.",
+           sw: "Soko la Kimaasai ni mlipuko wa rangi — shanga, shuka na vinyago. Kupunguza bei ni kawaida na kwa furaha: salimia kwanza, toa nusu, malizia kwa tabasamu. Kwa uhalisia, nusu siku kwenye boma la Kimaasai (kuanzia ~$200) huleta ngoma, hadithi za morani na maisha ya boma, kipato kwa jamii." },
+      o: [ { g: "shop", l: { en: "💎 Tell me about Tanzanite", sw: "💎 Niambie kuhusu Tanzanite" } }, WA, HOME ]
+    },
+    relax: {
+      m: { en: "Prefer to slow down? Arusha does calm beautifully — coffee-plantation lodges, a crater lake for canoeing, and gardens with Mount Meru views. Perfect between matches.",
+           sw: "Unapenda kupumzika? Arusha ina utulivu mzuri — loji za mashamba ya kahawa, ziwa la kreta kwa makasia, na bustani zenye mandhari ya Mlima Meru. Inafaa kati ya mechi." },
+      o: [
+        { g: "luxstay", l: { en: "🛎️ Luxury lodges", sw: "🛎️ Loji za kifahari" } },
+        { g: "duluti", l: { en: "🛶 Lake Duluti & Chemka", sw: "🛶 Ziwa Duluti na Chemka" } },
+        { g: "coffee", l: { en: "☕ A gentle coffee day", sw: "☕ Siku ya kahawa" } }
+      ]
+    },
+    duluti: {
+      m: { en: "Lake Duluti is a forest-ringed volcanic crater lake minutes from town — a gentle canoe and a birdwatch (130+ species). For a warm-water treat, the turquoise Chemka (Kikuletwa) hot springs under fig trees are a dreamy rest-day swim about 1.5 h away.",
+           sw: "Ziwa Duluti ni ziwa la kreta lililozungukwa na msitu dakika chache kutoka mjini — makasia mepesi na kuangalia ndege (aina 130+). Kwa maji ya joto, chemchemi za Chemka (Kikuletwa) za bluu chini ya mikuyu ni kuogelea kwa ndoto saa 1.5 kutoka hapa." },
+      o: [ { g: "luxstay", l: { en: "🛎️ Where do I stay?", sw: "🛎️ Nikae wapi?" } }, WA, HOME ]
+    },
+    luxstay: {
+      m: { en: "Top-end Arusha is gorgeous: Arusha Coffee Lodge (plantation chalets), Gran Meliá and Lake Duluti Serena for lakeside calm, and the landmark Mount Meru Hotel for city convenience and big Mount Meru views. Great for honeymooners and post-safari unwinding.",
+           sw: "Arusha ya kiwango cha juu ni ya kuvutia: Arusha Coffee Lodge (vibanda shambani), Gran Meliá na Lake Duluti Serena kwa utulivu wa ziwani, na Mount Meru Hotel maarufu kwa urahisi wa mjini na mandhari ya Meru. Nzuri kwa fungate na kupumzika baada ya safari." },
+      o: [ { g: "stay", l: { en: "💰 Mid-range & budget too", sw: "💰 Bei ya kati na nafuu" } }, WA, HOME ]
+    },
+    stay: {
+      m: { en: "Arusha has a bed for every budget. Where shall I point you?",
+           sw: "Arusha ina malazi kwa kila bajeti. Nikuelekeze wapi?" },
+      o: [
+        { g: "luxstay", l: { en: "🛎️ Luxury lodges", sw: "🛎️ Loji za kifahari" } },
+        { g: "midstay", l: { en: "🏨 Mid-range value", sw: "🏨 Bei ya kati" } },
+        { g: "budstay", l: { en: "🎒 Budget & backpacker", sw: "🎒 Nafuu na wasafiri" } }
+      ]
+    },
+    midstay: {
+      m: { en: "Mid-range Arusha is excellent value — try Kibo Palace, Planet Lodge or the historic Arusha Hotel: comfortable rooms, pools, reliable Wi-Fi and easy access to the stadium and city. Expect roughly $60–150 a night depending on season.",
+           sw: "Bei ya kati Arusha ina thamani nzuri — jaribu Kibo Palace, Planet Lodge au Arusha Hotel ya kihistoria: vyumba vizuri, mabwawa, Wi-Fi, na urahisi wa kufika uwanjani na mjini. Takribani $60–150 kwa usiku kutegemea msimu." },
+      o: [ { g: "budstay", l: { en: "🎒 Cheaper options?", sw: "🎒 Chaguo nafuu?" } }, WA, HOME ]
+    },
+    budstay: {
+      m: { en: "Backpackers love Arusha's social hostels and guesthouses — dorms and privates, shared kitchens, safari-buddy vibes and helpful staff who arrange trips. Budget from roughly $12–35 a night. Stick to well-reviewed places and keep valuables in a locker.",
+           sw: "Wasafiri wa bajeti wanapenda hosteli na nyumba za wageni za Arusha — vyumba vya pamoja na binafsi, jiko la pamoja, na wafanyakazi wanaosaidia kupanga safari. Bajeti kuanzia takriban $12–35 kwa usiku. Chagua zenye reviews nzuri na hifadhi vitu vyako." },
+      o: [ WA, HOME ]
+    },
+    eat: {
+      m: { en: "Hungry? Arusha eats well — smoky nyama choma joints, ugali with the family, wood-fired 'Zanzibar pizza', plus Indian, Italian and Ethiopian tables, and coffee that's grown on the hills you can see.",
+           sw: "Una njaa? Arusha inakula vizuri — nyama choma, ugali, 'Zanzibar pizza', pamoja na vyakula vya Kihindi, Kiitaliano na Kiethiopia, na kahawa inayolimwa milimani unayoiona." },
+      o: [
+        { g: "localeat", l: { en: "🍖 Best local food", sw: "🍖 Chakula bora cha kienyeji" } },
+        { g: "fineeat", l: { en: "🍝 International dining", sw: "🍝 Migahawa ya kimataifa" } },
+        { g: "night", l: { en: "🌙 Nightlife", sw: "🌙 Burudani ya usiku" } }
+      ]
+    },
+    localeat: {
+      m: { en: "For the real taste of Arusha, go where locals go: grilled nyama choma with kachumbari, ugali and fresh mishkaki, and the famous 'Zanzibar pizza' from a street griddle at night. Ask for the halal and vegetarian options — most places have them. Karibu Arusha lists verified food partners on the Services page.",
+           sw: "Kwa ladha halisi ya Arusha, nenda wanapoenda wenyeji: nyama choma na kachumbari, ugali na mishkaki, na 'Zanzibar pizza' maarufu usiku. Uliza chaguo la halali na mboga — sehemu nyingi zinazo. Karibu Arusha ina washirika wa chakula waliothibitishwa kwenye Huduma." },
+      o: [ { g: "page:#/services", l: { en: "🍽️ See food partners", sw: "🍽️ Ona washirika wa chakula" } }, WA, HOME ]
+    },
+    fineeat: {
+      m: { en: "For a treat, Arusha has excellent Indian and Italian kitchens, cosy Ethiopian injera spots, and lodge restaurants with garden views. Many sit around the Njiro and city-centre areas — a taxi ride from most hotels. Reservations are wise on match nights.",
+           sw: "Kwa starehe, Arusha ina migahawa bora ya Kihindi na Kiitaliano, sehemu za injera za Kiethiopia, na migahawa ya loji yenye mandhari. Nyingi ziko maeneo ya Njiro na katikati ya jiji — teksi kutoka hoteli nyingi. Weka booking usiku wa mechi." },
+      o: [ { g: "night", l: { en: "🌙 And after dinner?", sw: "🌙 Na baada ya chakula?" } }, WA, HOME ]
+    },
+    night: {
+      m: { en: "Evenings range from quiet rooftop lounges with Mount Meru sunsets to lively bars and clubs around Njiro and the city centre. Go with a group, use a trusted taxi back to your hotel, and keep your phone discreet. On match days the fan-zone atmosphere is electric.",
+           sw: "Jioni zinaanzia lounge tulivu za paa zenye machweo ya Meru hadi baa na klabu za msisimko maeneo ya Njiro na mjini. Nenda na kikundi, tumia teksi ya kuaminika kurudi hoteli, na weka simu yako kwa siri. Siku za mechi, hali ya fan-zone ni ya kusisimua." },
+      o: [ WA, HOME ]
+    },
+    logistics: {
+      m: { en: "Getting to and around Arusha is easy once you know the basics — two airports, and everything from dala-dalas to private 4x4s.",
+           sw: "Kufika na kuzunguka Arusha ni rahisi ukijua misingi — viwanja viwili vya ndege, na kila kitu kutoka dala-dala hadi 4x4 binafsi." },
+      o: [
+        { g: "airport", l: { en: "✈️ Airports & transfers", sw: "✈️ Viwanja na usafiri" } },
+        { g: "around", l: { en: "🚕 Getting around town", sw: "🚕 Kuzunguka mjini" } },
+        { g: "safety", l: { en: "🛡️ Safety tips", sw: "🛡️ Ushauri wa usalama" } }
+      ]
+    },
+    airport: {
+      m: { en: "Most international visitors land at Kilimanjaro International Airport (JRO/KIA), about 46 km (~1 hour) from Arusha — arrange a transfer in advance (roughly $50 by car). The small Arusha Airport (ARK) in town handles light aircraft and bush flights to the parks. Have your hotel or a licensed operator meet you; agree the fare before you set off.",
+           sw: "Wageni wengi wa kimataifa hutua Kilimanjaro International Airport (JRO/KIA), takriban km 46 (~saa 1) kutoka Arusha — panga usafiri mapema (takriban $50 kwa gari). Kiwanja kidogo cha Arusha (ARK) mjini hushughulikia ndege ndogo za hifadhini. Mwambie hoteli au mwendeshaji akulaki; kubaliana nauli kabla ya kuondoka." },
+      o: [ { g: "around", l: { en: "🚕 Now, getting around", sw: "🚕 Sasa, kuzunguka" } }, WA, HOME ]
+    },
+    around: {
+      m: { en: "In town: dala-dalas (shared minibuses) are cheapest, bajaji (tuk-tuks) and taxis are handy for short hops, and for parks you'll want a 4x4 with a driver-guide. Agree taxi fares before you ride, or use a licensed transport partner. Karibu Arusha lists verified transport and car-rental partners on the Services page.",
+           sw: "Mjini: dala-dala ndizo nafuu, bajaji na teksi ni rahisi kwa umbali mfupi, na kwa hifadhi unahitaji 4x4 na dereva-kiongozi. Kubaliana nauli ya teksi kabla, au tumia mshirika wa usafiri mwenye leseni. Karibu Arusha ina washirika wa usafiri na magari ya kukodi kwenye Huduma." },
+      o: [ { g: "page:#/services", l: { en: "🚗 See transport partners", sw: "🚗 Ona washirika wa usafiri" } }, { g: "safety", l: { en: "🛡️ Safety tips", sw: "🛡️ Usalama" } }, HOME ]
+    },
+    safety: {
+      m: { en: "Arusha is welcoming, and a little street-sense goes a long way: use trusted, licensed operators (look for the Karibu Arusha verified badge), agree prices first, and avoid unofficial 'flycatcher' guides who approach you on the street. Keep valuables discreet, use hotel safes, and take a known taxi at night. For anything urgent, the Visitor Desk is on WhatsApp.",
+           sw: "Arusha inakaribisha, na busara kidogo inasaidia: tumia waendeshaji wenye leseni (angalia beji ya Karibu Arusha), kubaliana bei kwanza, na epuka 'flycatcher' wanaokukaribia mtaani. Weka vitu vyako kwa siri, tumia sefu za hoteli, na chukua teksi unayoijua usiku. Kwa dharura, Dawati la Wageni liko WhatsApp." },
+      o: [ WA, HOME ]
+    },
+    shop: {
+      m: { en: "Take Arusha home with you — vibrant Maasai beadwork, Tingatinga art, Makonde carvings, and the star of the show: Tanzanite, the blue-violet gem found in just one place on Earth, right here near Arusha.",
+           sw: "Beba Arusha nyumbani — shanga za Kimaasai, sanaa ya Tingatinga, vinyago vya Makonde, na nyota ya show: Tanzanite, kito cha bluu-zambarau kinachopatikana sehemu moja tu duniani, hapa Arusha." },
+      o: [
+        { g: "tanzanite", l: { en: "💎 Buying Tanzanite safely", sw: "💎 Kununua Tanzanite salama" } },
+        { g: "maasai", l: { en: "🪘 Markets & bargaining", sw: "🪘 Masoko na kupunguza bei" } },
+        { g: "malls", l: { en: "🛒 Malls for essentials", sw: "🛒 Maduka ya mahitaji" } }
+      ]
+    },
+    tanzanite: {
+      m: { en: "Tanzanite is a thousand times rarer than diamond and mined only at Mererani near Arusha. Buy from certified dealers (the Tanzanite Experience and Cultural Heritage Centre are reputable), always ask for a certificate of authenticity, and be cautious of 'too good to be true' street offers. It's the ultimate Arusha souvenir.",
+           sw: "Tanzanite ni adimu mara elfu kuliko almasi na huchimbwa Mererani karibu na Arusha pekee. Nunua kutoka wauzaji walioidhinishwa (Tanzanite Experience na Kituo cha Urithi ni wa kuaminika), daima uliza cheti cha uhalisia, na kuwa makini na bei za mtaani 'nzuri mno'. Ni zawadi bora ya Arusha." },
+      o: [ { g: "page:#/explore", l: { en: "🗺️ Find it on the map", sw: "🗺️ Itafute kwenye ramani" } }, WA, HOME ]
+    },
+    malls: {
+      m: { en: "For everyday needs — SIM cards, snacks, pharmacies, ATMs — Arusha has modern shopping at places like the city-centre supermarkets and malls. Handy for stocking up before a safari or grabbing a local SIM for data.",
+           sw: "Kwa mahitaji ya kila siku — laini za simu, vitafunio, maduka ya dawa, ATM — Arusha ina maduka ya kisasa mjini. Ni rahisi kujaza mahitaji kabla ya safari au kupata laini ya data." },
+      o: [ HOME, WA ]
+    }
+  };
+
+  function setupChatbot() {
     const fab = document.getElementById("helpFab");
     const panel = document.getElementById("helpPanel");
-    const body = document.getElementById("helpBody");
-    const wa = document.getElementById("helpWa");
-    if (!fab || !panel || !body) return;
-    if (wa) wa.href = waLink(window.CONFIG.visitorDeskWhatsApp, "help");
-    const render = (q) => {
-      const query = (q || "").trim().toLowerCase();
-      const list = FAQ.filter(f => !query || L(f.q).toLowerCase().includes(query) || L(f.a).toLowerCase().includes(query));
-      body.innerHTML = list.length ? list.map((f, i) => `
-        <details class="help-item"${!query && i === 0 ? " open" : ""}>
-          <summary>${esc(L(f.q))}</summary>
-          <p>${esc(L(f.a))}</p>
-        </details>`).join("") : `<p class="muted help-empty">${t("help_none")}</p>`;
-    };
-    const open = (on) => {
-      panel.hidden = !on; fab.setAttribute("aria-expanded", on);
-      fab.classList.toggle("hidden", on);
-      if (on) { render(""); const si = document.getElementById("helpSearch"); if (si) setTimeout(() => si.focus(), 50); }
-    };
-    fab.addEventListener("click", () => open(true));
-    document.getElementById("helpClose").addEventListener("click", () => open(false));
-    document.getElementById("helpSearch").addEventListener("input", (e) => render(e.target.value));
-    document.addEventListener("keydown", (e) => { if (e.key === "Escape" && !panel.hidden) open(false); });
+    const thread = document.getElementById("cbThread");
+    const quick = document.getElementById("cbQuick");
+    const form = document.getElementById("cbForm");
+    const input = document.getElementById("cbText");
+    if (!fab || !panel || !thread) return;
+
+    let started = false;
+    let aiMode = null;       // null=unknown, true=Claude on, false=scripted
+    const history = [];      // for the AI: {role, content}
+
+    const scrollDown = () => { thread.scrollTop = thread.scrollHeight; };
+    function bubble(role, html) {
+      const d = document.createElement("div");
+      d.className = "cb-msg cb-" + role;
+      d.innerHTML = html;
+      thread.appendChild(d); scrollDown(); return d;
+    }
+    function typing() {
+      const d = document.createElement("div");
+      d.className = "cb-msg cb-bot cb-typing";
+      d.innerHTML = "<span></span><span></span><span></span>";
+      thread.appendChild(d); scrollDown(); return d;
+    }
+    function renderOptions(opts) {
+      quick.innerHTML = "";
+      (opts || []).forEach(o => {
+        const b = document.createElement("button");
+        b.type = "button"; b.className = "cb-chip"; b.textContent = L(o.l);
+        b.addEventListener("click", () => handleOption(o));
+        quick.appendChild(b);
+      });
+    }
+    function goNode(id) {
+      const node = WELCOME_ARUSHA[id] || WELCOME_ARUSHA.root;
+      bubble("bot", esc(L(node.m)).replace(/\n/g, "<br>"));
+      renderOptions(node.o);
+    }
+    function handleOption(o) {
+      if (o.g === "wa") { window.open(waLink(window.CONFIG.visitorDeskWhatsApp, "help"), "_blank", "noopener"); return; }
+      if (o.g && o.g.indexOf("page:") === 0) { const h = o.g.slice(5); location.hash = h; closePanel(); return; }
+      bubble("user", esc(L(o.l)));           // echo the choice
+      goNode(o.g);
+    }
+
+    function scriptedReply(text) {
+      // keyword match into the graph, else offer the root menu
+      const q = text.toLowerCase();
+      const map = [
+        ["ngorongoro|crater|kreta", "ngorongoro"], ["serengeti|migration|nyumbu|wildebeest", "serengeti"],
+        ["meru|climb|panda|trek|hike|kili", "meru"], ["coffee|kahawa|materuni|napuru|waterfall|maporomoko", "coffee"],
+        ["maasai|boma|market|soko|bead|shanga", "maasai"], ["heritage|art|sanaa|tingatinga|carving|vinyago", "heritage"],
+        ["tanzanite|gem|kito|jewel", "tanzanite"], ["mall|sim|atm|pharmacy|shop|ununuzi|nunua", "malls"],
+        ["hotel|lodge|stay|malazi|sleep|accommodation|kaa", "stay"], ["luxury|kifahari|honeymoon", "luxstay"],
+        ["budget|hostel|nafuu|cheap|backpack", "budstay"], ["eat|food|chakula|restaurant|mgahawa|nyama|ugali", "eat"],
+        ["night|club|bar|burudani|lounge", "night"], ["airport|jro|kia|ark|flight|ndege|kiwanja", "airport"],
+        ["taxi|dala|bajaji|transport|usafiri|car|gari|rental|kukodi|around|zunguka", "around"],
+        ["safe|safety|usalama|scam|theft|wizi", "safety"], ["duluti|chemka|hot spring|relax|pumziko", "duluti"],
+        ["invest|uwekezaji|business", "shop"], ["thrill|adventure|msisimko", "thrill"],
+        ["culture|utamaduni", "culture"], ["book|weka|price|bei|cost|gharama", "serengeti"],
+        ["visa|immigration|uhamiaji", null], ["match|afcon|mechi|stadium|uwanja", null], ["weather|hali ya hewa|joto", null]
+      ];
+      const facts = {
+        visa: { en: "Many nationalities get a visa on arrival or e-visa for Tanzania — check the official immigration portal before you fly. The Visitor Desk can point you to the current rules.",
+                sw: "Mataifa mengi hupata visa ukifika au e-visa — angalia tovuti rasmi ya uhamiaji kabla ya safari. Dawati la Wageni linaweza kukuelekeza kanuni za sasa." },
+        match: { en: "Arusha's AFCON Pamoja 2027 matches are at the Samia Suluhu Hassan Stadium (19 June – 17 July 2027). See the Matches page for fixtures, and plan a safari in the gaps!",
+                 sw: "Mechi za AFCON Pamoja 2027 Arusha ni Uwanja wa Samia Suluhu Hassan (19 Juni – 17 Julai 2027). Angalia ukurasa wa Mechi, na panga safari kwenye mapengo!" },
+        weather: { en: "Arusha sits at altitude, so it's pleasantly mild year-round (roughly 13–28°C). June–October is dry and cool — perfect for safaris and matches. Bring a layer for chilly mornings.",
+                   sw: "Arusha iko juu, hivyo hali ni ya wastani mwaka mzima (takriban 13–28°C). Juni–Oktoba ni kavu na baridi kidogo — inafaa safari na mechi. Beba nguo ya joto kwa asubuhi." }
+      };
+      for (const [re, node] of map) {
+        if (new RegExp(re).test(q)) {
+          if (node) { goNode(node); return; }
+          const key = /visa|immigration|uhamiaji/.test(q) ? "visa" : /match|afcon|mechi|stadium|uwanja/.test(q) ? "match" : "weather";
+          bubble("bot", esc(L(facts[key])).replace(/\n/g, "<br>"));
+          renderOptions([{ g: "root", l: { en: "🧭 Explore more", sw: "🧭 Gundua zaidi" } }, WA]);
+          return;
+        }
+      }
+      bubble("bot", esc(t("cb_fallback")));
+      renderOptions(WELCOME_ARUSHA.root.o.slice(0, 4).concat([WA]));
+    }
+
+    function sendToAI(text) {
+      const sb = window.CONFIG.supabase;
+      history.push({ role: "user", content: text });
+      const dots = typing();
+      fetch(sb.url + "/functions/v1/welcome-arusha", {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ messages: history, lang })
+      }).then(r => r.json()).then(d => {
+        dots.remove();
+        if (d && d.configured && d.reply) {
+          aiMode = true;
+          history.push({ role: "assistant", content: d.reply });
+          bubble("bot", esc(d.reply).replace(/\n/g, "<br>"));
+          renderOptions([HOME, WA]);
+        } else {
+          aiMode = false;               // no key yet → scripted from here on
+          scriptedReply(text);
+        }
+      }).catch(() => { dots.remove(); aiMode = false; scriptedReply(text); });
+    }
+
+    function onUserText(text) {
+      text = (text || "").trim(); if (!text) return;
+      bubble("user", esc(text));
+      if (aiMode === false) return scriptedReply(text);
+      sendToAI(text);                    // try Claude; falls back to scripted if not configured
+    }
+
+    function greet() {
+      if (started) return; started = true;
+      thread.innerHTML = ""; history.length = 0;
+      goNode("root");
+    }
+    function openPanel() {
+      panel.hidden = false; fab.setAttribute("aria-expanded", "true"); fab.classList.add("hidden");
+      greet(); setTimeout(() => input && input.focus(), 60);
+    }
+    function closePanel() {
+      panel.hidden = true; fab.setAttribute("aria-expanded", "false"); fab.classList.remove("hidden");
+    }
+    fab.addEventListener("click", openPanel);
+    document.getElementById("helpClose").addEventListener("click", closePanel);
+    form.addEventListener("submit", (e) => { e.preventDefault(); const v = input.value; input.value = ""; onUserText(v); });
+    document.addEventListener("keydown", (e) => { if (e.key === "Escape" && !panel.hidden) closePanel(); });
+    // re-greet in the new language if the user switches language while open
+    window.addEventListener("ka-lang", () => { if (!panel.hidden) { started = false; greet(); } });
   }
-  setupHelp();
+  setupChatbot();
 
   /* ---------- boot ---------- */
   window.addEventListener("hashchange", render);

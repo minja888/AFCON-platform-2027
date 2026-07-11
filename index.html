@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Anton&family=Caveat:wght@600;700&family=Hanken+Grotesk:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="styles.css?v=43" />
+  <link rel="stylesheet" href="styles.css?v=44" />
 </head>
 <body>
   <!-- ===== HEADER ===== -->
@@ -112,28 +112,32 @@
     </div>
   </footer>
 
-  <!-- ===== HELP / FAQ ASSISTANT ===== -->
-  <button class="help-fab" id="helpFab" aria-label="Help" aria-expanded="false">
-    <span class="help-fab-ic" aria-hidden="true">💬</span>
-    <span class="help-fab-tx" data-i18n="help_fab">Need help?</span>
+  <!-- ===== WELCOME ARUSHA CHATBOT ===== -->
+  <button class="help-fab" id="helpFab" aria-label="Welcome Arusha chat" aria-expanded="false">
+    <span class="help-fab-ic" aria-hidden="true">🦒</span>
+    <span class="help-fab-tx" data-i18n="cb_fab">Ask Welcome Arusha</span>
   </button>
-  <div class="help-panel" id="helpPanel" role="dialog" aria-modal="false" aria-labelledby="helpTitle" hidden>
-    <div class="help-head">
-      <div>
-        <strong id="helpTitle" data-i18n="help_title">Karibu Assistant</strong>
-        <small data-i18n="help_sub">Quick answers about Arusha & AFCON 2027</small>
+  <div class="cb-panel" id="helpPanel" role="dialog" aria-modal="false" aria-labelledby="cbTitle" hidden>
+    <div class="cb-head">
+      <span class="cb-avatar" aria-hidden="true">🦒</span>
+      <div class="cb-head-tx">
+        <strong id="cbTitle" data-i18n="cb_title">Welcome Arusha</strong>
+        <small><span class="cb-dot"></span> <span data-i18n="cb_sub">Your Arusha guide · online</span></small>
       </div>
-      <button class="help-close" id="helpClose" aria-label="Close">✕</button>
+      <button class="cb-min" id="helpClose" aria-label="Close">✕</button>
     </div>
-    <input type="search" id="helpSearch" class="help-search" data-i18n-ph="help_search" />
-    <div class="help-body" id="helpBody"></div>
-    <a class="help-wa" id="helpWa" target="_blank" rel="noopener" data-i18n="help_wa">💬 Chat with the Visitor Desk</a>
+    <div class="cb-thread" id="cbThread" aria-live="polite"></div>
+    <div class="cb-quick" id="cbQuick"></div>
+    <form class="cb-input" id="cbForm">
+      <input id="cbText" type="text" autocomplete="off" data-i18n-ph="cb_ph" />
+      <button type="submit" class="cb-send" aria-label="Send">➤</button>
+    </form>
   </div>
 
   <!-- data + logic (order matters) -->
-  <script src="countries.js?v=43"></script>
-  <script src="data.js?v=43"></script>
-  <script src="i18n.js?v=43"></script>
-  <script src="app.js?v=43"></script>
+  <script src="countries.js?v=44"></script>
+  <script src="data.js?v=44"></script>
+  <script src="i18n.js?v=44"></script>
+  <script src="app.js?v=44"></script>
 </body>
 </html>
