@@ -33,6 +33,9 @@
     document.querySelectorAll("[data-i18n]").forEach((el) => {
       el.textContent = t(el.getAttribute("data-i18n"));
     });
+    document.querySelectorAll("[data-i18n-ph]").forEach((el) => {
+      el.setAttribute("placeholder", t(el.getAttribute("data-i18n-ph")));
+    });
     document.documentElement.lang = lang;
     document.documentElement.dir = RTL.includes(lang) ? "rtl" : "ltr";
     const footWa = document.getElementById("footerWhatsApp");
@@ -512,8 +515,8 @@
             <h2>${t("exp_home_title")}</h2>
             <p class="muted">${t("exp_home_sub")}</p>
             <div class="exp-teaser">
-              ${(window.ATTRACTIONS || []).slice(0, 6).map(a => `<span class="exp-teaser-chip">${svgIcon(CAT_ICON[a.cat] || "pin", 14)} ${esc(L(a.name))}</span>`).join("")}
-              <span class="exp-teaser-chip more">+${Math.max(0, (window.ATTRACTIONS || []).length - 6)}…</span>
+              ${(window.ATTRACTIONS || []).slice(0, 6).map(a => `<a class="exp-teaser-chip" href="#/place/${a.id}">${svgIcon(CAT_ICON[a.cat] || "pin", 14)} ${esc(L(a.name))}</a>`).join("")}
+              <a class="exp-teaser-chip more" href="#/explore">+${Math.max(0, (window.ATTRACTIONS || []).length - 6)}…</a>
             </div>
             <a href="#/explore" class="btn btn-primary">${getCurrentUser() ? t("exp_home_cta_in") : t("exp_home_cta")} →</a>
           </div>
@@ -638,7 +641,6 @@
         </ul>
         <div class="detail-cta">
           <button class="btn btn-primary btn-wa" data-book="${tr.id}">💬 ${t("book_whatsapp")}</button>
-          ${tr.priceFrom ? `<button class="btn btn-gold pay-btn" data-pay="${tr.id}">💳 ${t("pay_deposit")} ($${Math.max(10, Math.round(tr.priceFrom * 0.2))})</button>` : ""}
           <button class="btn btn-ghost fav-btn ${isFav(tr.id) ? "on" : ""}" data-fav="${tr.id}" aria-pressed="${isFav(tr.id)}">
             <span class="fav-heart">♥</span> <span class="fav-txt">${isFav(tr.id) ? t("fav_saved") : t("fav_save")}</span>
           </button>
@@ -654,10 +656,26 @@
     const cats = ["all", "safari", "culture", "stay", "food", "transport", "trek"];
     const chips = cats.map(c =>
       `<button class="chip ${c === "all" ? "active" : ""}" data-cat="${c}">${t("cat_" + c)}</button>`).join("");
+    // spotlight the highest-rated verified operator as "Certified tour operator of the tournament"
+    const top = window.OPERATORS.slice().sort((a, b) => (b.rating || 0) - (a.rating || 0))[0];
+    const topCard = top ? `
+      <div class="op-spotlight">
+        <div class="op-spot-badge">${svgIcon("shield", 18)} ${t("ops_top_badge")}</div>
+        <div class="op-spot-body">
+          <span class="op-icon">${top.icon}</span>
+          <div>
+            <h3>${esc(L(top.name))} ${top.verified ? `<span class="verified-pill">✔ ${t("verified")}</span>` : ""}</h3>
+            <p class="muted">${esc(L(top.desc))}</p>
+            <div class="op-spot-meta"><span class="card-rating">★ ${top.rating}</span> · <span>${t("cat_" + top.category)}</span> · <code>${esc(top.license)}</code></div>
+          </div>
+          <a class="btn btn-gold" href="#/operator/${top.id}">${t("view_trip")} →</a>
+        </div>
+      </div>` : "";
     return `
       <section class="container section">
         <h2 class="page-title">${t("sec_ops_title")}</h2>
         <p class="muted">${t("sec_ops_sub")}</p>
+        ${topCard}
         <input type="search" id="opSearch" class="search-box" placeholder="${t("search_ph")}" />
         <div class="chips" id="opFilters">${chips}</div>
         <div class="card-grid" id="opGrid">${window.OPERATORS.map(operatorCard).join("")}</div>
@@ -843,7 +861,7 @@
   }
   const ATT_CATS = ["all", "park", "mountain", "museum", "culture", "nature", "conference"];
   const attCard = (a) => `
-    <button class="card att-card" data-att="${a.id}" type="button" aria-label="${esc(L(a.name))} — ${t("exp_show_map")}">
+    <a class="card att-card" href="#/place/${a.id}" aria-label="${esc(L(a.name))}">
       <span class="att-media ${a.grad || "grad-green"}">
         ${a.img ? `<img class="att-img" src="${a.img}" alt="${esc(L(a.name))}" loading="lazy" decoding="async" onerror="this.remove()" />` : `<span class="att-media-fallback">${svgIcon(CAT_ICON[a.cat] || "pin", 40)}</span>`}
         <span class="att-scrim"></span>
@@ -854,10 +872,10 @@
         <span class="att-desc">${esc(L(a.desc))}</span>
         <span class="att-locate">
           <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 10c0 7-9 12-9 12s-9-5-9-12a9 9 0 0 1 18 0Z"/><circle cx="12" cy="10" r="3"/></svg>
-          ${t("exp_show_map")}
+          ${t("exp_learn")}
         </span>
       </span>
-    </button>`;
+    </a>`;
   /* short history of Arusha city + the Clock Tower (shown to everyone on Explore) */
   function exploreHistoryBand() {
     return `
@@ -882,7 +900,7 @@
     const atts = window.ATTRACTIONS || [];
     if (!u || !u.name) {
       // locked teaser — names only, everything else invites registration
-      const teaser = atts.slice(0, 8).map(a => `<span class="exp-teaser-chip">${svgIcon(CAT_ICON[a.cat] || "pin", 14)} ${esc(L(a.name))}</span>`).join("");
+      const teaser = atts.slice(0, 8).map(a => `<a class="exp-teaser-chip" href="#/place/${a.id}">${svgIcon(CAT_ICON[a.cat] || "pin", 14)} ${esc(L(a.name))}</a>`).join("");
       return `
         <section class="detail-hero grad-green">
           <div class="container"><h1>${t("exp_title")}</h1><p class="detail-meta">${t("exp_lead")}</p></div>
@@ -1023,6 +1041,46 @@
   }
 
   /* ===================================================================
+     VIEW: PLACE (single attraction — history + unique feature)
+     =================================================================== */
+  function viewPlace(id) {
+    const a = (window.ATTRACTIONS || []).find(x => x.id === id);
+    if (!a) return notFound();
+    const img = a.img || "";
+    const bg = img ? ` style="background-image: linear-gradient(rgba(20,24,14,.35), rgba(20,24,14,.72)), url('${img}');"` : "";
+    const nearby = (window.ATTRACTIONS || []).filter(x => x.id !== a.id && x.cat === a.cat).slice(0, 3);
+    return `
+      <section class="detail-hero ${a.grad || "grad-green"} tz-band place-hero"${bg}>
+        <div class="container">
+          <a href="#/explore" class="back-link">← ${t("nav_explore")}</a>
+          <span class="att-cat-pill place-pill">${svgIcon(CAT_ICON[a.cat] || "pin", 14)} ${t("att_" + a.cat)}</span>
+          <h1>${esc(L(a.name))}</h1>
+        </div>
+      </section>
+      <section class="container detail-body">
+        <p class="detail-summary">${esc(L(a.desc))}</p>
+        <div id="placeMap" class="att-map" style="height:320px"></div>
+        <div class="place-actions">
+          <a class="btn btn-primary" target="_blank" rel="noopener" href="https://www.google.com/maps/search/?api=1&query=${a.lat},${a.lng}">${t("place_directions")} →</a>
+          <a class="btn btn-ghost" href="#/itineraries">${t("place_plan")}</a>
+        </div>
+        ${nearby.length ? `<h3 class="mt">${t("place_nearby")}</h3>
+          <div class="card-grid att-grid">${nearby.map(attCard).join("")}</div>` : ""}
+      </section>`;
+  }
+  function bindPlace(id) {
+    const a = (window.ATTRACTIONS || []).find(x => x.id === id);
+    if (!a) return;
+    loadLeaflet().then(() => {
+      const el2 = document.getElementById("placeMap"); if (!el2) return;
+      const m = window.L.map("placeMap", { scrollWheelZoom: false }).setView([a.lat, a.lng], 10);
+      window.L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", { maxZoom: 18, attribution: "&copy; OpenStreetMap" }).addTo(m);
+      const col = CAT_COLOR[a.cat] || "#4d5f28";
+      window.L.marker([a.lat, a.lng], { icon: window.L.divIcon({ className: "att-pin", html: `<svg viewBox="0 0 32 40" width="32" height="40"><path d="M16 1C8.3 1 2 7.1 2 14.7 2 25 16 39 16 39s14-14 14-24.3C30 7.1 23.7 1 16 1Z" fill="${col}" stroke="#fff" stroke-width="2"/><circle cx="16" cy="14.5" r="5.2" fill="#fff"/></svg>`, iconSize: [32, 40], iconAnchor: [16, 39] }) }).addTo(m);
+    }).catch(() => {});
+  }
+
+  /* ===================================================================
      VIEW: EVENTS (marathons · sports · conferences · culture — per RAS)
      =================================================================== */
   const EV_TYPES = ["all", "afcon", "sports", "conference", "culture"];
@@ -1139,6 +1197,8 @@
             <input id="pEmail" type="email" inputmode="email" autocomplete="email" /></div>
           <div class="field"><label for="pPhone">${t("ps_phone")} <span class="req">*</span></label>
             <input id="pPhone" type="tel" inputmode="tel" placeholder="+255 7xx xxx xxx" /></div>
+          <div class="field"><label for="pWebsite">${t("ps_website")}</label>
+            <input id="pWebsite" type="url" inputmode="url" placeholder="https://..." /></div>
           <div class="field"><label for="pTin">${t("ps_tin")}</label>
             <input id="pTin" type="text" placeholder="e.g. 123-456-789" /></div>
           <div class="field"><label for="pTinDoc">${t("ps_tin_doc")}</label>
@@ -1222,8 +1282,14 @@
           p_ptype: ptype, p_entity: entity, p_company: val("pCompany"), p_contact: val("pContact"),
           p_email: val("pEmail"), p_phone: val("pPhone"), p_tin: val("pTin") || null,
           p_license: val("pLicense") || null, p_pass: val("pPass"), p_doc_path: path,
-          p_lang: lang, p_tin_doc_path: tinPath
+          p_lang: lang, p_tin_doc_path: tinPath, p_website: val("pWebsite") || null
         });
+        // email the administrator about the new application (best-effort)
+        fetch(sb.url + "/functions/v1/partner-notify", {
+          method: "POST", headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ kind: "application", company: val("pCompany"), ptype, contact: val("pContact"),
+            email: val("pEmail"), phone: val("pPhone"), website: val("pWebsite"), tin: val("pTin"), license: val("pLicense") })
+        }).catch(() => {});
         form.hidden = true; document.getElementById("pOk").hidden = false;
       } catch (ex) {
         err.textContent = /email_exists/.test(String(ex)) ? t("ps_err_exists") : t("ps_err_fail");
@@ -1249,6 +1315,7 @@
             <div id="plErr" class="form-error" role="alert" hidden></div>
             <button type="submit" class="btn btn-primary btn-block">${t("login_btn")}</button>
             <p class="muted small auth-alt">${t("pp_no_acct")} <a href="#/partner-signup" class="link-inline">${t("pw_cta")}</a></p>
+            <p class="muted small auth-alt"><button type="button" class="link-inline linklike" id="pForgot">${t("pp_forgot")}</button></p>
           </form>
         </section>`;
     }
@@ -1282,6 +1349,9 @@
             <input type="hidden" id="sLat" /><input type="hidden" id="sLng" /></div>
           <div class="field"><label for="sWa">${t("pp_s_wa")} <span class="req">*</span></label>
             <input id="sWa" type="tel" placeholder="255XXXXXXXXX" /></div>
+          <div class="field"><label for="sPhotos">${t("pp_s_photos")}</label>
+            <input id="sPhotos" type="file" accept="image/jpeg,image/png,image/webp" multiple />
+            <p class="field-note">${t("pp_s_photos_note")}</p></div>
           <div id="sErr" class="form-error" role="alert" hidden></div>
           <div class="form-ok" id="sOk" hidden>✓ ${t("pp_s_ok")}</div>
           <button type="submit" class="btn btn-primary">${t("pp_s_add")}</button>
@@ -1294,6 +1364,20 @@
   function bindPartnerPortal() {
     const loginF = document.getElementById("pLoginForm");
     if (loginF) {
+      const fg = document.getElementById("pForgot");
+      if (fg) fg.addEventListener("click", () => {
+        const em = (document.getElementById("plEmail").value || "").trim() || prompt(t("pp_forgot_ph"));
+        if (!em) return;
+        sbRpc("partner_request_reset", { p_email: em }).then(d => {
+          if (d && d.token) {
+            fetch(window.CONFIG.supabase.url + "/functions/v1/partner-notify", {
+              method: "POST", headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ kind: "reset", email: em, token: d.token })
+            }).catch(() => {});
+          }
+          alert(t("pp_forgot_sent"));
+        }).catch(() => alert(t("pp_forgot_sent")));
+      });
       loginF.addEventListener("submit", (e) => {
         e.preventDefault();
         const em = document.getElementById("plEmail").value.trim();
@@ -1344,18 +1428,55 @@
       const err = document.getElementById("sErr"); err.hidden = true;
       const v = (id) => (document.getElementById(id).value || "").trim();
       if (!v("sTitle") || !v("sArea") || !v("sWa")) { err.textContent = t("pp_s_err"); err.hidden = false; return; }
-      const btn = f.querySelector("button[type=submit]"); btn.disabled = true;
-      sbRpcNamed("partner_add_service", {
+      const files = Array.from((document.getElementById("sPhotos") || { files: [] }).files || []).slice(0, 10);
+      if (files.find(fl => fl.size > 5 * 1024 * 1024)) { err.textContent = t("pp_s_photo_big"); err.hidden = false; return; }
+      const btn = f.querySelector("button[type=submit]"); btn.disabled = true; btn.textContent = "\u23F3 " + t("ps_uploading");
+      const sb3 = window.CONFIG.supabase;
+      Promise.all(files.map(fl => {
+        const ext = (fl.name.split(".").pop() || "jpg").toLowerCase().replace(/[^a-z0-9]/g, "") || "jpg";
+        const ph = crypto.randomUUID() + "." + ext;
+        return fetch(sb3.url + "/storage/v1/object/partner-photos/" + ph, {
+          method: "POST", headers: { "apikey": sb3.anonKey, "Authorization": "Bearer " + sb3.anonKey, "Content-Type": fl.type },
+          body: fl
+        }).then(r => { if (!r.ok) throw new Error("photo"); return ph; });
+      })).then(paths => sbRpcNamed("partner_add_service", {
         p_email: p.email, p_pass: p.pass, p_title: v("sTitle"), p_category: v("sCat"),
         p_description: v("sDesc") || null, p_price: v("sPrice") ? +v("sPrice") : null, p_currency: "USD",
         p_area: v("sArea"), p_lat: v("sLat") ? +v("sLat") : null, p_lng: v("sLng") ? +v("sLng") : null,
-        p_whatsapp: v("sWa").replace(/\D/g, "")
-      }).then(() => {
-        document.getElementById("sOk").hidden = false; btn.disabled = false;
-        ["sTitle", "sDesc", "sPrice", "sArea", "sWa"].forEach(id => document.getElementById(id).value = "");
+        p_whatsapp: v("sWa").replace(/\D/g, ""), p_photos: paths
+      })).then(() => {
+        document.getElementById("sOk").hidden = false; btn.disabled = false; btn.textContent = t("pp_s_add");
+        ["sTitle", "sDesc", "sPrice", "sArea", "sWa", "sPhotos"].forEach(id => { const el2 = document.getElementById(id); if (el2) el2.value = ""; });
         loadMine();
-      }).catch(() => { err.textContent = t("acct_err"); err.hidden = false; btn.disabled = false; });
+      }).catch(() => { err.textContent = t("acct_err"); err.hidden = false; btn.disabled = false; btn.textContent = t("pp_s_add"); });
     });
+  }
+
+  /* photo-first partner-service card (like a trip card) - used on Services + Home */
+  const svcPhotoUrl = (ph) => window.CONFIG.supabase.url + "/storage/v1/object/public/partner-photos/" + ph;
+  function svcPhotoCard(s) {
+    const ph = Array.isArray(s.photos) ? s.photos : [];
+    const first = ph.length ? svcPhotoUrl(ph[0]) : null;
+    return `
+      <div class="card svc-card svc-photo-card">
+        <div class="att-media grad-green">
+          ${first ? `<img class="att-img" src="${first}" alt="${esc(s.title)}" loading="lazy" decoding="async" onerror="this.remove()" />`
+                  : `<span class="att-media-fallback">${svgIcon(P_ICON[s.category] || "globe", 40)}</span>`}
+          <span class="att-scrim"></span>
+          <span class="att-cat-pill">${svgIcon(P_ICON[s.category] || "globe", 14)} ${t("pt_" + (s.category || "other"))}</span>
+          ${ph.length > 1 ? `<span class="svc-photo-n">${svgIcon("camera", 13)} ${ph.length}</span>` : ""}
+        </div>
+        <div class="att-body">
+          <span class="att-name">${esc(s.title)}</span>
+          <span class="muted small">${esc(s.company_name)}${s.website ? ` &middot; <a class="link-inline" target="_blank" rel="noopener" href="${esc(s.website)}">${t("sv_site")}</a>` : ""}</span>
+          ${s.description ? `<span class="att-desc">${esc(s.description)}</span>` : ""}
+          <div class="svc-meta">
+            ${s.area_name ? `<span>${svgIcon("pin", 14)} ${esc(s.area_name)}</span>` : ""}
+            ${s.price_from ? `<span class="price">${t("from")} <strong>$${s.price_from}</strong></span>` : ""}
+          </div>
+          ${s.whatsapp ? `<a class="btn btn-small btn-gold" target="_blank" rel="noopener" href="https://wa.me/${esc(s.whatsapp)}?text=${encodeURIComponent(t("wa_msg") + s.title)}">\uD83D\uDCAC ${t("contact_whatsapp")}</a>` : ""}
+        </div>
+      </div>`;
   }
 
   /* home: surface the latest partner services under the trips section */
@@ -1368,20 +1489,38 @@
       headers: { "apikey": sb.anonKey, "Authorization": "Bearer " + sb.anonKey }
     }).then(r => r.json()).then(rows => {
       if (!Array.isArray(rows) || !rows.length) return;      // stays hidden until partners publish
-      grid.innerHTML = rows.map(s => `
-        <div class="card svc-card">
-          <div class="att-top"><span class="inv-icon">${svgIcon(P_ICON[s.category] || "globe", 22)}</span>
-            <span class="att-cat-pill">${t("pt_" + (s.category || "other"))}</span></div>
-          <h3>${esc(s.title)}</h3>
-          <p class="muted small">${esc(s.company_name)}</p>
-          <div class="svc-meta">
-            ${s.area_name ? `<span>${svgIcon("pin", 14)} ${esc(s.area_name)}</span>` : ""}
-            ${s.price_from ? `<span class="price">${t("from")} <strong>$${s.price_from}</strong></span>` : ""}
-          </div>
-          ${s.whatsapp ? `<a class="btn btn-small btn-gold" target="_blank" rel="noopener" href="https://wa.me/${esc(s.whatsapp)}?text=${encodeURIComponent(t("wa_msg") + s.title)}">💬 ${t("contact_whatsapp")}</a>` : ""}
-        </div>`).join("");
+      grid.innerHTML = rows.map(svcPhotoCard).join("");
       wrap.hidden = false;
     }).catch(() => {});
+  }
+
+  /* ---- partner password reset (from the emailed 24h link) ---- */
+  function viewPartnerReset(token) {
+    return `
+      <section class="container auth-wrap">
+        <form id="pResetForm" class="auth-card" novalidate>
+          <div class="auth-icon">🔑</div>
+          <h1 class="auth-title">${t("pr_title")}</h1>
+          <p class="auth-sub">${t("pr_sub")}</p>
+          <div class="field"><label for="prPass">${t("ps_pass")}</label>
+            <div class="pass-wrap"><input id="prPass" type="password" autocomplete="new-password" /><button type="button" class="pass-toggle" aria-label="${t("pass_show")}">👁</button></div></div>
+          <div id="prErr" class="form-error" role="alert" hidden></div>
+          <button type="submit" class="btn btn-primary btn-block" data-token="${esc(token || "")}">${t("pr_btn")}</button>
+        </form>
+      </section>`;
+  }
+  function bindPartnerReset() {
+    const f = document.getElementById("pResetForm");
+    if (!f) return;
+    f.addEventListener("submit", (e) => {
+      e.preventDefault();
+      const btn = f.querySelector("button[type=submit]");
+      const err = document.getElementById("prErr"); err.hidden = true;
+      btn.disabled = true;
+      sbRpc("partner_reset_password", { p_token: btn.dataset.token, p_pass: document.getElementById("prPass").value })
+        .then(() => { clearPartner(); alert(t("pr_ok")); location.hash = "#/partner"; })
+        .catch(() => { err.textContent = t("pr_err"); err.hidden = false; btn.disabled = false; });
+    });
   }
 
   /* ---- public services marketplace (approved partners only) ---- */
@@ -1402,19 +1541,7 @@
   function bindServices() {
     const grid = document.getElementById("svcGrid");
     if (!grid) return;
-    const card = (s) => `
-      <div class="card svc-card">
-        <div class="att-top"><span class="inv-icon">${svgIcon(P_ICON[s.category] || "globe", 22)}</span>
-          <span class="att-cat-pill">${t("pt_" + (s.category || "other"))}</span></div>
-        <h3>${esc(s.title)}</h3>
-        <p class="muted small">${esc(s.company_name)} · ${t("pt_" + s.ptype)}</p>
-        ${s.description ? `<p class="muted">${esc(s.description)}</p>` : ""}
-        <div class="svc-meta">
-          ${s.area_name ? `<span>${svgIcon("pin", 14)} ${esc(s.area_name)}</span>` : ""}
-          ${s.price_from ? `<span class="price">${t("from")} <strong>$${s.price_from}</strong></span>` : ""}
-        </div>
-        ${s.whatsapp ? `<a class="btn btn-small btn-gold" target="_blank" rel="noopener" href="https://wa.me/${esc(s.whatsapp)}?text=${encodeURIComponent(t("wa_msg") + s.title)}">💬 ${t("contact_whatsapp")}</a>` : ""}
-      </div>`;
+    const card = svcPhotoCard;
     const show = (cat) => {
       const rows = (svcCache || []).filter(s => cat === "all" || s.category === cat);
       grid.innerHTML = rows.length ? rows.map(card).join("") : `<p class="muted">${t("sv_none")}</p>`;
@@ -1924,23 +2051,38 @@
       });
   }
 
+  /* admin: download all partner rows as a CSV (opens in Excel) */
+  function exportPartnersCSV(rows) {
+    const head = ["Applied", "Company", "Contact", "Type", "Entity", "Email", "Phone", "Website", "TIN", "Licence", "Status", "Services"];
+    const data = (rows || []).map(p => [p.created_at, p.company_name, p.contact_name, p.ptype, p.entity, p.email, p.phone, p.website || "", p.tin || "", p.license_no || "", p.status, p.services]);
+    const csv = [head].concat(data).map(row => row.map(f => `"${String(f == null ? "" : f).replace(/"/g, '""')}"`).join(",")).join("\r\n");
+    const blob = new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url; a.download = "karibu-arusha-partners.csv"; a.click();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  }
+
   /* ---- admin: partner verification queue (approve / reject / view PDF) ---- */
   function loadAdminPartners(pass) {
     const host = document.getElementById("adminPartners");
     if (!host) return;
     sbRpc("admin_partners", { p_pass: pass }).then(d => {
       const rows = (d && d.partners) || [];
+      const exportBar = `<div class="admin-head"><h4 style="margin:0">${rows.length} ${t("admin_sum_partners")}</h4><button class="btn btn-small" id="partExport">⬇ ${t("admin_export")}</button></div>`;
       if (!rows.length) { host.innerHTML = `<p class="muted admin-empty">${t("admin_none")}</p>`; return; }
       const stPill = (s) => `<span class="pstat pstat-${s}">${s === "approved" ? "✓" : s === "rejected" ? "✕" : "⏳"} ${t("pp_st_" + s)}</span>`;
-      host.innerHTML = `<div class="table-wrap"><table class="reg-table">
-        <thead><tr><th>${t("ps_company")}</th><th>${t("ps_type")}</th><th>${t("admin_contact")}</th><th>TIN / ${t("ps_license")}</th><th>PDF</th><th>${t("admin_status")}</th><th></th></tr></thead>
+      host.innerHTML = exportBar + `<div class="table-wrap"><table class="reg-table">
+        <thead><tr><th>${t("ps_company")}</th><th>${t("ps_type")}</th><th>${t("admin_contact")}</th><th>${t("ps_website")}</th><th>TIN / ${t("ps_license")}</th><th>${t("admin_docs")}</th><th>${t("admin_status")}</th><th></th></tr></thead>
         <tbody>${rows.map(p => `<tr>
           <td><strong>${esc(p.company_name)}</strong><br><small class="muted">${esc(p.contact_name)} · ${p.entity}</small></td>
           <td>${t("pt_" + p.ptype)}</td>
           <td>${esc(p.email)}<br><small>${esc(p.phone)}</small></td>
+          <td>${p.website ? `<a class="link-inline" target="_blank" rel="noopener" href="${esc(p.website)}">${t("sv_site")}</a>` : "—"}</td>
           <td>${esc(p.tin || "—")}<br><small>${esc(p.license_no || "—")}</small></td>
-          <td>${p.doc_path ? `<button class="btn btn-small" data-doc="${esc(p.doc_path)}">📄 ${t("admin_view_doc")}</button>` : "—"}
-              ${p.tin_doc_path ? `<br><button class="btn btn-small" data-doc="${esc(p.tin_doc_path)}" style="margin-top:4px">🧾 TIN</button>` : ""}</td>
+          <td class="admin-doc-cell">
+              ${p.doc_path ? `<button class="btn btn-small" data-doc="${esc(p.doc_path)}">📄 ${t("admin_view_doc")}</button><button class="btn btn-small" data-doc="${esc(p.doc_path)}" data-dl="1" title="${t("admin_download")}">⬇</button>` : "—"}
+              ${p.tin_doc_path ? `<div style="margin-top:4px"><button class="btn btn-small" data-doc="${esc(p.tin_doc_path)}">🧾 TIN</button><button class="btn btn-small" data-doc="${esc(p.tin_doc_path)}" data-dl="1" title="${t("admin_download")}">⬇</button></div>` : ""}</td>
           <td>${stPill(p.status)}<br><small class="muted">${p.services} ${t("admin_services_n")}</small></td>
           <td class="admin-actions-cell">
             ${p.status !== "approved" ? `<button class="btn btn-small btn-gold" data-pstat="approved" data-pid="${p.id}">✓ ${t("admin_approve")}</button>` : ""}
@@ -1955,10 +2097,12 @@
         b.disabled = true;
         fetch(window.CONFIG.supabase.url + "/functions/v1/partner-doc", {
           method: "POST", headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ pass, path: b.dataset.doc })
+          body: JSON.stringify({ pass, path: b.dataset.doc, download: b.dataset.dl === "1" })
         }).then(r => r.json()).then(d2 => { b.disabled = false; if (d2 && d2.url) window.open(d2.url, "_blank", "noopener"); else alert(t("acct_err")); })
           .catch(() => { b.disabled = false; alert(t("acct_err")); });
       }));
+      const exp = document.getElementById("partExport");
+      if (exp) exp.addEventListener("click", () => exportPartnersCSV(rows));
     }).catch(() => { host.innerHTML = `<p class="form-error">${t("acct_err")}</p>`; });
   }
 
@@ -2161,43 +2305,6 @@
     });
   }
 
-  /* ---------- Stripe deposit (TEST MODE): server-side edge function owns the key ---------- */
-  function startPayment(tripId, btn, amount) {
-    const sb = window.CONFIG && window.CONFIG.supabase;
-    if (!sb || !sb.url) return;
-    const u = getCurrentUser() || {};
-    const orig = btn.textContent;
-    btn.disabled = true; btn.textContent = "⏳ …";
-    fetch(sb.url + "/functions/v1/create-payment", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        tripId, name: u.name || "", email: u.email || "",
-        amount: +amount || undefined
-      })
-    })
-      .then(r => r.json())
-      .then(d => {
-        if (d && d.url) { addActivity({ type: "payment", message: t("act_pay_started") + " — " + tripId }); location.href = d.url; }
-        else throw new Error(d && d.error);
-      })
-      .catch(() => { btn.disabled = false; btn.textContent = orig; alert(t("pay_err")); });
-  }
-  function viewPayOk() {
-    return `
-      <section class="container auth-wrap">
-        <div class="auth-card">
-          <div class="auth-icon">🎉</div>
-          <h1 class="auth-title">${t("pay_ok_title")}</h1>
-          <p class="auth-sub">${t("pay_ok_sub")}</p>
-          <div class="hero-cta-row" style="justify-content:center">
-            <a class="btn btn-primary" href="#/account">${t("reg_go_account")}</a>
-            <a class="btn btn-ghost" href="#/trips">${t("reg_explore")}</a>
-          </div>
-        </div>
-      </section>`;
-  }
-
   function notFound() {
     return `<section class="container section center">
       <h2>🦒</h2><p class="muted">404</p>
@@ -2232,202 +2339,6 @@
     backdrop.hidden = false;
     document.body.style.overflow = "hidden";
   }
-  /* ---------- premium payment gateway (Card via Stripe · Mobile Money) ---------- */
-  const MIN_PAY = 1;                       // tourists can pay any amount from $1
-  const TZS_RATE = 2650;                   // display-only USD→TZS approximation
-  const fmtTZS = (usd) => "≈ TZS " + Math.round(usd * TZS_RATE).toLocaleString("en-US");
-  const MM_PROVIDERS = [
-    { id: "mpesa", name: "M-Pesa", ussd: "*150*00#" },
-    { id: "tigo", name: "Mixx by Yas", ussd: "*150*01#" },
-    { id: "airtel", name: "Airtel Money", ussd: "*150*60#" },
-    { id: "halopesa", name: "HaloPesa", ussd: "*150*88#" },
-  ];
-  function openPayModal(tripId) {
-    const tr = window.TRIPS.find(x => x.id === tripId);
-    if (!tr || !tr.priceFrom) return;
-    const price = tr.priceFrom;
-    const deposit = Math.max(MIN_PAY, Math.round(price * 0.2));
-    const half = Math.max(MIN_PAY, Math.round(price / 2));
-    let amount = deposit;                   // current chosen amount (USD)
-    const lock = `<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="4" y="10" width="16" height="10" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg>`;
-
-    modalBody.innerHTML = `
-      <div class="pg">
-        <div class="pg-head">
-          <span class="pg-lock">${lock} ${t("pay_secure_badge")}</span>
-          <h3 id="modalTitle" class="pg-title">${t("pay_deposit")}</h3>
-          <p class="pg-trip"><span>${tr.icon}</span> ${esc(L(tr.name))} · <span class="muted">${t("from")} $${price}</span></p>
-        </div>
-
-        <div class="pg-hero">
-          <span class="pg-hero-label">${t("pay_now")}</span>
-          <div class="pg-hero-amt">$<span id="pgAmt">${amount}</span></div>
-          <span class="pg-hero-tzs" id="pgTzs">${fmtTZS(amount)}</span>
-        </div>
-
-        <div class="amt-chips" role="group" aria-label="${t("pay_amount_label")}">
-          <button type="button" class="amt-chip active" data-amt="${deposit}"><b>${t("pay_amt_dep")}</b><small>$${deposit}</small></button>
-          <button type="button" class="amt-chip" data-amt="${half}"><b>50%</b><small>$${half}</small></button>
-          <button type="button" class="amt-chip" data-amt="${price}"><b>${t("pay_amt_full")}</b><small>$${price}</small></button>
-        </div>
-        <div class="pg-field">
-          <label for="payCustom">${t("pay_amt_custom")}</label>
-          <div class="pg-input"><span>$</span><input id="payCustom" type="number" inputmode="numeric" min="${MIN_PAY}" max="${price}" step="1" placeholder="${t("pay_amt_ph")} (${MIN_PAY}–${price})" /></div>
-        </div>
-
-        <div class="pg-tabs" role="tablist" aria-label="${t("pay_method")}">
-          <button type="button" class="pg-tab active" data-tab="card" role="tab" aria-selected="true">💳 ${t("pay_m_card")}</button>
-          <button type="button" class="pg-tab" data-tab="mm" role="tab" aria-selected="false">📱 ${t("pay_m_mobile")}</button>
-        </div>
-
-        <div class="pg-pane" data-pane="card">
-          <p class="pg-brands"><b>VISA</b><b>Mastercard</b><b> Pay</b><b>G Pay</b></p>
-          <p class="pg-help">${t("pay_card_help")}</p>
-        </div>
-        <div class="pg-pane" data-pane="mm" hidden>
-          <p class="pg-help">${t("pay_mm_help")}</p>
-          <div class="mm-provs" role="group" aria-label="${t("pay_mm_provider")}">
-            ${MM_PROVIDERS.map((p, i) => `<button type="button" class="mm-prov${i === 0 ? " active" : ""}" data-prov="${p.id}">${p.name}</button>`).join("")}
-          </div>
-          <div class="pg-field">
-            <label for="mmPhone">${t("pay_mm_phone")}</label>
-            <div class="pg-input"><span>📱</span><input id="mmPhone" type="tel" inputmode="tel" autocomplete="tel" placeholder="0712 345 678" /></div>
-          </div>
-        </div>
-
-        <div class="pg-err" id="pgErr" role="alert" hidden></div>
-        <button class="btn btn-gold btn-block pg-cta" id="pgCta" data-trip="${tr.id}">${t("pay_pay")} $${amount} →</button>
-        <p class="pg-foot">${lock} ${t("pay_secure")}</p>
-      </div>`;
-
-    const $ = (s) => modalBody.querySelector(s);
-    const amtEl = $("#pgAmt"), tzsEl = $("#pgTzs"), cta = $("#pgCta"), custom = $("#payCustom"), err = $("#pgErr");
-    let method = "card", provider = MM_PROVIDERS[0].id;
-    const ctaLabel = () => method === "card" ? `${t("pay_pay")} $${amount} →` : `${t("pay_mm_cta")} $${amount} →`;
-    const setAmount = (v, fromInput) => {
-      amount = v; amtEl.textContent = v; tzsEl.textContent = fmtTZS(v);
-      cta.textContent = ctaLabel();
-      if (!fromInput) { const c = $(".amt-chip[data-amt='" + v + "']"); }
-    };
-
-    $(".amt-chips").addEventListener("click", (e) => {
-      const c = e.target.closest(".amt-chip"); if (!c) return;
-      $(".amt-chips").querySelectorAll(".amt-chip").forEach(x => x.classList.remove("active"));
-      c.classList.add("active"); if (custom) custom.value = "";
-      setAmount(+c.dataset.amt);
-    });
-    custom.addEventListener("input", () => {
-      if (custom.value === "") return;
-      let v = Math.min(price, Math.max(MIN_PAY, Math.round(+custom.value)));
-      if (!Number.isFinite(v)) return;
-      $(".amt-chips").querySelectorAll(".amt-chip").forEach(x => x.classList.remove("active"));
-      setAmount(v, true);
-    });
-    $(".pg-tabs").addEventListener("click", (e) => {
-      const tabBtn = e.target.closest(".pg-tab"); if (!tabBtn) return;
-      method = tabBtn.dataset.tab;
-      $(".pg-tabs").querySelectorAll(".pg-tab").forEach(x => { const on = x === tabBtn; x.classList.toggle("active", on); x.setAttribute("aria-selected", on); });
-      modalBody.querySelectorAll(".pg-pane").forEach(p => { p.hidden = p.dataset.pane !== method; });
-      cta.textContent = ctaLabel();
-    });
-    $(".mm-provs").addEventListener("click", (e) => {
-      const p = e.target.closest(".mm-prov"); if (!p) return;
-      $(".mm-provs").querySelectorAll(".mm-prov").forEach(x => x.classList.remove("active"));
-      p.classList.add("active"); provider = p.dataset.prov;
-    });
-    cta.addEventListener("click", () => {
-      err.hidden = true;
-      if (method === "card") return startPayment(tr.id, cta, amount);
-      const phone = ($("#mmPhone").value || "").trim();
-      if (phone.replace(/\D/g, "").length < 9) { err.textContent = t("pay_mm_err_phone"); err.hidden = false; return; }
-      startMobilePayment(tr, amount, provider, phone, cta);
-    });
-    setAmount(deposit);
-    backdrop.hidden = false;
-    document.body.style.overflow = "hidden";
-  }
-  /* mobile money: try a real ClickPesa USSD-PUSH; fall back to manual "send to Lipa" */
-  function startMobilePayment(tr, amount, provider, phone, btn) {
-    const prov = MM_PROVIDERS.find(p => p.id === provider) || MM_PROVIDERS[0];
-    const u = getCurrentUser() || {};
-    const sb = window.CONFIG && window.CONFIG.supabase;
-    btn.disabled = true; btn.textContent = "⏳ …";
-    fetch(sb.url + "/functions/v1/mm-push", {
-      method: "POST", headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ tripId: tr.id, amount, phone, name: u.name || "", email: u.email || "" })
-    })
-      .then(r => r.json())
-      .then(d => {
-        if (d && d.ok && d.orderReference) {           // real push sent — wait for PIN
-          addActivity({ type: "payment", message: `${t("act_mm_request")} $${amount} · ${prov.name}` });
-          mmWaitForPin(tr, amount, prov, phone, d.orderReference);
-        } else {                                        // not configured → manual instructions
-          mmManualDone(tr, amount, prov, phone);
-        }
-      })
-      .catch(() => mmManualDone(tr, amount, prov, phone));  // network issue → manual fallback
-  }
-  function mmWaitForPin(tr, amount, prov, phone, ref) {
-    const pg = modalBody.querySelector(".pg"); if (!pg) return;
-    pg.innerHTML = `
-      <div class="pg-done">
-        <div class="pg-spin" aria-hidden="true"></div>
-        <h3>${t("pay_mm_wait_title")}</h3>
-        <p class="pg-help">${t("pay_mm_wait_sub").replace("{prov}", `<strong>${prov.name}</strong>`).replace("{amt}", `<strong>$${amount}</strong> (${fmtTZS(amount)})`)}</p>
-        <p class="pg-foot">${t("pay_mm_wait_ref")} <code>${esc(ref)}</code></p>
-      </div>`;
-    const sb = window.CONFIG.supabase;
-    let tries = 0; const MAX = 20;                     // ~80s
-    const done = (paid) => {
-      const pg2 = modalBody.querySelector(".pg"); if (!pg2) return;
-      if (paid) {
-        addActivity({ type: "payment", message: `${t("act_mm_paid")} $${amount} · ${prov.name}` });
-        pg2.innerHTML = `<div class="pg-done"><div class="pg-done-mark">✅</div><h3>${t("pay_mm_success_title")}</h3><p class="pg-help">${t("pay_mm_success_sub")}</p><button class="btn btn-primary btn-block" onclick="document.getElementById('modalClose').click()">${t("pay_mm_done")}</button></div>`;
-      } else {
-        pg2.innerHTML = `<div class="pg-done"><div class="pg-done-mark">⌛</div><h3>${t("pay_mm_fail_title")}</h3><p class="pg-help">${t("pay_mm_fail_sub")}</p><button class="btn btn-gold btn-block pay-btn" data-pay="${tr.id}">${t("pay_mm_retry")}</button></div>`;
-      }
-    };
-    const poll = () => {
-      tries++;
-      fetch(sb.url + "/functions/v1/mm-status?ref=" + encodeURIComponent(ref))
-        .then(r => r.json())
-        .then(d => {
-          const s = (d && d.status || "").toUpperCase();
-          if (s === "SUCCESS" || s === "SETTLED" || s === "PAID" || s === "COMPLETED") return done(true);
-          if (s === "FAILED" || s === "CANCELLED" || s === "REJECTED") return done(false);
-          if (tries >= MAX) return done(false);
-          setTimeout(poll, 4000);
-        })
-        .catch(() => { if (tries >= MAX) return done(false); setTimeout(poll, 4000); });
-    };
-    setTimeout(poll, 4000);
-  }
-  function mmManualDone(tr, amount, prov, phone) {
-    const u = getCurrentUser() || {};
-    sbInsert("submissions", {
-      type: "mobile_payment", name: u.name || null, email: u.email || null, phone,
-      country: u.country || null, rating: null, lang,
-      message: `Mobile-money request: $${amount} for "${L(tr.name)}" via ${prov.name} (${phone}).`
-    }).then(() => addActivity({ type: "payment", message: `${t("act_mm_request")} $${amount} · ${prov.name}` })).catch(() => {});
-    const mm = (window.CONFIG && window.CONFIG.mobileMoney) || {};
-    const sendBox = mm.till
-      ? `<div class="pg-sendbox"><span class="pg-sendbox-l">${t("pay_mm_sendto")}</span><strong class="pg-sendbox-till">${esc(mm.till)}</strong>${mm.name ? `<span class="muted small">${esc(mm.name)}</span>` : ""}</div>`
-      : "";
-    const pg = modalBody.querySelector(".pg"); if (!pg) return;
-    pg.innerHTML = `
-      <div class="pg-done">
-        <div class="pg-done-mark">📲</div>
-        <h3>${t("pay_mm_ok_title")}</h3>
-        <p class="pg-help">${t("pay_mm_ok_sub")}</p>
-        ${sendBox}
-        <div class="pg-steps">
-          <div class="pg-step"><span>1</span> ${t("pay_mm_step1").replace("{prov}", `<strong>${prov.name}</strong>`).replace("{ussd}", `<code>${prov.ussd}</code>`)}</div>
-          <div class="pg-step"><span>2</span> ${t("pay_mm_step2").replace("{amt}", `<strong>$${amount}</strong> (${fmtTZS(amount)})`)}</div>
-          <div class="pg-step"><span>3</span> ${t("pay_mm_step3")}</div>
-        </div>
-        <button class="btn btn-primary btn-block" onclick="document.getElementById('modalClose').click()">${t("pay_mm_done")}</button>
-      </div>`;
-  }
   function closeBooking() {
     backdrop.hidden = true;
     document.body.style.overflow = "";
@@ -2456,24 +2367,25 @@
       case "account": html = viewAccount(); break;
       case "admin": html = viewAdmin(); break;
       case "explore": html = viewExplore(); break;
+      case "place": html = viewPlace(param); break;
       case "itineraries": html = viewItineraries(); break;
       case "partners": html = viewPartners(); break;
       case "partner-signup": html = viewPartnerSignup(); break;
       case "partner": html = viewPartnerPortal(); break;
+      case "partner-reset": html = viewPartnerReset(param); break;
       case "services": html = viewServices(); break;
       case "events": html = viewEvents(); break;
       case "about": html = viewAbout(); break;
-      case "pay-ok": html = viewPayOk(); break;
       default: html = notFound();
     }
     app.innerHTML = html;
     window.scrollTo(0, 0);
-    afterRender(route);
+    afterRender(route, param);
     setActiveNav(route);
     updateAuthNav();
   }
 
-  function afterRender(route) {
+  function afterRender(route, param) {
     // trip filter chips
     bindTripFilters();
 
@@ -2498,9 +2410,11 @@
     if (route === "account") bindAccount();
     if (route === "admin") bindAdminPage();
     if (route === "explore") bindExplore();
+    if (route === "place") bindPlace(param);
     if (route === "itineraries") bindItineraries();
     if (route === "partner-signup") bindPartnerSignup();
     if (route === "partner") bindPartnerPortal();
+    if (route === "partner-reset") bindPartnerReset();
     if (route === "services") bindServices();
     if (route === "events") bindEvents();
     if (route === "home") { buildScrollHero(); setupCineVideo(); loadHomeServices(); } else stopScrollHero();
@@ -2598,14 +2512,6 @@
     if (txt) txt.textContent = added ? t("fav_saved") : t("fav_save");
   });
 
-  /* ---------- pay a trip deposit via Stripe Checkout ---------- */
-  document.addEventListener("click", (e) => {
-    const b = e.target.closest(".pay-btn");
-    if (b) { openPayModal(b.dataset.pay); return; }        // step 1: pretty summary modal
-    const go = e.target.closest(".pay-confirm");
-    if (go) startPayment(go.dataset.payGo, go);            // step 2: off to Stripe Checkout
-  });
-
   /* ---------- tourist logout ---------- */
   const navLogoutBtn = document.getElementById("navLogout");
   if (navLogoutBtn) navLogoutBtn.addEventListener("click", () => {
@@ -2619,6 +2525,57 @@
     document.getElementById("siteHeader").classList.toggle("scrolled", window.scrollY > 10);
     document.getElementById("mainNav").classList.remove("open");  // scrolling closes the menu
   }, { passive: true });
+
+  /* ---------- Help / FAQ assistant (closed-book, instant, EN+SW) ---------- */
+  const FAQ = [
+    { q: { en: "How do I book a safari or trip?", sw: "Nawezaje kuweka booking ya safari?" },
+      a: { en: "Browse Trips or Itineraries, then tap ‘Book on WhatsApp’ or ‘Enquire’. You’re connected directly to a licensed operator — Karibu Arusha never holds your money.", sw: "Angalia Safari au Ratiba, kisha bonyeza ‘Weka kwa WhatsApp’ au ‘Uliza’. Unaunganishwa moja kwa moja na mwendeshaji mwenye leseni — Karibu Arusha hatushiki pesa zako." } },
+    { q: { en: "How do I pay?", sw: "Nalipaje?" },
+      a: { en: "You pay the licensed operator directly (cash, mobile money or card) once you agree the details on WhatsApp. No payment is taken on this website.", sw: "Unalipa mwendeshaji mwenye leseni moja kwa moja (fedha, simu au kadi) mkishakubaliana WhatsApp. Hakuna malipo yanayochukuliwa kwenye tovuti hii." } },
+    { q: { en: "When and where is AFCON Pamoja 2027?", sw: "AFCON Pamoja 2027 ni lini na wapi?" },
+      a: { en: "19 June – 17 July 2027. Arusha matches are at the Samia Suluhu Hassan Stadium. See the Matches page for fixtures.", sw: "19 Juni – 17 Julai 2027. Mechi za Arusha ni Uwanja wa Samia Suluhu Hassan. Angalia ukurasa wa Mechi." } },
+    { q: { en: "What can I do between matches?", sw: "Nifanye nini kati ya mechi?" },
+      a: { en: "Arusha is the gateway to Serengeti, Ngorongoro, Kilimanjaro, Tarangire and more. Try a 1-day trip or a ready-made itinerary timed around the fixtures.", sw: "Arusha ni lango la Serengeti, Ngorongoro, Kilimanjaro, Tarangire na zaidi. Jaribu safari ya siku moja au ratiba iliyopangwa kuzunguka mechi." } },
+    { q: { en: "Do I need a visa for Tanzania?", sw: "Nahitaji visa kuja Tanzania?" },
+      a: { en: "Many nationalities get a visa on arrival or e-visa. Check the official immigration portal before you travel — we’ll add live details on the Events/Travel pages.", sw: "Mataifa mengi hupata visa ukifika au e-visa. Angalia tovuti rasmi ya uhamiaji kabla ya safari — tutaongeza taarifa kwenye kurasa za Matukio/Safari." } },
+    { q: { en: "How do I become a partner?", sw: "Nawezaje kuwa mshirika?" },
+      a: { en: "Go to ‘Become a Partner’, sign up, upload your licence (and TIN) as a PDF for verification. Once the admin approves you, add your services with photos and a map area.", sw: "Nenda ‘Kuwa Mshirika’, jisajili, pakia leseni (na TIN) kama PDF kwa uthibitisho. Msimamizi akiidhinisha, ongeza huduma zako na picha na eneo la ramani." } },
+    { q: { en: "I’m a partner — how do I add my services?", sw: "Mimi ni mshirika — naongezaje huduma?" },
+      a: { en: "Log in at ‘Become a Partner → Partner login’. Approved partners can publish services with up to 10 photos, a price, a map pin and a WhatsApp number — they appear on the Services page instantly.", sw: "Ingia kwenye ‘Kuwa Mshirika → Ingia’. Washirika walioidhinishwa wanaweza kuchapisha huduma na picha hadi 10, bei, pini ya ramani na namba ya WhatsApp — zinaonekana kwenye Huduma mara moja." } },
+    { q: { en: "I forgot my partner password", sw: "Nimesahau nenosiri la mshirika" },
+      a: { en: "On the partner login, tap ‘Forgot password’. A secure reset link is emailed (valid 24 hours). If you don’t receive it, the administrator can help.", sw: "Kwenye kuingia kwa mshirika, bonyeza ‘Nimesahau nenosiri’. Link salama ya kubadilisha inatumwa kwa barua pepe (masaa 24). Usipoipata, msimamizi atakusaidia." } },
+    { q: { en: "Are the operators trustworthy?", sw: "Waendeshaji wanaaminika?" },
+      a: { en: "Yes — every partner is document-verified by the Karibu Arusha team, with RAS Arusha oversight, and connections follow TATO-recognised practice.", sw: "Ndiyo — kila mshirika amekaguliwa nyaraka na timu ya Karibu Arusha, chini ya uangalizi wa RAS Arusha, na muunganiko unafuata utaratibu wa TATO." } },
+    { q: { en: "Can I invest in Arusha?", sw: "Naweza kuwekeza Arusha?" },
+      a: { en: "Yes — open the Explore Arusha page (Invest section) for tourism, agriculture, Tanzanite and MICE opportunities, then send an investment enquiry.", sw: "Ndiyo — fungua ukurasa wa Vinjari Arusha (sehemu ya Uwekezaji) kwa fursa za utalii, kilimo, Tanzanite na MICE, kisha tuma ombi la uwekezaji." } }
+  ];
+  function setupHelp() {
+    const fab = document.getElementById("helpFab");
+    const panel = document.getElementById("helpPanel");
+    const body = document.getElementById("helpBody");
+    const wa = document.getElementById("helpWa");
+    if (!fab || !panel || !body) return;
+    if (wa) wa.href = waLink(window.CONFIG.visitorDeskWhatsApp, "help");
+    const render = (q) => {
+      const query = (q || "").trim().toLowerCase();
+      const list = FAQ.filter(f => !query || L(f.q).toLowerCase().includes(query) || L(f.a).toLowerCase().includes(query));
+      body.innerHTML = list.length ? list.map((f, i) => `
+        <details class="help-item"${!query && i === 0 ? " open" : ""}>
+          <summary>${esc(L(f.q))}</summary>
+          <p>${esc(L(f.a))}</p>
+        </details>`).join("") : `<p class="muted help-empty">${t("help_none")}</p>`;
+    };
+    const open = (on) => {
+      panel.hidden = !on; fab.setAttribute("aria-expanded", on);
+      fab.classList.toggle("hidden", on);
+      if (on) { render(""); const si = document.getElementById("helpSearch"); if (si) setTimeout(() => si.focus(), 50); }
+    };
+    fab.addEventListener("click", () => open(true));
+    document.getElementById("helpClose").addEventListener("click", () => open(false));
+    document.getElementById("helpSearch").addEventListener("input", (e) => render(e.target.value));
+    document.addEventListener("keydown", (e) => { if (e.key === "Escape" && !panel.hidden) open(false); });
+  }
+  setupHelp();
 
   /* ---------- boot ---------- */
   window.addEventListener("hashchange", render);

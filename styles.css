@@ -1274,3 +1274,87 @@ button, .btn, .chip, a.btn, .nav-group-btn, .att-card, .zone-opt, .ptype-opt, .a
 .hist-text p { line-height: 1.65; color: var(--ink); margin: 0 0 10px; max-width: 62ch; }
 @media (max-width: 760px) { .hist-band { grid-template-columns: 1fr; padding: 18px; } }
 .home-svcs .card-grid { grid-template-columns: repeat(auto-fill, minmax(255px, 1fr)); }
+
+/* =====================================================================
+   v43 — delightful auth, help/FAQ widget, service photo cards, operator
+   spotlight, place hero, admin docs
+   ===================================================================== */
+
+/* ---- delightful auth cards (login / partner login) ---- */
+.auth-wrap { min-height: 68vh; display: grid; place-items: center; padding: 40px 16px; }
+.auth-card { position: relative; overflow: hidden; width: min(440px, 94vw); background: var(--white);
+  border: 1px solid var(--line); border-radius: calc(var(--radius) + 8px); padding: 38px 30px 30px;
+  box-shadow: var(--shadow-lg); text-align: center; animation: authIn .5s cubic-bezier(.2,.8,.3,1); }
+@keyframes authIn { from { opacity: 0; transform: translateY(14px) scale(.98); } to { opacity: 1; transform: none; } }
+.auth-card::before { content: ""; position: absolute; left: 0; right: 0; top: 0; height: 6px;
+  background: linear-gradient(90deg, #1eb53a 0 30%, #fcd116 30% 36%, #000 36% 64%, #fcd116 64% 70%, #00a3dd 70%); }
+.auth-card::after { content: ""; position: absolute; width: 240px; height: 240px; right: -90px; top: -90px; border-radius: 50%;
+  background: radial-gradient(closest-side, rgba(224,165,46,.18), transparent 70%); pointer-events: none; }
+.auth-icon { width: 66px; height: 66px; margin: 0 auto 14px; display: grid; place-items: center; font-size: 1.9rem;
+  border-radius: 20px; background: linear-gradient(135deg, var(--green), var(--green-deep)); color: #fff;
+  box-shadow: 0 10px 24px rgba(60,48,24,.28); animation: authPop .6s .1s both cubic-bezier(.2,1.4,.4,1); }
+@keyframes authPop { from { transform: scale(0); } to { transform: scale(1); } }
+.auth-title { font-family: var(--display); font-weight: 800; letter-spacing: -.01em; font-size: 1.5rem; color: var(--green-deep); margin-bottom: 4px; }
+.auth-sub { color: var(--ink-soft); margin-bottom: 18px; }
+.auth-card .field { text-align: left; }
+.auth-alt .linklike { background: none; border: none; padding: 0; font: inherit; color: var(--gold-deep); cursor: pointer; text-decoration: underline; }
+
+/* ---- help / FAQ floating assistant ---- */
+.help-fab { position: fixed; right: 18px; bottom: 18px; z-index: 900; display: inline-flex; align-items: center; gap: 8px;
+  padding: 12px 18px; min-height: 48px; border: none; border-radius: 999px; cursor: pointer; color: #fff; font: inherit; font-weight: 700;
+  background: linear-gradient(135deg, var(--green), var(--green-deep)); box-shadow: 0 10px 26px rgba(60,48,24,.34);
+  transition: transform .15s ease, box-shadow .15s ease; }
+.help-fab:hover { transform: translateY(-2px); box-shadow: var(--shadow-lg); }
+.help-fab.hidden { display: none; }
+.help-fab-ic { font-size: 1.2rem; }
+.help-panel { position: fixed; right: 18px; bottom: 18px; z-index: 901; width: min(380px, 94vw); max-height: min(74vh, 620px);
+  display: flex; flex-direction: column; background: var(--white); border: 1px solid var(--line); border-radius: 18px;
+  box-shadow: var(--shadow-lg); overflow: hidden; animation: authIn .28s cubic-bezier(.2,.8,.3,1); }
+.help-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 16px 18px; color: #fff;
+  background: linear-gradient(135deg, var(--green), var(--green-deep)); }
+.help-head strong { display: block; font-size: 1.05rem; }
+.help-head small { color: rgba(255,255,255,.8); font-size: .8rem; }
+.help-close { background: rgba(255,255,255,.16); border: none; color: #fff; width: 32px; height: 32px; border-radius: 50%; cursor: pointer; font-size: .9rem; }
+.help-search { margin: 12px 14px 6px; padding: 11px 14px; min-height: 44px; border: 1px solid var(--line); border-radius: 12px; font: inherit; background: var(--sand); }
+.help-search:focus { outline: 2px solid var(--gold); }
+.help-body { overflow-y: auto; padding: 6px 14px 10px; }
+.help-item { border-bottom: 1px solid var(--line); }
+.help-item summary { cursor: pointer; padding: 12px 4px; font-weight: 600; color: var(--green-deep); list-style: none; min-height: 44px; display: flex; align-items: center; }
+.help-item summary::-webkit-details-marker { display: none; }
+.help-item summary::before { content: "＋"; margin-right: 8px; color: var(--gold-deep); font-weight: 700; }
+.help-item[open] summary::before { content: "－"; }
+.help-item p { margin: 0 4px 12px; color: var(--ink); line-height: 1.6; font-size: .92rem; }
+.help-empty { padding: 16px 4px; }
+.help-wa { display: block; text-align: center; padding: 14px; font-weight: 700; color: var(--green-deep); background: #fcd116; text-decoration: none; }
+.help-wa:hover { filter: brightness(1.05); }
+
+/* ---- photo-first service cards ---- */
+.svc-photo-card { padding: 0; overflow: hidden; }
+.svc-photo-card .att-media { aspect-ratio: 16 / 10; }
+.svc-photo-n { position: absolute; bottom: 10px; right: 10px; display: inline-flex; align-items: center; gap: 4px;
+  font-size: .74rem; font-weight: 700; color: #fff; background: rgba(20,24,14,.6); padding: 4px 9px; border-radius: 999px; }
+.svc-photo-card .att-body { padding: 15px 16px 16px; }
+.svc-photo-card .att-body .btn { align-self: flex-start; margin-top: 6px; }
+
+/* ---- operator spotlight (top-ranked certified) ---- */
+.op-spotlight { border: 1px solid var(--line); border-left: 5px solid #fcd116; border-radius: var(--radius);
+  background: linear-gradient(135deg, #fff, var(--sand)); box-shadow: var(--shadow); padding: 18px 20px; margin: 14px 0 20px; }
+.op-spot-badge { display: inline-flex; align-items: center; gap: 6px; font-size: .74rem; font-weight: 800; letter-spacing: .04em;
+  text-transform: uppercase; color: var(--green-deep); background: #fcd116; padding: 5px 12px; border-radius: 999px; margin-bottom: 12px; }
+.op-spot-badge .ic { color: var(--green-deep); }
+.op-spot-body { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
+.op-spot-body .op-icon { font-size: 2rem; }
+.op-spot-body h3 { margin: 0 0 4px; color: var(--green-deep); }
+.op-spot-meta { font-size: .84rem; color: var(--ink-soft); display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+.op-spot-body > a { margin-left: auto; }
+
+/* ---- place (attraction) detail ---- */
+.place-hero { background-size: cover; background-position: center; }
+.place-pill { display: inline-flex; align-items: center; gap: 5px; background: rgba(255,255,255,.9); color: var(--green-deep);
+  padding: 5px 12px; border-radius: 999px; font-size: .76rem; font-weight: 700; margin: 8px 0; }
+.place-actions { display: flex; gap: 10px; flex-wrap: wrap; margin: 16px 0 6px; }
+
+/* ---- admin document cell ---- */
+.admin-doc-cell .btn { margin: 2px 3px 2px 0; }
+.exp-teaser-chip { cursor: pointer; text-decoration: none; transition: transform .12s ease, border-color .12s ease; }
+a.exp-teaser-chip:hover { transform: translateY(-1px); border-color: var(--gold); }

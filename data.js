@@ -11,9 +11,6 @@
 window.CONFIG = {
   // Visitor Desk WhatsApp (intl format, no +, no spaces). 0787 540 009 → 255787540009
   visitorDeskWhatsApp: "255787540009",
-  // Mobile-money merchant the tourist sends money to (M-Pesa Lipa Namba / Tigo / Airtel /
-  // HaloPesa merchant, or a personal number). Leave "" to hide the "Send to" box.
-  mobileMoney: { name: "VELLAT COMPANY LIMITED", till: "M-Pesa Lipa 51219278" },
   // Cinematic hero background VIDEO of Arusha (mp4, landscape, plays muted).
   // Paste a direct .mp4 URL (Supabase Storage / your CDN) OR a local path like
   // "media/arusha-hero.mp4". Leave "" to use the photo slideshow instead.
