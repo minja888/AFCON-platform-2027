@@ -1128,6 +1128,171 @@
   }
 
   /* ===================================================================
+     ARUSHA AMBASSADORS — connection-only (we NEVER hold money). Ambassadors
+     link tourists to licensed operators and investors to the right place.
+     =================================================================== */
+  const AMB_TIERS = ["influencer", "creator", "campus", "community"];
+  const AMB_ICON = { influencer: "camera", creator: "sprout", campus: "users", community: "globe" };
+  function ambPhotoUrl(ph) { return window.CONFIG.supabase.url + "/storage/v1/object/public/partner-photos/" + ph; }
+
+  function viewAmbassadors() {
+    const why = [
+      ["users", t("amb_b1_t"), t("amb_b1_d")],
+      ["shield", t("amb_b2_t"), t("amb_b2_d")],
+      ["sprout", t("amb_b3_t"), t("amb_b3_d")],
+      ["globe", t("amb_b4_t"), t("amb_b4_d")]
+    ];
+    return `
+      <section class="detail-hero grad-green tz-band">
+        <div class="container">
+          <h1>${t("amb_title")}</h1>
+          <p class="detail-meta">${t("amb_lead")}</p>
+        </div>
+      </section>
+      <section class="container section">
+        <div class="prose">
+          <p>${t("amb_p1")}</p>
+          <p>${t("amb_p2")}</p>
+          <p>${t("amb_p3")}</p>
+        </div>
+        <h2 class="page-title mt" style="text-transform:none">${t("amb_why")}</h2>
+        <div class="pw-grid">
+          ${why.map(w => `<div class="card pw-card"><span class="inv-icon">${svgIcon(w[0], 24)}</span><h3>${w[1]}</h3><p class="muted">${w[2]}</p></div>`).join("")}
+        </div>
+        <div class="amb-note">${svgIcon("shield", 18)} <span>${t("amb_nomoney")}</span></div>
+        <div class="center mt hero-cta-row" style="justify-content:center">
+          <a class="btn btn-primary btn-lg" href="#/ambassador-apply">${t("amb_apply")}</a>
+        </div>
+        <h2 class="acct-section-h" id="ambRoster">${t("amb_meet")}</h2>
+        <div class="card-grid amb-grid" id="ambGrid"><p class="muted">${t("admin_loading")}</p></div>
+      </section>`;
+  }
+  function bindAmbassadors() {
+    const grid = document.getElementById("ambGrid");
+    if (!grid) return;
+    const tierLabel = (ti) => t("amb_tier_" + ti);
+    const card = (a) => `
+      <div class="card amb-card">
+        <div class="amb-top">
+          <span class="amb-photo">${a.photo_path ? `<img src="${ambPhotoUrl(a.photo_path)}" alt="${esc(a.full_name)}" loading="lazy" onerror="this.remove()" />` : svgIcon(AMB_ICON[a.tier] || "users", 26)}</span>
+          <div><h3>${esc(a.full_name)}</h3><span class="amb-tier amb-tier-${a.tier}">${svgIcon(AMB_ICON[a.tier] || "users", 12)} ${tierLabel(a.tier)}</span></div>
+        </div>
+        ${a.location ? `<p class="muted small">${svgIcon("pin", 13)} ${esc(a.location)}</p>` : ""}
+        ${a.bio ? `<p class="muted">${esc(a.bio)}</p>` : ""}
+        ${a.connects ? `<p class="amb-connects"><strong>${t("amb_connects")}:</strong> ${esc(a.connects)}</p>` : ""}
+        <div class="amb-socials">
+          ${a.instagram ? `<a target="_blank" rel="noopener" href="${esc(a.instagram)}">Instagram</a>` : ""}
+          ${a.tiktok ? `<a target="_blank" rel="noopener" href="${esc(a.tiktok)}">TikTok</a>` : ""}
+          ${a.youtube ? `<a target="_blank" rel="noopener" href="${esc(a.youtube)}">YouTube</a>` : ""}
+          ${a.website ? `<a target="_blank" rel="noopener" href="${esc(a.website)}">${t("sv_site")}</a>` : ""}
+        </div>
+        ${a.ref_code ? `<span class="amb-code">${t("amb_code")}: <code>${esc(a.ref_code)}</code></span>` : ""}
+      </div>`;
+    const sb = window.CONFIG.supabase;
+    fetch(`${sb.url}/rest/v1/public_ambassadors?select=*&order=created_at.desc`, {
+      headers: { "apikey": sb.anonKey, "Authorization": "Bearer " + sb.anonKey }
+    }).then(r => r.json()).then(rows => {
+      grid.innerHTML = (Array.isArray(rows) && rows.length) ? rows.map(card).join("") : `<p class="muted">${t("amb_none")}</p>`;
+    }).catch(() => { grid.innerHTML = `<p class="form-error">${t("acct_err")}</p>`; });
+  }
+
+  function viewAmbassadorApply() {
+    const tiers = AMB_TIERS.map((ti, i) => `
+      <button type="button" class="ptype-opt${i === 3 ? " active" : ""}" data-tier="${ti}">
+        ${svgIcon(AMB_ICON[ti], 20)}<span>${t("amb_tier_" + ti)}</span>
+      </button>`).join("");
+    return `
+      <section class="detail-hero grad-gold tz-band">
+        <div class="container"><h1>${t("aa_title")}</h1><p class="detail-meta">${t("aa_lead")}</p></div>
+      </section>
+      <section class="container reg-wrap">
+        <form id="aaForm" class="reg-form pform" novalidate>
+          <div class="field"><label>${t("aa_tier")} <span class="req">*</span></label>
+            <div class="ptype-grid" id="aaTiers">${tiers}</div></div>
+          <div class="field"><label for="aaName">${t("ps_contact")} <span class="req">*</span></label>
+            <input id="aaName" type="text" autocomplete="name" /></div>
+          <div class="field"><label for="aaEmail">${t("reg_email")} <span class="req">*</span></label>
+            <input id="aaEmail" type="email" inputmode="email" autocomplete="email" /></div>
+          <div class="field"><label for="aaPhone">${t("ps_phone")} <span class="req">*</span></label>
+            <input id="aaPhone" type="tel" inputmode="tel" placeholder="+255 7xx xxx xxx" /></div>
+          <div class="field"><label for="aaLoc">${t("aa_location")}</label>
+            <input id="aaLoc" type="text" placeholder="${t("aa_location_ph")}" /></div>
+          <div class="field"><label for="aaBio">${t("aa_bio")}</label>
+            <textarea id="aaBio" rows="3" class="acct-msg" placeholder="${t("aa_bio_ph")}"></textarea></div>
+          <div class="field"><label for="aaConnects">${t("aa_connects")}</label>
+            <textarea id="aaConnects" rows="2" class="acct-msg" placeholder="${t("aa_connects_ph")}"></textarea></div>
+          <div class="field"><label for="aaIg">Instagram / TikTok / YouTube / ${t("sv_site")}</label>
+            <input id="aaIg" type="url" placeholder="Instagram URL" />
+            <input id="aaTk" type="url" placeholder="TikTok URL" style="margin-top:8px" />
+            <input id="aaYt" type="url" placeholder="YouTube URL" style="margin-top:8px" />
+            <input id="aaWeb" type="url" placeholder="Website URL" style="margin-top:8px" /></div>
+          <div class="field"><label for="aaPhoto">${t("aa_photo")}</label>
+            <input id="aaPhoto" type="file" accept="image/jpeg,image/png,image/webp" />
+            <p class="field-note">${t("aa_photo_note")}</p></div>
+          <div id="aaErr" class="form-error" role="alert" hidden></div>
+          <button type="submit" class="btn btn-primary btn-block">${t("aa_submit")}</button>
+          <p class="muted small reg-privacy">${t("aa_privacy")}</p>
+        </form>
+        <div id="aaOk" class="reg-success" hidden>
+          <div class="reg-success-mark">✓</div>
+          <p class="reg-success-msg" id="aaOkMsg">${t("aa_success")}</p>
+          <a class="btn btn-primary" href="#/ambassadors">${t("amb_meet")}</a>
+        </div>
+      </section>`;
+  }
+  function bindAmbassadorApply() {
+    const form = document.getElementById("aaForm");
+    if (!form) return;
+    let tier = "community";
+    document.getElementById("aaTiers").addEventListener("click", (e) => {
+      const b = e.target.closest(".ptype-opt"); if (!b) return;
+      tier = b.dataset.tier;
+      document.querySelectorAll("#aaTiers .ptype-opt").forEach(x => x.classList.toggle("active", x === b));
+    });
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const err = document.getElementById("aaErr"); err.hidden = true;
+      const v = (id) => (document.getElementById(id).value || "").trim();
+      const problems = [];
+      if (!v("aaName")) problems.push(t("reg_err_name"));
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v("aaEmail"))) problems.push(t("reg_err_email"));
+      if (!v("aaPhone")) problems.push(t("ps_err_phone"));
+      const file = document.getElementById("aaPhoto").files[0];
+      if (file && (!/^image\//.test(file.type) || file.size > 5 * 1024 * 1024)) problems.push(t("pp_s_photo_big"));
+      if (problems.length) { err.innerHTML = problems.map(p => `<div>• ${esc(p)}</div>`).join(""); err.hidden = false; return; }
+      const btn = form.querySelector("button[type=submit]"); btn.disabled = true; btn.textContent = "⏳ " + t("ps_uploading");
+      const sb = window.CONFIG.supabase;
+      try {
+        let photoPath = null;
+        if (file) {
+          const ext = (file.name.split(".").pop() || "jpg").toLowerCase().replace(/[^a-z0-9]/g, "") || "jpg";
+          photoPath = "amb-" + crypto.randomUUID() + "." + ext;
+          const up = await fetch(`${sb.url}/storage/v1/object/partner-photos/${photoPath}`, {
+            method: "POST", headers: { "apikey": sb.anonKey, "Authorization": "Bearer " + sb.anonKey, "Content-Type": file.type }, body: file
+          });
+          if (!up.ok) throw new Error("photo");
+        }
+        const res = await sbRpc("ambassador_apply", {
+          p_tier: tier, p_name: v("aaName"), p_email: v("aaEmail"), p_phone: v("aaPhone"),
+          p_location: v("aaLoc") || null, p_bio: v("aaBio") || null,
+          p_instagram: v("aaIg") || null, p_tiktok: v("aaTk") || null, p_youtube: v("aaYt") || null,
+          p_website: v("aaWeb") || null, p_photo_path: photoPath, p_connects: v("aaConnects") || null, p_lang: lang
+        });
+        fetch(sb.url + "/functions/v1/partner-notify", {
+          method: "POST", headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ kind: "application", company: v("aaName") + " (Ambassador)", ptype: tier, contact: v("aaName"), email: v("aaEmail"), phone: v("aaPhone"), website: v("aaWeb") })
+        }).catch(() => {});
+        const msg = document.getElementById("aaOkMsg");
+        if (res && res.ref_code) msg.innerHTML = esc(t("aa_success")) + `<br><br><strong>${t("amb_code")}: <code>${esc(res.ref_code)}</code></strong>`;
+        form.hidden = true; document.getElementById("aaOk").hidden = false;
+      } catch (ex) {
+        err.textContent = /email_exists/.test(String(ex)) ? t("ps_err_exists") : t("ps_err_fail");
+        err.hidden = false; btn.disabled = false; btn.textContent = t("aa_submit");
+      }
+    });
+  }
+
+  /* ===================================================================
      BECOME A PARTNER — landing, signup (PDF verification), portal, services
      Backend: Supabase RPCs (bcrypt) + private storage bucket partner-docs.
      =================================================================== */
@@ -1619,14 +1784,57 @@
   function viewAbout() {
     const step = (t1, d1) => `<div class="step-card"><h3>${t(t1)}</h3><p class="muted">${t(d1)}</p></div>`;
     const win = (ic, t1, d1) => `<div class="win-card"><span class="win-icon">${ic}</span><h4>${t(t1)}</h4><p class="muted">${t(d1)}</p></div>`;
+    const value = (ic, tt, dd) => `<div class="card val-card"><span class="inv-icon">${svgIcon(ic, 24)}</span><h3>${t(tt)}</h3><p class="muted">${t(dd)}</p></div>`;
     return `
-      <section class="detail-hero grad-gold">
+      <section class="detail-hero grad-gold tz-band">
         <div class="container">
           <h1>${t("about_title")}</h1>
           <p class="detail-meta">${t("about_lead")}</p>
         </div>
       </section>
+
       <section class="container section">
+        <span class="trips-kicker">${t("about_story_k")}</span>
+        <h2 class="page-title" style="text-transform:none">${t("about_story_t")}</h2>
+        <div class="prose">
+          <p>${t("about_story_1")}</p>
+          <p>${t("about_story_2")}</p>
+          <p>${t("about_story_3")}</p>
+          <p>${t("about_story_4")}</p>
+          <p>${t("about_story_5")}</p>
+        </div>
+      </section>
+
+      <section class="container section">
+        <div class="vision-band">
+          <div class="vision-card">
+            <span class="vision-badge">${svgIcon("globe", 18)} ${t("about_vision_k")}</span>
+            <h2>${t("about_vision_t")}</h2>
+            <p>${t("about_vision_d")}</p>
+          </div>
+          <div class="mission-card">
+            <span class="vision-badge">${svgIcon("map", 18)} ${t("about_mission_k")}</span>
+            <h2>${t("about_mission_t")}</h2>
+            <p>${t("about_mission_d")}</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="container section">
+        <h2 class="page-title" style="text-transform:none">${t("about_values_t")}</h2>
+        <p class="muted">${t("about_values_sub")}</p>
+        <div class="val-grid">
+          ${value("shield", "val1_t", "val1_d")}
+          ${value("users", "val2_t", "val2_d")}
+          ${value("sprout", "val3_t", "val3_d")}
+          ${value("water", "val4_t", "val4_d")}
+          ${value("gem", "val5_t", "val5_d")}
+          ${value("globe", "val6_t", "val6_d")}
+        </div>
+      </section>
+
+      <section class="container section">
+        <h2 class="page-title" style="text-transform:none">${t("about_how_t")}</h2>
         <div class="step-grid">
           ${step("step1_t","step1_d")}${step("step2_t","step2_d")}
           ${step("step3_t","step3_d")}${step("step4_t","step4_d")}
@@ -1636,8 +1844,9 @@
           ${win("🌱","win1_t","win1_d")}${win("🛍️","win2_t","win2_d")}
           ${win("🏛️","win3_t","win3_d")}${win("✈️","win4_t","win4_d")}
         </div>
-        <div class="center mt">
+        <div class="center mt hero-cta-row" style="justify-content:center">
           <a href="#/trips" class="btn btn-primary">${t("about_cta")}</a>
+          <a href="#/ambassadors" class="btn btn-ghost">${t("amb_apply")}</a>
         </div>
       </section>`;
   }
@@ -1927,6 +2136,7 @@
         <button class="admin-tab" data-tab="rev">⭐ ${t("admin_sum_rev")} (${rev.length})</button>
         <button class="admin-tab" data-tab="chal">⚠️ ${t("admin_sum_chal")} (${chal.length})</button>
         <button class="admin-tab" data-tab="partners">🤝 ${t("admin_sum_partners")}</button>
+        <button class="admin-tab" data-tab="ambs">🌈 ${t("admin_sum_ambs")}</button>
       </div>
       <div class="admin-cat" data-cat="reg">
         <div class="admin-head"><h3>${t("admin_sum_reg")}</h3><div class="admin-actions"><button class="btn btn-small" id="regExport"${regs.length ? "" : " disabled"}>⬇ ${t("admin_export")}</button></div></div>
@@ -1935,7 +2145,8 @@
       <div class="admin-cat" data-cat="enq" hidden><h3>📨 ${t("admin_sum_enq")}</h3>${msgTable(enq)}</div>
       <div class="admin-cat" data-cat="rev" hidden><h3>⭐ ${t("admin_sum_rev")}</h3>${revTable}</div>
       <div class="admin-cat" data-cat="chal" hidden><h3>⚠️ ${t("admin_sum_chal")}</h3>${msgTable(chal)}</div>
-      <div class="admin-cat" data-cat="partners" hidden><h3>🤝 ${t("admin_sum_partners")}</h3><div id="adminPartners"><p class="muted">${t("admin_loading")}</p></div></div>`;
+      <div class="admin-cat" data-cat="partners" hidden><h3>🤝 ${t("admin_sum_partners")}</h3><div id="adminPartners"><p class="muted">${t("admin_loading")}</p></div></div>
+      <div class="admin-cat" data-cat="ambs" hidden><h3>🌈 ${t("admin_sum_ambs")}</h3><div id="adminAmbs"><p class="muted">${t("admin_loading")}</p></div></div>`;
   }
   function exportCentralCSV(rows) {
     const head = ["Registered", "Name", "Country", "Phone", "Email", "Interest", "Lang"];
@@ -2044,11 +2255,51 @@
         const exp = document.getElementById("regExport");
         if (exp) exp.addEventListener("click", () => exportCentralCSV(data.registrations || []));
         loadAdminPartners(pass);
+        loadAdminAmbassadors(pass);
       })
       .catch(() => {
         sessionStorage.removeItem("ka_admin_pass");
         if (container) container.innerHTML = `<p class="form-error">${t("admin_login_err")}</p>`;
       });
+  }
+
+  /* admin: ambassadors queue (approve / reject) */
+  function loadAdminAmbassadors(pass) {
+    const host = document.getElementById("adminAmbs");
+    if (!host) return;
+    sbRpc("admin_ambassadors", { p_pass: pass }).then(rows => {
+      rows = Array.isArray(rows) ? rows : [];
+      if (!rows.length) { host.innerHTML = `<p class="muted admin-empty">${t("admin_none")}</p>`; return; }
+      const stPill = (st) => `<span class="pstat pstat-${st}">${st === "approved" ? "✓" : st === "rejected" ? "✕" : "⏳"} ${t("pp_st_" + st)}</span>`;
+      host.innerHTML = `<div class="admin-head"><h4 style="margin:0">${rows.length} ${t("admin_sum_ambs")}</h4><button class="btn btn-small" id="ambExport">⬇ ${t("admin_export")}</button></div>
+        <div class="table-wrap"><table class="reg-table">
+        <thead><tr><th>${t("ps_contact")}</th><th>${t("aa_tier")}</th><th>${t("admin_contact")}</th><th>${t("aa_location")}</th><th>${t("amb_code")}</th><th>${t("admin_status")}</th><th></th></tr></thead>
+        <tbody>${rows.map(a => `<tr>
+          <td><strong>${esc(a.full_name)}</strong></td>
+          <td>${t("amb_tier_" + a.tier)}</td>
+          <td>${esc(a.email)}<br><small>${esc(a.phone)}</small></td>
+          <td>${esc(a.location || "—")}</td>
+          <td><code>${esc(a.ref_code || "")}</code></td>
+          <td>${stPill(a.status)}</td>
+          <td class="admin-actions-cell">
+            ${a.status !== "approved" ? `<button class="btn btn-small btn-gold" data-astat="approved" data-aid="${a.id}">✓ ${t("admin_approve")}</button>` : ""}
+            ${a.status !== "rejected" ? `<button class="btn btn-small" data-astat="rejected" data-aid="${a.id}">✕ ${t("admin_reject")}</button>` : ""}
+          </td></tr>`).join("")}</tbody></table></div>`;
+      host.querySelectorAll("[data-astat]").forEach(b => b.addEventListener("click", () => {
+        b.disabled = true;
+        sbRpc("admin_ambassador_status", { p_pass: pass, p_id: b.dataset.aid, p_status: b.dataset.astat })
+          .then(() => loadAdminAmbassadors(pass)).catch(() => { b.disabled = false; alert(t("acct_err")); });
+      }));
+      const ex = document.getElementById("ambExport");
+      if (ex) ex.addEventListener("click", () => {
+        const head = ["Applied","Name","Tier","Email","Phone","Location","RefCode","Status"];
+        const data = rows.map(a => [a.created_at, a.full_name, a.tier, a.email, a.phone, a.location || "", a.ref_code || "", a.status]);
+        const csv = [head].concat(data).map(function(r){return r.map(function(f){return '"'+String(f==null?"":f).replace(/"/g,'""')+'"';}).join(",");}).join(String.fromCharCode(13,10));
+        const blob = new Blob(["﻿" + csv], { type: "text/csv;charset=utf-8" });
+        const url = URL.createObjectURL(blob); const a2 = document.createElement("a");
+        a2.href = url; a2.download = "karibu-arusha-ambassadors.csv"; a2.click(); setTimeout(() => URL.revokeObjectURL(url), 1000);
+      });
+    }).catch(() => { host.innerHTML = `<p class="form-error">${t("acct_err")}</p>`; });
   }
 
   /* admin: download all partner rows as a CSV (opens in Excel) */
@@ -2374,6 +2625,8 @@
       case "partner": html = viewPartnerPortal(); break;
       case "partner-reset": html = viewPartnerReset(param); break;
       case "services": html = viewServices(); break;
+      case "ambassadors": html = viewAmbassadors(); break;
+      case "ambassador-apply": html = viewAmbassadorApply(); break;
       case "events": html = viewEvents(); break;
       case "about": html = viewAbout(); break;
       default: html = notFound();
@@ -2416,6 +2669,8 @@
     if (route === "partner") bindPartnerPortal();
     if (route === "partner-reset") bindPartnerReset();
     if (route === "services") bindServices();
+    if (route === "ambassadors") bindAmbassadors();
+    if (route === "ambassador-apply") bindAmbassadorApply();
     if (route === "events") bindEvents();
     if (route === "home") { buildScrollHero(); setupCineVideo(); loadHomeServices(); } else stopScrollHero();
     setupReveal();
