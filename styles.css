@@ -1784,3 +1784,57 @@ img { background: var(--sand); }   /* soft placeholder tone while loading */
 .pr-svc-h{ margin-top:6px; }
 .pr-enq{ padding:20px; margin-top:22px; }
 .svc-grid{ display:grid; grid-template-columns:repeat(auto-fill,minmax(260px,1fr)); gap:16px; margin:12px 0 4px; }
+
+/* ======================================================================
+   v54 — animated "Coming up" events hero
+   ====================================================================== */
+.evhero{ margin:0 0 22px; }
+.evhero-h{ display:inline-flex; align-items:center; gap:7px; font-weight:800; text-transform:uppercase;
+  letter-spacing:.1em; font-size:.74rem; color:var(--green-deep); margin-bottom:10px; }
+.evhero-h .ic{ color:var(--gold-deep); }
+.evhero-stage{ position:relative; border-radius:22px; overflow:hidden; min-height:220px;
+  box-shadow:0 16px 40px rgba(58,74,30,.24); }
+.evhero-slide{ position:absolute; inset:0; display:flex; align-items:flex-end; color:#fff;
+  opacity:0; visibility:hidden; transform:scale(1.06); transition:opacity .7s ease, transform 6s ease; }
+.evhero-slide.is-active{ opacity:1; visibility:visible; transform:scale(1); }
+.evhero-img{ position:absolute; inset:0; width:100%; height:100%; object-fit:cover; }
+.evhero-scrim{ position:absolute; inset:0;
+  background:linear-gradient(115deg, rgba(0,0,0,.62) 0%, rgba(0,0,0,.34) 46%, rgba(0,0,0,.12) 100%); }
+.evhero-tx{ position:relative; padding:26px 30px 30px; max-width:640px; }
+.evhero-eyebrow{ display:inline-flex; align-items:center; gap:7px; background:rgba(255,255,255,.16);
+  backdrop-filter:blur(3px); padding:5px 12px; border-radius:20px; font-size:.76rem; font-weight:700; margin-bottom:12px; }
+.evhero-title{ font-size:clamp(1.4rem,3.6vw,2.1rem); line-height:1.05; margin:0 0 8px; text-shadow:0 2px 14px rgba(0,0,0,.35); }
+.evhero-date{ margin:0 0 14px; opacity:.92; font-size:.95rem; }
+.evhero-count{ display:inline-block; background:var(--gold); color:var(--green-deep); font-weight:800;
+  padding:8px 16px; border-radius:24px; font-size:.95rem; box-shadow:0 6px 16px rgba(0,0,0,.25);
+  animation:evPulse 2.2s ease-in-out infinite; }
+.evhero-count b{ font-size:1.15em; }
+@keyframes evPulse{ 0%,100%{ transform:translateY(0);} 50%{ transform:translateY(-3px);} }
+/* active slide content slides up in */
+.evhero-slide.is-active .evhero-tx > *{ animation:evUp .6s both; }
+.evhero-slide.is-active .evhero-eyebrow{ animation-delay:.05s; }
+.evhero-slide.is-active .evhero-title{ animation-delay:.13s; }
+.evhero-slide.is-active .evhero-date{ animation-delay:.21s; }
+.evhero-slide.is-active .evhero-count{ animation:evUp .6s both, evPulse 2.2s ease-in-out .8s infinite; animation-delay:.29s; }
+@keyframes evUp{ from{ opacity:0; transform:translateY(14px);} to{ opacity:1; transform:none; } }
+.evhero-nav{ position:absolute; top:50%; transform:translateY(-50%); width:40px; height:40px; border-radius:50%;
+  border:0; cursor:pointer; background:rgba(0,0,0,.32); color:#fff; font-size:1.6rem; line-height:1;
+  display:grid; place-items:center; transition:.2s; z-index:2; }
+.evhero-nav:hover{ background:rgba(0,0,0,.55); }
+.evhero-prev{ left:12px; } .evhero-next{ right:12px; }
+.evhero-dots{ display:flex; justify-content:center; gap:9px; margin-top:12px; }
+.evhero-dot{ width:9px; height:9px; border-radius:50%; border:0; padding:0; background:var(--line); cursor:pointer; transition:.2s; }
+.evhero-dot.is-active{ background:var(--gold); width:26px; border-radius:6px; }
+@media (max-width:560px){
+  .evhero-stage{ min-height:210px; }
+  .evhero-tx{ padding:20px 20px 24px; }
+  .evhero-nav{ width:34px; height:34px; font-size:1.3rem; }
+}
+@media (prefers-reduced-motion: reduce){
+  .evhero-slide{ transition:opacity .3s ease; transform:none; }
+  .evhero-count, .evhero-slide.is-active .evhero-tx > *{ animation:none; }
+}
+
+/* event card entrance inside the year scrollers */
+.ev-card{ transition:transform .18s ease, box-shadow .18s ease; }
+.ev-card:hover{ transform:translateY(-4px); box-shadow:0 12px 26px rgba(0,0,0,.14); }

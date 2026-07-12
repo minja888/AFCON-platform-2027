@@ -1174,6 +1174,69 @@
         <div class="ev-scroller">${byYear[y].map(eventCard).join("")}</div>
       </div>`).join("");
   }
+  /* upcoming events from today (for the animated hero) */
+  function upcomingEvents(n) {
+    const today = new Date(); today.setHours(0, 0, 0, 0);
+    return allEvents()
+      .filter(e2 => { const d = new Date((e2.date || "") + "T00:00:00"); return !isNaN(d) && d >= today; })
+      .slice(0, n || 6);
+  }
+  function evDaysAway(dateStr) {
+    const today = new Date(); today.setHours(0, 0, 0, 0);
+    const d = new Date((dateStr || "") + "T00:00:00");
+    return Math.round((d - today) / 86400000);
+  }
+  function evHeroSlide(e2, i) {
+    const d = new Date((e2.date || "") + "T00:00:00");
+    const dd = evDaysAway(e2.date);
+    const countdown = dd <= 0 ? t("ev_today") : dd === 1 ? t("ev_tomorrow")
+      : `${t("ev_in")} <b>${dd}</b> ${dd === 1 ? t("ev_day") : t("ev_days")}`;
+    const dateLabel = d.toLocaleDateString(lang === "sw" ? "sw-TZ" : lang, { weekday: "long", day: "numeric", month: "long", year: "numeric" });
+    return `<div class="evhero-slide${i === 0 ? " is-active" : ""} ${e2.grad || EV_GRAD[e2.etype] || "grad-green"}" data-ehslide="${i}">
+      ${e2.photo ? `<img class="evhero-img" src="${svcPhotoUrl(e2.photo)}" alt="" loading="lazy" onerror="this.remove()" />` : ""}
+      <span class="evhero-scrim"></span>
+      <div class="evhero-tx">
+        <span class="evhero-eyebrow">${svgIcon(EV_ICON[e2.etype] || "globe", 14)} ${t("ev_" + (e2.etype || "other"))}${e2.national ? " · 🇹🇿" : ""}</span>
+        <h3 class="evhero-title">${esc(e2.title)}</h3>
+        <p class="evhero-date">${dateLabel}${e2.venue ? " · " + esc(e2.venue) : ""}</p>
+        <span class="evhero-count">${countdown}</span>
+      </div>
+    </div>`;
+  }
+  function eventsHeroHtml() {
+    const up = upcomingEvents(6);
+    if (!up.length) return "";
+    return `<div class="evhero" id="evHero">
+      <span class="evhero-h">${svgIcon("sparkle", 15)} ${t("ev_hero_h")}</span>
+      <div class="evhero-stage">
+        ${up.map(evHeroSlide).join("")}
+        <button type="button" class="evhero-nav evhero-prev" id="evHeroPrev" aria-label="prev">‹</button>
+        <button type="button" class="evhero-nav evhero-next" id="evHeroNext" aria-label="next">›</button>
+      </div>
+      <div class="evhero-dots" id="evHeroDots">${up.map((_, i) => `<button type="button" class="evhero-dot${i === 0 ? " is-active" : ""}" data-eh="${i}" aria-label="${i + 1}"></button>`).join("")}</div>
+    </div>`;
+  }
+  function bindEventsHero() {
+    const hero = document.getElementById("evHero"); if (!hero) return;
+    const slides = Array.from(hero.querySelectorAll(".evhero-slide"));
+    const dots = Array.from(hero.querySelectorAll(".evhero-dot"));
+    if (slides.length < 2) return;
+    let idx = 0, timer = null;
+    const go = (i) => {
+      idx = (i + slides.length) % slides.length;
+      slides.forEach((s, n) => s.classList.toggle("is-active", n === idx));
+      dots.forEach((d, n) => d.classList.toggle("is-active", n === idx));
+    };
+    const start = () => { if (reduceMotion) return; stop(); timer = setInterval(() => go(idx + 1), 4500); };
+    const stop = () => { if (timer) clearInterval(timer); timer = null; };
+    hero.addEventListener("click", (e) => {
+      if (e.target.closest("#evHeroNext")) { go(idx + 1); start(); }
+      else if (e.target.closest("#evHeroPrev")) { go(idx - 1); start(); }
+      else { const dot = e.target.closest("[data-eh]"); if (dot) { go(+dot.dataset.eh); start(); } }
+    });
+    hero.addEventListener("mouseenter", stop); hero.addEventListener("mouseleave", start);
+    start();
+  }
   function viewEvents(filter) {
     const f = filter || "all";
     const chips = ["all", "afcon", "sports", "conference", "culture", "music"].map(c =>
@@ -1183,6 +1246,7 @@
         <div class="container"><h1>${t("ev_title")}</h1><p class="detail-meta">${t("ev_lead")}</p></div>
       </section>
       <section class="container section">
+        <div id="evHeroHost">${eventsHeroHtml()}</div>
         <div class="ev-cta">
           <span>${t("ev_partner_cta")}</span>
           <a class="btn btn-small btn-gold" href="#/partner">${t("ev_partner_btn")} →</a>
@@ -1193,9 +1257,14 @@
   }
   function bindEvents() {
     const f = document.getElementById("evFilters");
+    let heroBound = false;
+    const bindHeroOnce = () => { if (!heroBound) { bindEventsHero(); heroBound = true; } };
     const rerender = () => {
       const cat = document.querySelector("#evFilters .chip.active")?.dataset.evtype || "all";
       const list = document.getElementById("evList"); if (list) list.innerHTML = eventsHtml(cat);
+      const host = document.getElementById("evHeroHost");
+      if (host && !heroBound) { host.innerHTML = eventsHeroHtml(); }  // rebuild once with partner events
+      bindHeroOnce();
       setupReveal();
     };
     if (f) f.onclick = (e) => {

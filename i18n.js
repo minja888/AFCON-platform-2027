@@ -969,3 +969,15 @@ window.I18N = {
   Object.assign(window.I18N.en, EN);
   Object.assign(window.I18N.sw, SW);
 })();
+
+/* ===== v54 — animated events "coming up" hero ===== */
+(function () {
+  Object.assign(window.I18N.en, {
+    ev_hero_h: "Coming up next", ev_in: "in", ev_days: "days", ev_day: "day",
+    ev_today: "Happening today", ev_tomorrow: "Tomorrow", ev_view: "See on calendar"
+  });
+  Object.assign(window.I18N.sw, {
+    ev_hero_h: "Yanayofuata", ev_in: "baada ya", ev_days: "siku", ev_day: "siku",
+    ev_today: "Yanafanyika leo", ev_tomorrow: "Kesho", ev_view: "Ona kwenye kalenda"
+  });
+})();
