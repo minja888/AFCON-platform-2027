@@ -1209,7 +1209,7 @@
     return `<div class="evhero" id="evHero">
       <span class="evhero-h">${svgIcon("sparkle", 15)} ${t("ev_hero_h")}</span>
       <div class="evhero-stage">
-        ${up.map(evHeroSlide).join("")}
+        <div class="evhero-track" id="evHeroTrack">${up.map(evHeroSlide).join("")}</div>
         <button type="button" class="evhero-nav evhero-prev" id="evHeroPrev" aria-label="prev">‹</button>
         <button type="button" class="evhero-nav evhero-next" id="evHeroNext" aria-label="next">›</button>
       </div>
@@ -1218,12 +1218,14 @@
   }
   function bindEventsHero() {
     const hero = document.getElementById("evHero"); if (!hero) return;
+    const track = hero.querySelector("#evHeroTrack");
     const slides = Array.from(hero.querySelectorAll(".evhero-slide"));
     const dots = Array.from(hero.querySelectorAll(".evhero-dot"));
     if (slides.length < 2) return;
     let idx = 0, timer = null;
     const go = (i) => {
       idx = (i + slides.length) % slides.length;
+      if (track) track.style.transform = "translateX(-" + (idx * 100) + "%)";
       slides.forEach((s, n) => s.classList.toggle("is-active", n === idx));
       dots.forEach((d, n) => d.classList.toggle("is-active", n === idx));
     };
