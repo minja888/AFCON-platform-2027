@@ -1515,3 +1515,55 @@ a.exp-teaser-chip:hover { transform: translateY(-1px); border-color: var(--gold)
 /* home events section */
 #homeEventsSection .ev-list { max-width: 760px; }
 .ev-nat { display: inline-flex; align-items: center; gap: 4px; font-size: .72rem; font-weight: 700; padding: 3px 9px; border-radius: 999px; background: rgba(0,163,221,.12); color: #00679c; }
+
+/* =====================================================================
+   v50 — Traveller Moments gallery + share modal + scroll polish
+   ===================================================================== */
+.mo-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 14px; }
+.mo-masonry { display: block; column-width: 250px; column-gap: 14px; }
+.mo-masonry .mo-card { break-inside: avoid; margin: 0 0 14px; }
+.mo-card { position: relative; margin: 0; border-radius: var(--radius); overflow: hidden; background: var(--sand);
+  box-shadow: var(--shadow); border: 1px solid var(--line); transition: transform .18s ease, box-shadow .18s ease; }
+.mo-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-lg); }
+.mo-card img { width: 100%; display: block; object-fit: cover; }
+.mo-masonry .mo-card img { height: auto; }
+.mo-grid:not(.mo-masonry) .mo-card img { aspect-ratio: 4/5; }
+.mo-card figcaption { padding: 12px 14px; }
+.mo-cap { margin: 0 0 6px; font-size: .95rem; line-height: 1.5; color: var(--ink); }
+.mo-meta { display: flex; flex-wrap: wrap; gap: 10px; font-size: .78rem; color: var(--ink-soft); align-items: center; }
+.mo-meta .ic { color: var(--gold-deep); }
+.mo-trip { color: var(--green); font-weight: 600; }
+.mo-share { display: inline-flex; align-items: center; gap: 5px; margin-top: 9px; font-size: .82rem; font-weight: 700; color: var(--gold-deep); }
+.mo-share .ic { color: var(--gold-deep); }
+.mo-share:hover { color: var(--green); }
+.mo-empty { grid-column: 1 / -1; text-align: center; padding: 40px 16px; border: 1px dashed var(--line); border-radius: var(--radius); background: var(--white); }
+.mo-empty span { font-size: 2.6rem; display: block; margin-bottom: 6px; }
+
+/* trip-detail moments strip */
+.mo-strip { margin-top: 30px; }
+.mo-strip .mo-grid { grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); }
+
+/* share-moment modal form */
+.mo-form-wrap h3 { font-family: var(--display); font-weight: 700; color: var(--green-deep); margin-bottom: 4px; }
+.mo-form-wrap .field { text-align: left; }
+.mo-form-wrap input[type=file] { width: 100%; padding: 10px; border: 1.5px dashed var(--line); border-radius: var(--radius-sm); background: var(--white); }
+.mo-preview { margin: 4px 0 10px; border-radius: var(--radius-sm); overflow: hidden; border: 1px solid var(--line); }
+.mo-preview img { width: 100%; max-height: 240px; object-fit: cover; display: block; }
+
+/* admin moments moderation */
+.admin-mom-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 12px; }
+.admin-mom { border: 1px solid var(--line); border-radius: var(--radius-sm); overflow: hidden; background: var(--white); }
+.admin-mom.is-hidden { opacity: .5; }
+.admin-mom img { width: 100%; height: 130px; object-fit: cover; display: block; }
+.admin-mom-b { padding: 8px 10px; display: grid; gap: 5px; }
+.admin-mom-b small { color: var(--ink-soft); }
+.admin-mom-b p { margin: 0; font-size: .85rem; }
+
+/* ---- scroll & render polish (frontend-design / ui-ux-pro-max) ---- */
+html { scroll-behavior: smooth; }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+/* cheap off-screen skipping so long pages scroll buttery-smooth */
+.container.section { content-visibility: auto; contain-intrinsic-size: 1px 700px; }
+.cine-hero, .detail-hero { content-visibility: visible; }
+.card, .mo-card, .att-card, .btn { will-change: auto; }
+img { background: var(--sand); }   /* soft placeholder tone while loading */

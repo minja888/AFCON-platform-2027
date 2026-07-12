@@ -653,10 +653,19 @@
         </ul>
         <div class="detail-cta">
           <button class="btn btn-primary btn-wa" data-book="${tr.id}">💬 ${t("book_whatsapp")}</button>
+          <button class="btn btn-gold" data-moment="${tr.id}">📸 ${t("mo_share")}</button>
           <button class="btn btn-ghost fav-btn ${isFav(tr.id) ? "on" : ""}" data-fav="${tr.id}" aria-pressed="${isFav(tr.id)}">
             <span class="fav-heart">♥</span> <span class="fav-txt">${isFav(tr.id) ? t("fav_saved") : t("fav_save")}</span>
           </button>
           <span class="muted small">${t("safe_text")}</span>
+        </div>
+
+        <div class="mo-strip" id="tripMoments" data-trip="${tr.id}">
+          <div class="section-head" style="margin-top:8px"><div>
+            <span class="trips-kicker">${t("mo_kicker")}</span>
+            <h2 style="text-transform:none">${t("mo_trip_title")}</h2>
+          </div><a href="#/moments" class="link-more">${t("mo_all")} →</a></div>
+          <div class="mo-grid" id="tripMoGrid"></div>
         </div>
       </section>`;
   }
@@ -1177,6 +1186,144 @@
       headers: { "apikey": sb.anonKey, "Authorization": "Bearer " + sb.anonKey }
     }).then(r => r.json()).then(rows => { PARTNER_EVENTS = Array.isArray(rows) ? rows : []; rerender(); })
       .catch(() => { if (PARTNER_EVENTS === null) PARTNER_EVENTS = []; });
+  }
+
+  /* ===================================================================
+     TOURIST MOMENTS — share a photo from a chosen trip (delightful gallery)
+     =================================================================== */
+  const moPhotoUrl = (ph) => window.CONFIG.supabase.url + "/storage/v1/object/public/moments/" + ph;
+  function momentCard(m) {
+    const wa = `https://wa.me/?text=${encodeURIComponent((m.caption || t("mo_default_cap")) + " — " + (m.trip_name || "Arusha") + " · Karibu Arusha")}`;
+    return `
+      <figure class="mo-card">
+        <img src="${moPhotoUrl(m.photo_path)}" alt="${esc(m.caption || t("mo_default_cap"))}" loading="lazy" decoding="async" onerror="this.closest('.mo-card').remove()" />
+        <figcaption>
+          ${m.caption ? `<p class="mo-cap">${esc(m.caption)}</p>` : ""}
+          <div class="mo-meta">
+            <span>${svgIcon("users", 12)} ${esc(m.tourist_name || t("mo_anon"))}</span>
+            ${m.trip_name ? `<span class="mo-trip">${svgIcon("map", 12)} ${esc(m.trip_name)}</span>` : ""}
+          </div>
+          <a class="mo-share" target="_blank" rel="noopener" href="${wa}">${svgIcon("globe", 13)} ${t("mo_share_btn")}</a>
+        </figcaption>
+      </figure>`;
+  }
+
+  function openMomentModal(tripId) {
+    const tr = (window.TRIPS || []).find(x => x.id === tripId);
+    const tripName = tr ? L(tr.name) : "";
+    const u = getCurrentUser() || {};
+    modalBody.innerHTML = `
+      <div class="mo-form-wrap">
+        <h3 id="modalTitle">${t("mo_share")}</h3>
+        <p class="muted">${t("mo_share_sub")}${tripName ? " — <strong>" + esc(tripName) + "</strong>" : ""}</p>
+        <form id="moForm" novalidate>
+          <div class="field"><label for="moName">${t("reg_name")}</label>
+            <input id="moName" type="text" value="${esc(u.name || "")}" placeholder="${t("mo_name_ph")}" /></div>
+          <div class="field"><label for="moPhoto">${t("mo_photo")} <span class="req">*</span></label>
+            <input id="moPhoto" type="file" accept="image/jpeg,image/png,image/webp" /></div>
+          <div class="mo-preview" id="moPreview" hidden><img id="moPreviewImg" alt="" /></div>
+          <div class="field"><label for="moCap">${t("mo_caption")}</label>
+            <textarea id="moCap" rows="2" class="acct-msg" maxlength="180" placeholder="${t("mo_caption_ph")}"></textarea></div>
+          <div id="moErr" class="form-error" role="alert" hidden></div>
+          <button type="submit" class="btn btn-primary btn-block">${t("mo_post")}</button>
+        </form>
+        <div id="moOk" class="reg-success" hidden>
+          <div class="reg-success-mark">✓</div>
+          <p class="reg-success-msg">${t("mo_ok")}</p>
+        </div>
+      </div>`;
+    backdrop.hidden = false; document.body.style.overflow = "hidden";
+    const $ = (s) => modalBody.querySelector(s);
+    const photo = $("#moPhoto");
+    photo.addEventListener("change", () => {
+      const f = photo.files[0];
+      if (f) { const url = URL.createObjectURL(f); $("#moPreviewImg").src = url; $("#moPreview").hidden = false; }
+    });
+    $("#moForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const err = $("#moErr"); err.hidden = true;
+      const f = photo.files[0];
+      if (!f) { err.textContent = t("mo_err_photo"); err.hidden = false; return; }
+      if (!/^image\//.test(f.type) || f.size > 5 * 1024 * 1024) { err.textContent = t("pp_s_photo_big"); err.hidden = false; return; }
+      const btn = $("#moForm button[type=submit]"); btn.disabled = true; btn.textContent = "⏳ " + t("ps_uploading");
+      const sb = window.CONFIG.supabase;
+      try {
+        const ext = (f.name.split(".").pop() || "jpg").toLowerCase().replace(/[^a-z0-9]/g, "") || "jpg";
+        const ph = "mo-" + crypto.randomUUID() + "." + ext;
+        const up = await fetch(`${sb.url}/storage/v1/object/moments/${ph}`, {
+          method: "POST", headers: { "apikey": sb.anonKey, "Authorization": "Bearer " + sb.anonKey, "Content-Type": f.type }, body: f
+        });
+        if (!up.ok) throw new Error("photo");
+        const ins = await fetch(`${sb.url}/rest/v1/moments`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json", "apikey": sb.anonKey, "Authorization": "Bearer " + sb.anonKey, "Prefer": "return=minimal" },
+          body: JSON.stringify({ tourist_name: ($("#moName").value || "").trim() || null, trip_id: tripId || null, trip_name: tripName || null, caption: ($("#moCap").value || "").trim() || null, photo_path: ph, lang })
+        });
+        if (!ins.ok) throw new Error("insert");
+        addActivity({ type: "review", message: t("mo_activity") + (tripName ? " — " + tripName : "") });
+        $("#moForm").hidden = true; $("#moOk").hidden = false;
+        loadTripMoments(tripId);
+      } catch (ex) { err.textContent = t("mo_err_fail"); err.hidden = false; btn.disabled = false; btn.textContent = t("mo_post"); }
+    });
+  }
+
+  function loadTripMoments(tripId) {
+    const strip = document.getElementById("tripMoments");
+    const grid = document.getElementById("tripMoGrid");
+    if (!strip || !grid) return;
+    const sb = window.CONFIG.supabase;
+    fetch(`${sb.url}/rest/v1/public_moments?trip_id=eq.${encodeURIComponent(tripId)}&select=*&order=created_at.desc&limit=8`, {
+      headers: { "apikey": sb.anonKey, "Authorization": "Bearer " + sb.anonKey }
+    }).then(r => r.json()).then(rows => {
+      if (Array.isArray(rows) && rows.length) { grid.innerHTML = rows.map(momentCard).join(""); strip.hidden = false; }
+      else strip.hidden = true;
+    }).catch(() => { strip.hidden = true; });
+  }
+
+  function viewMoments() {
+    return `
+      <section class="detail-hero grad-gold tz-band">
+        <div class="container"><h1>${t("mo_title")}</h1><p class="detail-meta">${t("mo_lead")}</p></div>
+      </section>
+      <section class="container section">
+        <div class="center" style="margin-bottom:18px"><a class="btn btn-primary" href="#/trips">📸 ${t("mo_cta")}</a></div>
+        <div class="mo-grid mo-masonry" id="moGrid"><p class="muted">${t("admin_loading")}</p></div>
+      </section>`;
+  }
+  function bindMoments() {
+    const grid = document.getElementById("moGrid");
+    if (!grid) return;
+    const sb = window.CONFIG.supabase;
+    fetch(`${sb.url}/rest/v1/public_moments?select=*&order=created_at.desc&limit=60`, {
+      headers: { "apikey": sb.anonKey, "Authorization": "Bearer " + sb.anonKey }
+    }).then(r => r.json()).then(rows => {
+      grid.innerHTML = (Array.isArray(rows) && rows.length) ? rows.map(momentCard).join("")
+        : `<div class="mo-empty"><span>📸</span><p class="muted">${t("mo_none")}</p><a class="btn btn-gold" href="#/trips">${t("mo_cta")}</a></div>`;
+    }).catch(() => { grid.innerHTML = `<p class="form-error">${t("acct_err")}</p>`; });
+  }
+
+  /* admin: moments moderation (hide / show) */
+  function loadAdminMoments(pass) {
+    const host = document.getElementById("adminMoms");
+    if (!host) return;
+    sbRpc("admin_moments", { p_pass: pass }).then(rows => {
+      rows = Array.isArray(rows) ? rows : [];
+      if (!rows.length) { host.innerHTML = `<p class="muted admin-empty">${t("admin_none")}</p>`; return; }
+      host.innerHTML = `<div class="admin-mom-grid">${rows.map(m => `
+        <div class="admin-mom${m.hidden ? " is-hidden" : ""}">
+          <img src="${moPhotoUrl(m.photo_path)}" alt="" loading="lazy" onerror="this.style.display='none'" />
+          <div class="admin-mom-b">
+            <small>${esc(m.tourist_name || "—")}${m.trip_name ? " · " + esc(m.trip_name) : ""}</small>
+            ${m.caption ? `<p>${esc(m.caption)}</p>` : ""}
+            <button class="btn btn-small" data-mhide="${m.id}" data-h="${m.hidden ? 0 : 1}">${m.hidden ? "👁 " + t("admin_show") : "🚫 " + t("admin_hide")}</button>
+          </div>
+        </div>`).join("")}</div>`;
+      host.querySelectorAll("[data-mhide]").forEach(b => b.addEventListener("click", () => {
+        b.disabled = true;
+        sbRpc("admin_moment_hide", { p_pass: pass, p_id: +b.dataset.mhide, p_hidden: b.dataset.h === "1" })
+          .then(() => loadAdminMoments(pass)).catch(() => { b.disabled = false; alert(t("acct_err")); });
+      }));
+    }).catch(() => { host.innerHTML = `<p class="form-error">${t("acct_err")}</p>`; });
   }
 
   /* ===================================================================
@@ -2301,6 +2448,7 @@
         <button class="admin-tab" data-tab="partners">🤝 ${t("admin_sum_partners")}</button>
         <button class="admin-tab" data-tab="ambs">🌈 ${t("admin_sum_ambs")}</button>
         <button class="admin-tab" data-tab="evs">📅 ${t("admin_sum_evs")}</button>
+        <button class="admin-tab" data-tab="moms">📸 ${t("admin_sum_moms")}</button>
       </div>
       <div class="admin-cat" data-cat="reg">
         <div class="admin-head"><h3>${t("admin_sum_reg")}</h3><div class="admin-actions"><button class="btn btn-small" id="regExport"${regs.length ? "" : " disabled"}>⬇ ${t("admin_export")}</button></div></div>
@@ -2311,7 +2459,8 @@
       <div class="admin-cat" data-cat="chal" hidden><h3>⚠️ ${t("admin_sum_chal")}</h3>${msgTable(chal)}</div>
       <div class="admin-cat" data-cat="partners" hidden><h3>🤝 ${t("admin_sum_partners")}</h3><div id="adminPartners"><p class="muted">${t("admin_loading")}</p></div></div>
       <div class="admin-cat" data-cat="ambs" hidden><h3>🌈 ${t("admin_sum_ambs")}</h3><div id="adminAmbs"><p class="muted">${t("admin_loading")}</p></div></div>
-      <div class="admin-cat" data-cat="evs" hidden><h3>📅 ${t("admin_sum_evs")}</h3><div id="adminEvs"><p class="muted">${t("admin_loading")}</p></div></div>`;
+      <div class="admin-cat" data-cat="evs" hidden><h3>📅 ${t("admin_sum_evs")}</h3><div id="adminEvs"><p class="muted">${t("admin_loading")}</p></div></div>
+      <div class="admin-cat" data-cat="moms" hidden><h3>📸 ${t("admin_sum_moms")}</h3><div id="adminMoms"><p class="muted">${t("admin_loading")}</p></div></div>`;
   }
   function exportCentralCSV(rows) {
     const head = ["Registered", "Name", "Country", "Phone", "Email", "Interest", "Lang"];
@@ -2422,6 +2571,7 @@
         loadAdminPartners(pass);
         loadAdminAmbassadors(pass);
         loadAdminEvents(pass);
+        loadAdminMoments(pass);
       })
       .catch(() => {
         sessionStorage.removeItem("ka_admin_pass");
@@ -2821,6 +2971,7 @@
       case "partner-reset": html = viewPartnerReset(param); break;
       case "services": html = viewServices(); break;
       case "ambassadors": html = viewAmbassadors(); break;
+      case "moments": html = viewMoments(); break;
       case "ambassador-apply": html = viewAmbassadorApply(); break;
       case "events": html = viewEvents(); break;
       case "about": html = viewAbout(); break;
@@ -2865,6 +3016,8 @@
     if (route === "partner-reset") bindPartnerReset();
     if (route === "services") bindServices();
     if (route === "ambassadors") bindAmbassadors();
+    if (route === "moments") bindMoments();
+    if (route === "trip") loadTripMoments(param);
     if (route === "ambassador-apply") bindAmbassadorApply();
     if (route === "events") bindEvents();
     if (route === "home") { buildScrollHero(); setupCineVideo(); bindHomeDiscovery(); loadHomeServices(); loadHomeEvents(); } else stopScrollHero();
@@ -2954,6 +3107,8 @@
 
   /* ---------- save/remove a favourite trip (must be logged in) ---------- */
   document.addEventListener("click", (e) => {
+    const mo = e.target.closest("[data-moment]");
+    if (mo) { if (!getCurrentUser()) { location.hash = "#/login"; return; } openMomentModal(mo.dataset.moment); return; }
     const b = e.target.closest(".fav-btn"); if (!b) return;
     if (!getCurrentUser()) { location.hash = "#/login"; return; }
     const added = toggleFav(b.dataset.fav);
