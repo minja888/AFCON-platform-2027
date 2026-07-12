@@ -1065,7 +1065,13 @@
         </div>
       </section>
       <section class="container detail-body">
-        <p class="detail-summary">${esc(L(a.desc))}</p>
+        ${(function () {
+          const lng = (window.ATTRACTION_LONG || {})[a.id];
+          const paras = lng ? (lng[lang] || lng.en) : null;
+          return (paras && paras.length)
+            ? `<div class="prose place-prose">${paras.map(p => `<p>${esc(p)}</p>`).join("")}</div>`
+            : `<p class="detail-summary">${esc(L(a.desc))}</p>`;
+        })()}
         <div id="placeMap" class="att-map" style="height:320px"></div>
         <div class="place-actions">
           <a class="btn btn-primary" target="_blank" rel="noopener" href="https://www.google.com/maps/search/?api=1&query=${a.lat},${a.lng}">${t("place_directions")} →</a>
