@@ -30,8 +30,6 @@ window.CONFIG = {
       note:  { en: "Giraffes at dusk — Tarangire & Arusha NP", sw: "Twiga machweo — Tarangire na Arusha NP" } }
   ],
   heroVideoRotate: 12000,               // ms each clip shows before crossfading to the next
-  // Attribution for the Creative-Commons hero videos (shown small in the footer).
-  heroVideoCredit: "Safari clips: Wikimedia Commons contributors · CC BY-SA",
   // Optional: paste a form endpoint URL (e.g. Formspree/Google Apps Script/Supabase) to
   // ALSO send registrations to a real server. Leave "" to store on-device only.
   registrationEndpoint: "",
@@ -477,7 +475,24 @@ window.EVENTS = [
     desc: { en: "TIC, RAS Arusha and sector leaders on tourism, agri & Tanzanite value-addition.", sw: "TIC, RAS Arusha na viongozi wa sekta: utalii, kilimo na uongezaji thamani wa Tanzanite." } },
   { id: "afcon-quarter", type: "afcon", date: "2027-07-10", tbc: false, venue: "Samia Suluhu Hassan Stadium",
     name: { en: "AFCON Quarter-final in Arusha", sw: "Robo fainali ya AFCON Arusha" },
-    desc: { en: "Quarter-final night — kick-off 19:00.", sw: "Usiku wa robo fainali — saa 19:00." }, link: "#/matches" }
+    desc: { en: "Quarter-final night — kick-off 19:00.", sw: "Usiku wa robo fainali — saa 19:00." }, link: "#/matches" },
+
+  /* ---- national Tanzania events (context around AFCON) ---- */
+  { id: "nat-saba", type: "conference", date: "2027-07-07", tbc: false, national: true, venue: "Dar es Salaam",
+    name: { en: "Saba Saba — Dar Int'l Trade Fair", sw: "Saba Saba — Maonyesho ya Biashara Dar" },
+    desc: { en: "Tanzania's biggest trade fair — business, industry and international exhibitors.", sw: "Maonyesho makubwa ya biashara Tanzania — biashara, viwanda na waonyeshaji wa kimataifa." } },
+  { id: "nat-nane", type: "culture", date: "2027-08-08", tbc: false, national: true, venue: "Nationwide",
+    name: { en: "Nane Nane — Farmers' Day", sw: "Nane Nane — Siku ya Wakulima" },
+    desc: { en: "National agricultural day celebrating Tanzania's farmers, with regional exhibitions.", sw: "Siku ya kitaifa ya kilimo kusherehekea wakulima wa Tanzania, na maonyesho ya mikoa." } },
+  { id: "nat-migration", type: "culture", date: "2027-07-15", tbc: false, national: true, venue: "Serengeti",
+    name: { en: "The Great Migration season", sw: "Msimu wa Uhamiaji Mkuu" },
+    desc: { en: "Peak river-crossing season in the northern Serengeti — one of Earth's greatest wildlife shows.", sw: "Kilele cha msimu wa kuvuka mito kaskazini mwa Serengeti — moja ya maonyesho makubwa ya wanyamapori duniani." } },
+  { id: "nat-kilimarathon", type: "sports", date: "2027-03-07", tbc: true, national: true, venue: "Moshi / Kilimanjaro",
+    name: { en: "Kilimanjaro Marathon", sw: "Marathon ya Kilimanjaro" },
+    desc: { en: "One of East Africa's most scenic marathons, run in the shadow of Kilimanjaro.", sw: "Moja ya marathon za mandhari zaidi Afrika Mashariki, chini ya Kilimanjaro." } },
+  { id: "nat-union", type: "culture", date: "2027-04-26", tbc: false, national: true, venue: "Nationwide",
+    name: { en: "Union Day", sw: "Siku ya Muungano" },
+    desc: { en: "National holiday marking the union of Tanganyika and Zanzibar.", sw: "Sikukuu ya kitaifa ya Muungano wa Tanganyika na Zanzibar." } }
 ];
 
 /* ---------- SUGGESTED ITINERARIES (Destination-Tanzania style, Arusha edition) ----------

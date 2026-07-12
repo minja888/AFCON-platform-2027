@@ -1491,3 +1491,27 @@ a.exp-teaser-chip:hover { transform: translateY(-1px); border-color: var(--gold)
 .ev-by .ic { color: var(--gold-deep); }
 .ev-type-music { background: rgba(138,106,68,.14); color: #6b4f2e; }
 .ev-type-other { background: var(--cream-2); color: var(--green-deep); }
+
+/* =====================================================================
+   v49 — clock chip (top-right), home universal search/discovery, home events
+   ===================================================================== */
+.clock-chip { display: inline-flex; align-items: center; gap: 7px; padding: 6px 12px; border-radius: 999px;
+  background: linear-gradient(135deg, var(--green), var(--green-deep)); color: #fff; font-size: .82rem; font-weight: 600;
+  box-shadow: var(--shadow); }
+.clock-dot { width: 7px; height: 7px; border-radius: 50%; background: #7ee787; box-shadow: 0 0 0 0 rgba(126,231,135,.7); animation: capPulse 2s infinite; }
+.clock-time { font-variant-numeric: tabular-nums; letter-spacing: .04em; }
+.clock-date { color: rgba(255,255,255,.75); font-weight: 500; }
+@media (max-width: 720px) { .clock-date { display: none; } }
+@media (max-width: 480px) { .clock-chip { padding: 6px 9px; } .clock-time { font-size: .78rem; } }
+/* old full-width topbar no longer used */
+.topbar { display: none !important; }
+
+/* home universal search + discovery */
+.home-search { max-width: 620px; margin: 0 auto 12px; display: block; }
+.home-disc-chips { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin-bottom: 18px; }
+.disc-item { display: contents; }
+.disc-item > * { height: 100%; }
+
+/* home events section */
+#homeEventsSection .ev-list { max-width: 760px; }
+.ev-nat { display: inline-flex; align-items: center; gap: 4px; font-size: .72rem; font-weight: 700; padding: 3px 9px; border-radius: 999px; background: rgba(0,163,221,.12); color: #00679c; }

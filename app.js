@@ -475,26 +475,26 @@
         </div>
       </section>
 
-      <section class="container section trips-section">
+      <section class="container section trips-section" id="planSection">
         <div class="section-head trips-head">
           <div>
             <span class="trips-kicker">${t("sec_trips_kicker")}</span>
-            <h2>${t("sec_trips_title")}</h2>
-            <p class="muted">${t("sec_trips_sub")}</p>
+            <h2>${t("home_plan_title")}</h2>
+            <p class="muted">${t("home_plan_sub")}</p>
           </div>
-          <a href="#/trips" class="link-more">${t("nav_trips")} →</a>
         </div>
-        <div class="card-grid trips-grid">${featured.map(tripCard).join("")}</div>
-        <div class="home-svcs" id="homeSvcs" hidden>
-          <div class="section-head" style="margin-top:34px">
-            <div>
-              <h2>${t("home_svc_t")}</h2>
-              <p class="muted">${t("home_svc_sub")}</p>
-            </div>
-            <a href="#/services" class="link-more">${t("nav_services")} →</a>
-          </div>
-          <div class="card-grid" id="homeSvcGrid"></div>
+        <input type="search" id="homeSearch" class="search-box home-search" placeholder="${t("home_search_ph")}" />
+        <div class="home-disc-chips" id="homeDiscChips">
+          <button class="chip active" data-disc="all">${t("hd_all")}</button>
+          <button class="chip" data-disc="trip">${t("hd_trips")}</button>
+          <button class="chip" data-disc="itin">${t("hd_itin")}</button>
+          <button class="chip" data-disc="svc">${t("hd_svc")}</button>
         </div>
+        <div class="card-grid trips-grid" id="homeDiscover">
+          ${(window.TRIPS || []).map(tr => `<div class="disc-item" data-kind="trip">${tripCard(tr)}</div>`).join("")}
+          ${(window.ITINERARIES || []).map(it => `<div class="disc-item" data-kind="itin">${itinCard(it)}</div>`).join("")}
+        </div>
+        <p class="muted small center" id="homeNoMatch" hidden>${t("exp_no_match")}</p>
       </section>
 
       <section class="container section">
@@ -534,6 +534,18 @@
           ${primaryCta("btn btn-primary btn-lg", true)}
         </div>
       </section>`}
+
+      <section class="container section" id="homeEventsSection">
+        <div class="section-head">
+          <div>
+            <span class="trips-kicker">${t("ev_home_kicker")}</span>
+            <h2>${t("ev_title")}</h2>
+            <p class="muted">${t("ev_home_sub")}</p>
+          </div>
+          <a href="#/events" class="link-more">${t("nav_events")} →</a>
+        </div>
+        <div class="ev-list" id="homeEvList"><p class="muted">${t("admin_loading")}</p></div>
+      </section>
     `;
   }
 
@@ -1102,7 +1114,7 @@
   function allEvents() {
     const nat = (window.EVENTS || []).map(e2 => ({
       title: L(e2.name), etype: e2.type, date: e2.date, venue: e2.venue,
-      desc: L(e2.desc), link: e2.link, tbc: e2.tbc, by: null
+      desc: L(e2.desc), link: e2.link, tbc: e2.tbc, by: null, national: e2.national
     }));
     const partner = (PARTNER_EVENTS || []).map(e2 => ({
       title: e2.title, etype: e2.etype, date: e2.date_start, venue: e2.venue,
@@ -1120,6 +1132,7 @@
           <div class="ev-top">
             <span class="ev-type ev-type-${e2.etype}">${svgIcon(EV_ICON[e2.etype] || "globe", 13)} ${t("ev_" + (e2.etype || "other"))}</span>
             ${e2.tbc ? `<span class="ev-tbc">${t("ev_tbc")}</span>` : ""}
+            ${e2.national ? `<span class="ev-nat">🇹🇿 ${t("ev_national")}</span>` : ""}
             ${e2.by ? `<span class="ev-by">${svgIcon("shield", 12)} ${esc(e2.by)}</span>` : ""}
           </div>
           <h3>${esc(e2.title)}</h3>
@@ -1144,7 +1157,6 @@
         </div>
         <div class="chips" id="evFilters">${chips}</div>
         <div class="ev-list" id="evList">${eventsHtml(f)}</div>
-        <p class="muted small center mt">${t("ev_note")}</p>
       </section>`;
   }
   function bindEvents() {
@@ -1741,19 +1753,75 @@
       </div>`;
   }
 
-  /* home: surface the latest partner services under the trips section */
+  /* home: fold verified partner services INTO the combined discovery grid,
+     then wire the universal search + kind chips so everything is findable. */
   function loadHomeServices() {
-    const wrap = document.getElementById("homeSvcs");
-    const grid = document.getElementById("homeSvcGrid");
-    if (!wrap || !grid) return;
+    const grid = document.getElementById("homeDiscover");
+    if (!grid) return;
     const sb = window.CONFIG.supabase;
-    fetch(`${sb.url}/rest/v1/public_services?select=*&order=created_at.desc&limit=3`, {
+    fetch(`${sb.url}/rest/v1/public_services?select=*&order=created_at.desc`, {
       headers: { "apikey": sb.anonKey, "Authorization": "Bearer " + sb.anonKey }
     }).then(r => r.json()).then(rows => {
-      if (!Array.isArray(rows) || !rows.length) return;      // stays hidden until partners publish
-      grid.innerHTML = rows.map(svcPhotoCard).join("");
-      wrap.hidden = false;
+      if (Array.isArray(rows) && rows.length) {
+        const html = rows.map(s => `<div class="disc-item" data-kind="svc">${svcPhotoCard(s)}</div>`).join("");
+        grid.insertAdjacentHTML("beforeend", html);
+      }
+      applyHomeFilter();
     }).catch(() => {});
+  }
+  function applyHomeFilter() {
+    const grid = document.getElementById("homeDiscover");
+    if (!grid) return;
+    const q = (document.getElementById("homeSearch")?.value || "").trim().toLowerCase();
+    const kind = document.querySelector("#homeDiscChips .chip.active")?.dataset.disc || "all";
+    let shown = 0;
+    Array.from(grid.children).forEach(el2 => {
+      const okKind = kind === "all" || el2.dataset.kind === kind;
+      const okText = !q || el2.textContent.toLowerCase().includes(q);
+      const show = okKind && okText;
+      el2.style.display = show ? "" : "none";
+      if (show) shown++;
+    });
+    const nm = document.getElementById("homeNoMatch"); if (nm) nm.hidden = shown > 0;
+  }
+  /* home: upcoming events (national + partner) near the bottom of the page */
+  function loadHomeEvents() {
+    const host = document.getElementById("homeEvList");
+    if (!host) return;
+    const render = () => {
+      const today = new Date().toISOString().slice(0, 10);
+      const upcoming = allEvents().filter(e2 => (e2.date || "") >= today).slice(0, 5);
+      const past = allEvents().slice(0, 5);
+      const list = upcoming.length ? upcoming : past;
+      host.innerHTML = list.length ? list.map(e2 => `
+        <article class="ev-item">
+          <div class="ev-date"><span class="ev-day">${new Date(e2.date + "T00:00:00").getDate()}</span><span class="ev-mon">${new Date(e2.date + "T00:00:00").toLocaleDateString(lang === "sw" ? "sw-TZ" : "en", { month: "short" })}</span></div>
+          <div class="ev-body">
+            <div class="ev-top">
+              <span class="ev-type ev-type-${e2.etype}">${svgIcon(EV_ICON[e2.etype] || "globe", 13)} ${t("ev_" + (e2.etype || "other"))}</span>
+              ${e2.national ? `<span class="ev-nat">🇹🇿 ${t("ev_national")}</span>` : ""}
+              ${e2.by ? `<span class="ev-by">${svgIcon("shield", 12)} ${esc(e2.by)}</span>` : ""}
+            </div>
+            <h3>${esc(e2.title)}</h3>
+            <p class="ev-meta">${e2.venue ? svgIcon("pin", 13) + " " + esc(e2.venue) + " · " : ""}${new Date(e2.date + "T00:00:00").toLocaleDateString(lang === "sw" ? "sw-TZ" : lang, { day: "numeric", month: "long", year: "numeric" })}</p>
+          </div>
+        </article>`).join("") : `<p class="muted">${t("ev_none")}</p>`;
+    };
+    render();
+    const sb = window.CONFIG.supabase;
+    fetch(`${sb.url}/rest/v1/public_events?select=*&order=date_start`, {
+      headers: { "apikey": sb.anonKey, "Authorization": "Bearer " + sb.anonKey }
+    }).then(r => r.json()).then(rows => { PARTNER_EVENTS = Array.isArray(rows) ? rows : []; render(); }).catch(() => {});
+  }
+  function bindHomeDiscovery() {
+    const s = document.getElementById("homeSearch");
+    if (s) s.addEventListener("input", applyHomeFilter);
+    const chips = document.getElementById("homeDiscChips");
+    if (chips) chips.addEventListener("click", (e) => {
+      const b = e.target.closest("[data-disc]"); if (!b) return;
+      chips.querySelectorAll(".chip").forEach(c => c.classList.remove("active"));
+      b.classList.add("active"); applyHomeFilter();
+    });
   }
 
   /* ---- partner password reset (from the emailed 24h link) ---- */
@@ -1939,17 +2007,7 @@
       </section>
 
       <section class="container section">
-        <h2 class="page-title" style="text-transform:none">${t("about_how_t")}</h2>
-        <div class="step-grid">
-          ${step("step1_t","step1_d")}${step("step2_t","step2_d")}
-          ${step("step3_t","step3_d")}${step("step4_t","step4_d")}
-        </div>
-        <h2 class="page-title mt">${t("about_who")}</h2>
-        <div class="win-grid">
-          ${win("🌱","win1_t","win1_d")}${win("🛍️","win2_t","win2_d")}
-          ${win("🏛️","win3_t","win3_d")}${win("✈️","win4_t","win4_d")}
-        </div>
-        <div class="center mt hero-cta-row" style="justify-content:center">
+        <div class="center hero-cta-row" style="justify-content:center">
           <a href="#/trips" class="btn btn-primary">${t("about_cta")}</a>
           <a href="#/ambassadors" class="btn btn-ghost">${t("amb_apply")}</a>
         </div>
@@ -2809,7 +2867,7 @@
     if (route === "ambassadors") bindAmbassadors();
     if (route === "ambassador-apply") bindAmbassadorApply();
     if (route === "events") bindEvents();
-    if (route === "home") { buildScrollHero(); setupCineVideo(); loadHomeServices(); } else stopScrollHero();
+    if (route === "home") { buildScrollHero(); setupCineVideo(); bindHomeDiscovery(); loadHomeServices(); loadHomeEvents(); } else stopScrollHero();
     setupReveal();
   }
 
