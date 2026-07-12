@@ -437,7 +437,7 @@
           <p class="hero-sub">${t("hero_sub")}</p>
           <div class="hero-cta-row">
             ${primaryCta("btn btn-primary")}
-            <a href="#/trips" class="btn btn-ghost btn-on-dark">${t("hero_cta")}</a>
+            <a href="#/explore" class="btn btn-ghost btn-on-dark">${t("nav_explore")}</a>
           </div>
           <div class="scroll-hint" aria-hidden="true">
             <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"/><path d="m6 13 6 6 6-6"/></svg>
@@ -491,10 +491,14 @@
           <button class="chip" data-disc="svc">${t("hd_svc")}</button>
         </div>
         <div class="card-grid trips-grid" id="homeDiscover">
-          ${(window.TRIPS || []).map(tr => `<div class="disc-item" data-kind="trip">${tripCard(tr)}</div>`).join("")}
-          ${(window.ITINERARIES || []).map(it => `<div class="disc-item" data-kind="itin">${itinCard(it)}</div>`).join("")}
+          ${(window.TRIPS || []).slice(0, 4).map(tr => `<div class="disc-item" data-kind="trip">${tripCard(tr)}</div>`).join("")}
+          ${(window.ITINERARIES || []).slice(0, 2).map(it => `<div class="disc-item" data-kind="itin">${itinCard(it)}</div>`).join("")}
         </div>
         <p class="muted small center" id="homeNoMatch" hidden>${t("exp_no_match")}</p>
+        <div class="center mt hero-cta-row" style="justify-content:center">
+          <a href="#/trips" class="btn btn-primary">${t("home_see_all")} →</a>
+          <a href="#/explore" class="btn btn-ghost">${t("nav_explore")}</a>
+        </div>
       </section>
 
       <section class="container section">
@@ -653,7 +657,6 @@
         </ul>
         <div class="detail-cta">
           <button class="btn btn-primary btn-wa" data-book="${tr.id}">💬 ${t("book_whatsapp")}</button>
-          <button class="btn btn-gold" data-moment="${tr.id}">📸 ${t("mo_share")}</button>
           <button class="btn btn-ghost fav-btn ${isFav(tr.id) ? "on" : ""}" data-fav="${tr.id}" aria-pressed="${isFav(tr.id)}">
             <span class="fav-heart">♥</span> <span class="fav-txt">${isFav(tr.id) ? t("fav_saved") : t("fav_save")}</span>
           </button>
@@ -1209,14 +1212,16 @@
   }
 
   function openMomentModal(tripId) {
-    const tr = (window.TRIPS || []).find(x => x.id === tripId);
-    const tripName = tr ? L(tr.name) : "";
     const u = getCurrentUser() || {};
+    const tripOpts = `<option value="">${t("mo_pick_trip")}</option>` +
+      (window.TRIPS || []).map(x => `<option value="${x.id}"${x.id === tripId ? " selected" : ""}>${esc(L(x.name))}</option>`).join("");
     modalBody.innerHTML = `
       <div class="mo-form-wrap">
         <h3 id="modalTitle">${t("mo_share")}</h3>
-        <p class="muted">${t("mo_share_sub")}${tripName ? " — <strong>" + esc(tripName) + "</strong>" : ""}</p>
+        <p class="muted">${t("mo_share_sub")}</p>
         <form id="moForm" novalidate>
+          <div class="field"><label for="moTrip">${t("mo_which_trip")}</label>
+            <select id="moTrip">${tripOpts}</select></div>
           <div class="field"><label for="moName">${t("reg_name")}</label>
             <input id="moName" type="text" value="${esc(u.name || "")}" placeholder="${t("mo_name_ph")}" /></div>
           <div class="field"><label for="moPhoto">${t("mo_photo")} <span class="req">*</span></label>
@@ -1245,6 +1250,9 @@
       const f = photo.files[0];
       if (!f) { err.textContent = t("mo_err_photo"); err.hidden = false; return; }
       if (!/^image\//.test(f.type) || f.size > 5 * 1024 * 1024) { err.textContent = t("pp_s_photo_big"); err.hidden = false; return; }
+      const selId = ($("#moTrip") && $("#moTrip").value) || tripId || "";
+      const selTr = (window.TRIPS || []).find(x => x.id === selId);
+      const tripName = selTr ? L(selTr.name) : "";
       const btn = $("#moForm button[type=submit]"); btn.disabled = true; btn.textContent = "⏳ " + t("ps_uploading");
       const sb = window.CONFIG.supabase;
       try {
@@ -1257,12 +1265,13 @@
         const ins = await fetch(`${sb.url}/rest/v1/moments`, {
           method: "POST",
           headers: { "Content-Type": "application/json", "apikey": sb.anonKey, "Authorization": "Bearer " + sb.anonKey, "Prefer": "return=minimal" },
-          body: JSON.stringify({ tourist_name: ($("#moName").value || "").trim() || null, trip_id: tripId || null, trip_name: tripName || null, caption: ($("#moCap").value || "").trim() || null, photo_path: ph, lang })
+          body: JSON.stringify({ tourist_name: ($("#moName").value || "").trim() || null, trip_id: selId || null, trip_name: tripName || null, caption: ($("#moCap").value || "").trim() || null, photo_path: ph, lang })
         });
         if (!ins.ok) throw new Error("insert");
         addActivity({ type: "review", message: t("mo_activity") + (tripName ? " — " + tripName : "") });
         $("#moForm").hidden = true; $("#moOk").hidden = false;
-        loadTripMoments(tripId);
+        if (document.getElementById("moGrid")) bindMoments();     // refresh the gallery
+        loadTripMoments(selId);
       } catch (ex) { err.textContent = t("mo_err_fail"); err.hidden = false; btn.disabled = false; btn.textContent = t("mo_post"); }
     });
   }
@@ -1286,19 +1295,23 @@
         <div class="container"><h1>${t("mo_title")}</h1><p class="detail-meta">${t("mo_lead")}</p></div>
       </section>
       <section class="container section">
-        <div class="center" style="margin-bottom:18px"><a class="btn btn-primary" href="#/trips">📸 ${t("mo_cta")}</a></div>
+        <div class="center" style="margin-bottom:18px"><button class="btn btn-primary" id="moShareBtn">📸 ${t("mo_cta")}</button></div>
         <div class="mo-grid mo-masonry" id="moGrid"><p class="muted">${t("admin_loading")}</p></div>
       </section>`;
   }
   function bindMoments() {
     const grid = document.getElementById("moGrid");
     if (!grid) return;
+    const shareBtn = document.getElementById("moShareBtn");
+    const openShare = () => { if (!getCurrentUser()) { location.hash = "#/login"; return; } openMomentModal(); };
+    if (shareBtn) shareBtn.addEventListener("click", openShare);
     const sb = window.CONFIG.supabase;
     fetch(`${sb.url}/rest/v1/public_moments?select=*&order=created_at.desc&limit=60`, {
       headers: { "apikey": sb.anonKey, "Authorization": "Bearer " + sb.anonKey }
     }).then(r => r.json()).then(rows => {
       grid.innerHTML = (Array.isArray(rows) && rows.length) ? rows.map(momentCard).join("")
-        : `<div class="mo-empty"><span>📸</span><p class="muted">${t("mo_none")}</p><a class="btn btn-gold" href="#/trips">${t("mo_cta")}</a></div>`;
+        : `<div class="mo-empty"><span>📸</span><p class="muted">${t("mo_none")}</p><button class="btn btn-gold" id="moShareBtn2">${t("mo_cta")}</button></div>`;
+      const b2 = document.getElementById("moShareBtn2"); if (b2) b2.addEventListener("click", openShare);
     }).catch(() => { grid.innerHTML = `<p class="form-error">${t("acct_err")}</p>`; });
   }
 
@@ -1308,6 +1321,7 @@
     if (!host) return;
     sbRpc("admin_moments", { p_pass: pass }).then(rows => {
       rows = Array.isArray(rows) ? rows : [];
+      setAdminBadge("badgeMoms", rows.length);
       if (!rows.length) { host.innerHTML = `<p class="muted admin-empty">${t("admin_none")}</p>`; return; }
       host.innerHTML = `<div class="admin-mom-grid">${rows.map(m => `
         <div class="admin-mom${m.hidden ? " is-hidden" : ""}">
@@ -2445,10 +2459,10 @@
         <button class="admin-tab" data-tab="enq">📨 ${t("admin_sum_enq")} (${enq.length})</button>
         <button class="admin-tab" data-tab="rev">⭐ ${t("admin_sum_rev")} (${rev.length})</button>
         <button class="admin-tab" data-tab="chal">⚠️ ${t("admin_sum_chal")} (${chal.length})</button>
-        <button class="admin-tab" data-tab="partners">🤝 ${t("admin_sum_partners")}</button>
-        <button class="admin-tab" data-tab="ambs">🌈 ${t("admin_sum_ambs")}</button>
-        <button class="admin-tab" data-tab="evs">📅 ${t("admin_sum_evs")}</button>
-        <button class="admin-tab" data-tab="moms">📸 ${t("admin_sum_moms")}</button>
+        <button class="admin-tab" data-tab="partners">🤝 ${t("admin_sum_partners")}<span class="admin-badge" id="badgePartners" hidden></span></button>
+        <button class="admin-tab" data-tab="ambs">🌈 ${t("admin_sum_ambs")}<span class="admin-badge" id="badgeAmbs" hidden></span></button>
+        <button class="admin-tab" data-tab="evs">📅 ${t("admin_sum_evs")}<span class="admin-badge" id="badgeEvs" hidden></span></button>
+        <button class="admin-tab" data-tab="moms">📸 ${t("admin_sum_moms")}<span class="admin-badge" id="badgeMoms" hidden></span></button>
       </div>
       <div class="admin-cat" data-cat="reg">
         <div class="admin-head"><h3>${t("admin_sum_reg")}</h3><div class="admin-actions"><button class="btn btn-small" id="regExport"${regs.length ? "" : " disabled"}>⬇ ${t("admin_export")}</button></div></div>
@@ -2579,12 +2593,19 @@
       });
   }
 
+  function setAdminBadge(id, n) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    if (n > 0) { el.textContent = n; el.hidden = false; } else { el.hidden = true; }
+  }
+
   /* admin: partner-event queue (approve / reject) */
   function loadAdminEvents(pass) {
     const host = document.getElementById("adminEvs");
     if (!host) return;
     sbRpc("admin_events", { p_pass: pass }).then(rows => {
       rows = Array.isArray(rows) ? rows : [];
+      setAdminBadge("badgeEvs", rows.filter(x => x.status === "pending").length);
       if (!rows.length) { host.innerHTML = `<p class="muted admin-empty">${t("admin_none")}</p>`; return; }
       const stPill = (st) => `<span class="pstat pstat-${st}">${st === "approved" ? "✓" : st === "rejected" ? "✕" : "⏳"} ${t("pp_st_" + st)}</span>`;
       host.innerHTML = `<div class="table-wrap"><table class="reg-table">
@@ -2614,6 +2635,7 @@
     if (!host) return;
     sbRpc("admin_ambassadors", { p_pass: pass }).then(rows => {
       rows = Array.isArray(rows) ? rows : [];
+      setAdminBadge("badgeAmbs", rows.filter(x => x.status === "pending").length);
       if (!rows.length) { host.innerHTML = `<p class="muted admin-empty">${t("admin_none")}</p>`; return; }
       const stPill = (st) => `<span class="pstat pstat-${st}">${st === "approved" ? "✓" : st === "rejected" ? "✕" : "⏳"} ${t("pp_st_" + st)}</span>`;
       host.innerHTML = `<div class="admin-head"><h4 style="margin:0">${rows.length} ${t("admin_sum_ambs")}</h4><button class="btn btn-small" id="ambExport">⬇ ${t("admin_export")}</button></div>
@@ -2665,6 +2687,7 @@
     if (!host) return;
     sbRpc("admin_partners", { p_pass: pass }).then(d => {
       const rows = (d && d.partners) || [];
+      setAdminBadge("badgePartners", rows.filter(x => x.status === "pending").length);
       const exportBar = `<div class="admin-head"><h4 style="margin:0">${rows.length} ${t("admin_sum_partners")}</h4><button class="btn btn-small" id="partExport">⬇ ${t("admin_export")}</button></div>`;
       if (!rows.length) { host.innerHTML = `<p class="muted admin-empty">${t("admin_none")}</p>`; return; }
       const stPill = (s) => `<span class="pstat pstat-${s}">${s === "approved" ? "✓" : s === "rejected" ? "✕" : "⏳"} ${t("pp_st_" + s)}</span>`;

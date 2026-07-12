@@ -373,6 +373,18 @@ window.ATTRACTIONS = [
   { id: "themi-falls",  cat: "nature",   icon: "🏞️", lat: -3.3475, lng: 36.7048,
     name: { en: "Themi Waterfalls", sw: "Maporomoko ya Themi" },
     desc: { en: "A hidden waterfall hike inside Arusha city's green edge.", sw: "Maporomoko yaliyofichika pembezoni mwa kijani mwa jiji la Arusha." } },
+  { id: "napuru-falls", cat: "nature",   icon: "💦", lat: -3.3050, lng: 36.7550,
+    name: { en: "Napuru Waterfalls", sw: "Maporomoko ya Napuru" },
+    desc: { en: "A lush, twin-drop waterfall in a green gorge just minutes from Arusha city — a favourite short escape.", sw: "Maporomoko mapacha katika bonde la kijani dakika chache tu kutoka jiji la Arusha — pumziko fupi la kupendwa." } },
+  { id: "materuni-falls", cat: "nature", icon: "☕", lat: -3.2167, lng: 37.3500,
+    name: { en: "Materuni Waterfalls", sw: "Maporomoko ya Materuni" },
+    desc: { en: "An 80-metre waterfall on Kilimanjaro's foothills, paired with a hands-on Chagga coffee experience.", sw: "Maporomoko ya mita 80 miteremko ya Kilimanjaro, pamoja na uzoefu wa kahawa ya Kichaga." } },
+  { id: "ndoro-falls",  cat: "nature",   icon: "🌊", lat: -3.3667, lng: 37.0333,
+    name: { en: "Ndoro Waterfalls", sw: "Maporomoko ya Ndoro" },
+    desc: { en: "A peaceful cascade in the Usa River area east of Arusha, surrounded by coffee and banana farms.", sw: "Maporomoko tulivu eneo la Usa River mashariki mwa Arusha, yakizungukwa na mashamba ya kahawa na migomba." } },
+  { id: "kalalani-falls", cat: "nature", icon: "🏞️", lat: -3.2500, lng: 36.9000,
+    name: { en: "Kalalani (Meru) Waterfalls", sw: "Maporomoko ya Kalalani (Meru)" },
+    desc: { en: "Forest waterfalls tumbling off the slopes of Mount Meru, reached by a lovely guided nature walk.", sw: "Maporomoko ya msituni yanayoteremka miteremko ya Mlima Meru, yanafikiwa kwa matembezi mazuri ya asili." } },
   { id: "decl-museum",  cat: "museum",   icon: "🏛️", lat: -3.3722, lng: 36.6889,
     name: { en: "Arusha Declaration Museum", sw: "Makumbusho ya Azimio la Arusha" },
     desc: { en: "Where Mwalimu Nyerere's 1967 Arusha Declaration story is kept alive.", sw: "Historia ya Azimio la Arusha la 1967 la Mwalimu Nyerere." } },
@@ -430,6 +442,10 @@ window.ATTRACTIONS = [
     "lake-duluti":["1439066615861-d1af74d74000", "grad-teal"],  // lake forest
     chemka:       ["1437482078695-73f5ca6c96e2", "grad-teal"],  // turquoise water
     "themi-falls":["1432405972618-c60b0225b8f9", "grad-green"], // waterfall
+    "napuru-falls":["1437482078695-73f5ca6c96e2", "grad-teal"], // waterfall
+    "materuni-falls":["1508233620744-7ff2b5b9f88f", "grad-brown"], // coffee falls
+    "ndoro-falls":["1465146633011-14f8e0781093", "grad-teal"], // cascade
+    "kalalani-falls":["1467890947394-8171244e5410", "grad-green"], // forest falls
     "decl-museum":["1554907984-15263bfd63bd",    "grad-brown"], // museum interior
     "nat-history":["1566127992631-137a642a90f4", "grad-brown"], // old building
     "tanzanite-mus":["1515562141207-7a88fb7ce338","grad-gold"], // gemstone
