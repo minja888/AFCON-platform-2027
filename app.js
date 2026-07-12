@@ -199,7 +199,9 @@
     shield:   '<path d="M12 3 5 6v6c0 4.5 3.2 7.5 7 9 3.8-1.5 7-4.5 7-9V6z"/><path d="m9 12 2 2 4-4"/>',
     globe:    '<circle cx="12" cy="12" r="9"/><path d="M3 12h18"/><path d="M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/>',
     plane:    '<path d="M21 3 3 10l6 3 3 6z"/><path d="m13 13 4 8 4-18"/>',
-    dove:     '<path d="M12 21s-7-4.5-7-10a4 4 0 0 1 7-2 4 4 0 0 1 7 2c0 5.5-7 10-7 10z"/>'
+    dove:     '<path d="M12 21s-7-4.5-7-10a4 4 0 0 1 7-2 4 4 0 0 1 7 2c0 5.5-7 10-7 10z"/>',
+    sparkle:  '<path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8z"/><path d="M19 15l.7 2 2 .7-2 .7-.7 2-.7-2-2-.7 2-.7z"/>',
+    chat:     '<path d="M4 5h16v10H9l-4 4V5z"/><path d="M8 9h8M8 12h5"/>'
   };
   function svgIcon(name, size) {
     const s = size || 22;
@@ -1131,7 +1133,8 @@
     }));
     const partner = (PARTNER_EVENTS || []).map(e2 => ({
       title: e2.title, etype: e2.etype, date: e2.date_start, venue: e2.venue,
-      desc: e2.description, link: e2.link, tbc: false, by: e2.company_name
+      desc: e2.description, link: e2.link, tbc: false, by: e2.company_name,
+      photo: e2.photo_path, partner_slug: e2.partner_slug
     }));
     return nat.concat(partner).sort((a, b) => (a.date || "").localeCompare(b.date || ""));
   }
@@ -1142,7 +1145,7 @@
     const yr = d.getFullYear();
     const inner = `
         <div class="ev-card-media ${e2.grad || EV_GRAD[e2.etype] || "grad-green"}">
-          <span class="ev-card-icon">${svgIcon(EV_ICON[e2.etype] || "globe", 30)}</span>
+          ${e2.photo ? `<img class="ev-card-img" src="${svcPhotoUrl(e2.photo)}" alt="${esc(e2.title)}" loading="lazy" decoding="async" onerror="this.remove()" /><span class="ev-card-scrim"></span>` : `<span class="ev-card-icon">${svgIcon(EV_ICON[e2.etype] || "globe", 30)}</span>`}
           <span class="ev-card-date"><b>${day}</b><small>${mon} ${yr}</small></span>
           ${e2.national ? `<span class="ev-card-nat">🇹🇿</span>` : ""}
         </div>
@@ -1556,14 +1559,57 @@
           ${why.map(w => `<div class="card pw-card"><span class="inv-icon">${svgIcon(w[0], 24)}</span><h3>${w[1]}</h3><p class="muted">${w[2]}</p></div>`).join("")}
         </div>
         <h2 class="page-title mt" style="text-transform:none">${t("pw_how")}</h2>
-        <div class="pw-steps">
-          ${steps.map((s, i) => `<div class="pw-step"><span class="pw-step-n">${i + 1}</span><strong>${s.split("—")[0]}</strong><small>${(s.split("—")[1] || "").trim()}</small></div>`).join("")}
+        <div class="pw-flow" id="pwFlow">
+          <div class="pw-flow-track" id="pwFlowTrack">
+            ${steps.map((s, i) => `
+              <button type="button" class="pw-chip${i === 0 ? " is-active" : ""}" data-pwstep="${i}">
+                <span class="pw-chip-n">${svgIcon(PW_STEP_ICON[i], 18)}</span>
+                <span class="pw-chip-t">${esc(s.split("—")[0].trim())}</span>
+                ${i < steps.length - 1 ? `<span class="pw-chip-arrow">→</span>` : ""}
+              </button>`).join("")}
+          </div>
+          <div class="pw-slides" id="pwSlides">
+            ${steps.map((s, i) => `
+              <div class="pw-slide${i === 0 ? " is-active" : ""}" data-pwslide="${i}">
+                <span class="pw-slide-n">${i + 1}</span>
+                <span class="pw-slide-ic">${svgIcon(PW_STEP_ICON[i], 34)}</span>
+                <div class="pw-slide-tx"><strong>${esc(s.split("—")[0].trim())}</strong><p>${esc((s.split("—")[1] || "").trim())}</p></div>
+              </div>`).join("")}
+            <button type="button" class="pw-nav pw-prev" id="pwPrev" aria-label="${t("pw_slide_prev")}">‹</button>
+            <button type="button" class="pw-nav pw-next" id="pwNext" aria-label="${t("pw_slide_next")}">›</button>
+          </div>
+          <div class="pw-dots" id="pwDots">${steps.map((_, i) => `<button type="button" class="pw-dot${i === 0 ? " is-active" : ""}" data-pwdot="${i}" aria-label="${i + 1}"></button>`).join("")}</div>
         </div>
         <div class="center mt hero-cta-row" style="justify-content:center">
           <a class="btn btn-primary btn-lg" href="#/partner-signup">${t("pw_cta")}</a>
           <a class="btn btn-ghost" href="#/partner">${t("pw_login")}</a>
         </div>
       </section>`;
+  }
+  const PW_STEP_ICON = ["users", "building", "shield", "map", "sparkle"];
+  function bindPartners() {
+    const flow = document.getElementById("pwFlow"); if (!flow) return;
+    const slides = Array.from(flow.querySelectorAll(".pw-slide"));
+    const chips = Array.from(flow.querySelectorAll(".pw-chip"));
+    const dots = Array.from(flow.querySelectorAll(".pw-dot"));
+    let idx = 0, timer = null;
+    const go = (i) => {
+      idx = (i + slides.length) % slides.length;
+      slides.forEach((s, n) => s.classList.toggle("is-active", n === idx));
+      chips.forEach((c, n) => c.classList.toggle("is-active", n === idx));
+      dots.forEach((d, n) => d.classList.toggle("is-active", n === idx));
+    };
+    const start = () => { if (reduceMotion) return; stop(); timer = setInterval(() => go(idx + 1), 4200); };
+    const stop = () => { if (timer) clearInterval(timer); timer = null; };
+    flow.addEventListener("click", (e) => {
+      const chip = e.target.closest("[data-pwstep]"); const dot = e.target.closest("[data-pwdot]");
+      if (chip) { go(+chip.dataset.pwstep); start(); }
+      else if (dot) { go(+dot.dataset.pwdot); start(); }
+      else if (e.target.closest("#pwNext")) { go(idx + 1); start(); }
+      else if (e.target.closest("#pwPrev")) { go(idx - 1); start(); }
+    });
+    flow.addEventListener("mouseenter", stop); flow.addEventListener("mouseleave", start);
+    start();
   }
 
   function viewPartnerSignup() {
@@ -1718,72 +1764,178 @@
                       approved: `<span class="pstat pstat-approved">✓ ${t("pp_st_approved")}</span>`,
                       rejected: `<span class="pstat pstat-rejected">✕ ${t("pp_st_rejected")}</span>` }[p.status] || "";
     const catOpts = P_TYPES.map(tt => `<option value="${tt}">${t("pt_" + tt)}</option>`).join("");
+    const approved = p.status === "approved";
+    const tab = (id, icon, label, badge) => `<button type="button" class="pdash-tab" data-ptab="${id}">
+        ${svgIcon(icon, 16)}<span>${label}</span>${badge ? `<span class="pdash-tab-badge" id="pdBadge_${id}" hidden></span>` : ""}</button>`;
+    const lock = `<div class="pdash-lock">${svgIcon("shield", 26)}<h3>${p.status === "rejected" ? t("pp_rejected_t") : t("pp_pending_t")}</h3><p class="muted">${p.status === "rejected" ? t("pp_rejected_d") : t("pp_pending_d")}</p></div>`;
     return `
-      <section class="detail-hero grad-green tz-band">
-        <div class="container">
-          <h1>${esc(p.company)}</h1>
-          <p class="detail-meta">${t("pt_" + p.ptype)} · ${stBadge}</p>
+      <section class="pdash-hero tz-band">
+        <div class="container pdash-hero-in">
+          <span class="pdash-avatar" id="pdAvatar">${(p.company || "?").trim().charAt(0).toUpperCase()}</span>
+          <div class="pdash-hero-tx">
+            <p class="pdash-hi">${t("pd_welcome")}</p>
+            <h1>${esc(p.company)}</h1>
+            <p class="detail-meta">${t("pt_" + p.ptype)} · ${stBadge}</p>
+          </div>
+          <button class="btn btn-ghost btn-on-dark pdash-logout" id="pLogout">${t("admin_logout")}</button>
         </div>
       </section>
-      <section class="container section">
-        ${p.status !== "approved" ? `<div class="exp-lock" style="max-width:560px"><h2>${p.status === "rejected" ? t("pp_rejected_t") : t("pp_pending_t")}</h2><p class="muted">${p.status === "rejected" ? t("pp_rejected_d") : t("pp_pending_d")}</p></div>` : `
-        <h2 class="acct-section-h">${t("pp_add_h")}</h2>
-        <form id="svcForm" class="reg-form pform" novalidate>
-          <div class="field"><label for="sTitle">${t("pp_s_title")} <span class="req">*</span></label>
-            <input id="sTitle" type="text" placeholder="${t("pp_s_title_ph")}" /></div>
-          <div class="field"><label for="sCat">${t("ps_type")}</label>
-            <select id="sCat">${catOpts}</select></div>
-          <div class="field"><label for="sDesc">${t("pp_s_desc")}</label>
-            <textarea id="sDesc" rows="3" class="acct-msg"></textarea></div>
-          <div class="field"><label for="sPrice">${t("pp_s_price")}</label>
-            <div class="pg-input"><span>$</span><input id="sPrice" type="number" min="0" step="1" /></div></div>
-          <div class="field"><label for="sArea">${t("pp_s_area")} <span class="req">*</span></label>
-            <input id="sArea" type="text" placeholder="${t("pp_s_area_ph")}" />
-            <p class="field-note">${t("pp_s_map_note")}</p>
-            <div id="svcMap" class="att-map" style="height:280px"></div>
-            <input type="hidden" id="sLat" /><input type="hidden" id="sLng" /></div>
-          <div class="field"><label for="sWa">${t("pp_s_wa")} <span class="req">*</span></label>
-            <input id="sWa" type="tel" placeholder="255XXXXXXXXX" /></div>
-          <div class="field"><label for="sPhotos">${t("pp_s_photos")}</label>
-            <input id="sPhotos" type="file" accept="image/jpeg,image/png,image/webp" multiple />
-            <p class="field-note">${t("pp_s_photos_note")}</p></div>
-          <div id="sErr" class="form-error" role="alert" hidden></div>
-          <div class="form-ok" id="sOk" hidden>✓ ${t("pp_s_ok")}</div>
-          <button type="submit" class="btn btn-primary">${t("pp_s_add")}</button>
-        </form>
-        <h2 class="acct-section-h">${t("pp_mine_h")}</h2>
-        <div id="mySvcs"><p class="muted">${t("admin_loading")}</p></div>
 
-        <h2 class="acct-section-h">${t("pe_add_h")}</h2>
-        <p class="muted small">${t("pe_add_sub")}</p>
-        <form id="peForm" class="reg-form pform" novalidate>
-          <div class="field"><label for="peTitle">${t("pe_title")} <span class="req">*</span></label>
-            <input id="peTitle" type="text" placeholder="${t("pe_title_ph")}" /></div>
-          <div class="field"><label for="peType">${t("ev_type_l")}</label>
-            <select id="peType">
-              <option value="culture">${t("ev_culture")}</option>
-              <option value="sports">${t("ev_sports")}</option>
-              <option value="conference">${t("ev_conference")}</option>
-              <option value="music">${t("ev_music")}</option>
-              <option value="other">${t("pt_other")}</option>
-            </select></div>
-          <div class="field"><label for="peStart">${t("pe_start")} <span class="req">*</span></label>
-            <input id="peStart" type="date" /></div>
-          <div class="field"><label for="peEnd">${t("pe_end")}</label>
-            <input id="peEnd" type="date" /></div>
-          <div class="field"><label for="peVenue">${t("pe_venue")}</label>
-            <input id="peVenue" type="text" placeholder="${t("pe_venue_ph")}" /></div>
-          <div class="field"><label for="peDesc">${t("pp_s_desc")}</label>
-            <textarea id="peDesc" rows="3" class="acct-msg"></textarea></div>
-          <div class="field"><label for="peLink">${t("pe_link")}</label>
-            <input id="peLink" type="url" placeholder="https://..." /></div>
-          <div id="peErr" class="form-error" role="alert" hidden></div>
-          <div class="form-ok" id="peOk" hidden>✓ ${t("pe_ok")}</div>
-          <button type="submit" class="btn btn-primary">${t("pe_submit")}</button>
-        </form>
-        <div id="myEvents"></div>`}
-        <div class="center mt"><button class="btn btn-ghost" id="pLogout">${t("admin_logout")}</button></div>
+      <nav class="pdash-tabs container" id="pdashTabs" role="tablist">
+        ${tab("home", "sparkle", t("pd_tab_home"))}
+        ${tab("profile", "users", t("pd_tab_profile"))}
+        ${tab("listings", "map", t("pd_tab_listings"))}
+        ${tab("events", "globe", t("pd_tab_events"))}
+        ${tab("enquiries", "chat", t("pd_tab_enquiries"), true)}
+      </nav>
+
+      <section class="container section pdash-body">
+        <!-- OVERVIEW -->
+        <div class="pdash-panel is-active" data-ppanel="home">
+          <div class="pdash-setup card">
+            <div class="pdash-setup-head">
+              <div><h2 class="pdash-h">${t("pd_setup_h")}</h2><p class="muted small">${t("pd_setup_sub")}</p></div>
+              <div class="pdash-ring" id="pdRing"><svg viewBox="0 0 44 44"><circle class="ring-bg" cx="22" cy="22" r="19"/><circle class="ring-fg" id="pdRingFg" cx="22" cy="22" r="19"/></svg><span id="pdRingPct">0%</span></div>
+            </div>
+            <ol class="pdash-steps" id="pdSteps"></ol>
+          </div>
+          <div class="pdash-stats" id="pdStats"></div>
+        </div>
+
+        <!-- PROFILE (always available) -->
+        <div class="pdash-panel" data-ppanel="profile">
+          <div class="pdash-panel-head"><div><h2 class="pdash-h">${t("pd_profile_h")}</h2><p class="muted small">${t("pd_profile_sub")}</p></div>
+            <a class="btn btn-small btn-ghost" id="pdViewPublic" target="_blank" rel="noopener" href="#/partner-profile/${esc(p.slug || "")}">${svgIcon("globe", 14)} ${t("pd_view_public")}</a></div>
+          <form id="pfProfile" class="reg-form pform pdash-form" novalidate>
+            <div class="pf-logo-row">
+              <div class="pf-logo-prev" id="pfLogoPrev">${(p.company || "?").trim().charAt(0).toUpperCase()}</div>
+              <div class="field pf-logo-field"><label for="pfLogo">${t("pd_logo")}</label>
+                <input id="pfLogo" type="file" accept="image/jpeg,image/png,image/webp" />
+                <p class="field-note">${t("pd_logo_note")}</p></div>
+            </div>
+            <div class="field"><label for="pfAbout">${t("pd_about")}</label>
+              <textarea id="pfAbout" rows="5" class="acct-msg" maxlength="1500" placeholder="${t("pd_about_ph")}"></textarea></div>
+            <h3 class="pdash-subh">${t("pd_socials_h")}</h3>
+            <div class="pf-grid2">
+              <div class="field"><label for="pfWebsite">${t("pd_website")}</label><input id="pfWebsite" type="url" inputmode="url" placeholder="https://…" /></div>
+              <div class="field"><label for="pfWa">${t("pd_wa")}</label><input id="pfWa" type="tel" inputmode="tel" placeholder="2557XXXXXXXX" /></div>
+              <div class="field"><label for="pfIg">${t("pd_ig")}</label><input id="pfIg" type="text" placeholder="@handle or link" /></div>
+              <div class="field"><label for="pfFb">${t("pd_fb")}</label><input id="pfFb" type="text" placeholder="Page name or link" /></div>
+              <div class="field"><label for="pfTk">${t("pd_tiktok")}</label><input id="pfTk" type="text" placeholder="@handle or link" /></div>
+              <div class="field"><label for="pfYt">${t("pd_yt")}</label><input id="pfYt" type="text" placeholder="Channel or link" /></div>
+              <div class="field"><label for="pfX">${t("pd_x")}</label><input id="pfX" type="text" placeholder="@handle or link" /></div>
+            </div>
+            <div id="pfErr" class="form-error" role="alert" hidden></div>
+            <div class="form-ok" id="pfOk" hidden>${t("pd_saved")}</div>
+            <button type="submit" class="btn btn-primary">${t("pd_save")}</button>
+          </form>
+        </div>
+
+        <!-- LISTINGS -->
+        <div class="pdash-panel" data-ppanel="listings">
+          ${!approved ? lock : `
+          <div class="pdash-panel-head"><div><h2 class="pdash-h">${t("pp_add_h")}</h2><p class="muted small">${t("pd_listings_intro")}</p></div></div>
+          <form id="svcForm" class="reg-form pform pdash-form" novalidate>
+            <div class="field"><label for="sTitle">${t("pp_s_title")} <span class="req">*</span></label>
+              <input id="sTitle" type="text" placeholder="${t("pp_s_title_ph")}" /></div>
+            <div class="field"><label for="sCat">${t("ps_type")}</label>
+              <select id="sCat">${catOpts}</select></div>
+            <div class="field"><label for="sDesc">${t("pp_s_desc")}</label>
+              <textarea id="sDesc" rows="3" class="acct-msg"></textarea></div>
+            <div class="field"><label for="sPrice">${t("pp_s_price")}</label>
+              <div class="pg-input"><span>$</span><input id="sPrice" type="number" min="0" step="1" /></div></div>
+            <div class="field"><label for="sArea">${t("pp_s_area")} <span class="req">*</span></label>
+              <input id="sArea" type="text" placeholder="${t("pp_s_area_ph")}" />
+              <p class="field-note">${t("pp_s_map_note")}</p>
+              <div id="svcMap" class="att-map" style="height:280px"></div>
+              <input type="hidden" id="sLat" /><input type="hidden" id="sLng" /></div>
+            <div class="field"><label for="sWa">${t("pp_s_wa")} <span class="req">*</span></label>
+              <input id="sWa" type="tel" placeholder="255XXXXXXXXX" /></div>
+            <div class="field"><label for="sPhotos">${t("pp_s_photos")}</label>
+              <input id="sPhotos" type="file" accept="image/jpeg,image/png,image/webp" multiple />
+              <p class="field-note">${t("pp_s_photos_note")}</p></div>
+            <div id="sErr" class="form-error" role="alert" hidden></div>
+            <div class="form-ok" id="sOk" hidden>✓ ${t("pp_s_ok")}</div>
+            <button type="submit" class="btn btn-primary">${t("pp_s_add")}</button>
+          </form>
+          <h2 class="acct-section-h">${t("pp_mine_h")}</h2>
+          <div id="mySvcs"><p class="muted">${t("admin_loading")}</p></div>`}
+        </div>
+
+        <!-- EVENTS -->
+        <div class="pdash-panel" data-ppanel="events">
+          ${!approved ? lock : `
+          <div class="pdash-panel-head"><div><h2 class="pdash-h">${t("pe_add_h")}</h2><p class="muted small">${t("pd_events_intro")}</p></div></div>
+          <form id="peForm" class="reg-form pform pdash-form" novalidate>
+            <div class="field"><label for="peTitle">${t("pe_title")} <span class="req">*</span></label>
+              <input id="peTitle" type="text" placeholder="${t("pe_title_ph")}" /></div>
+            <div class="field"><label for="peType">${t("ev_type_l")}</label>
+              <select id="peType">
+                <option value="culture">${t("ev_culture")}</option>
+                <option value="sports">${t("ev_sports")}</option>
+                <option value="conference">${t("ev_conference")}</option>
+                <option value="music">${t("ev_music")}</option>
+                <option value="other">${t("pt_other")}</option>
+              </select></div>
+            <div class="field"><label for="peStart">${t("pe_start")} <span class="req">*</span></label>
+              <input id="peStart" type="date" /></div>
+            <div class="field"><label for="peEnd">${t("pe_end")}</label>
+              <input id="peEnd" type="date" /></div>
+            <div class="field"><label for="peVenue">${t("pe_venue")}</label>
+              <input id="peVenue" type="text" placeholder="${t("pe_venue_ph")}" /></div>
+            <div class="field"><label for="peDesc">${t("pp_s_desc")}</label>
+              <textarea id="peDesc" rows="3" class="acct-msg"></textarea></div>
+            <div class="field"><label for="pePhoto">${t("pe_photo")}</label>
+              <input id="pePhoto" type="file" accept="image/jpeg,image/png,image/webp" />
+              <p class="field-note">${t("pe_photo_note")}</p></div>
+            <div class="field"><label for="peLink">${t("pe_link")}</label>
+              <input id="peLink" type="url" placeholder="https://..." /></div>
+            <div id="peErr" class="form-error" role="alert" hidden></div>
+            <div class="form-ok" id="peOk" hidden>✓ ${t("pe_ok")}</div>
+            <button type="submit" class="btn btn-primary">${t("pe_submit")}</button>
+          </form>
+          <div id="myEvents"></div>`}
+        </div>
+
+        <!-- ENQUIRIES -->
+        <div class="pdash-panel" data-ppanel="enquiries">
+          ${!approved ? lock : `
+          <div class="pdash-panel-head"><div><h2 class="pdash-h">${t("pd_enq_h")}</h2><p class="muted small">${t("pd_enq_sub")}</p></div>
+            <button class="btn btn-small btn-gold" id="pdShareProfile">${svgIcon("globe", 14)} ${t("pd_share_profile")}</button></div>
+          <div id="pdEnq"><p class="muted">${t("admin_loading")}</p></div>`}
+        </div>
       </section>`;
+  }
+
+  /* onboarding steps + overview stats (from partner_my_profile) */
+  function renderPartnerOverview(prof, p) {
+    const done = { register: true, verify: p.status === "approved", profile: !!(prof && prof.about),
+      listing: !!(prof && prof.service_count > 0), live: p.status === "approved" && !!(prof && prof.service_count > 0) };
+    const order = ["register", "verify", "profile", "listing", "live"];
+    const nowIdx = order.findIndex(k => !done[k]);
+    const pct = Math.round(order.filter(k => done[k]).length / order.length * 100);
+    const stepsEl = document.getElementById("pdSteps");
+    if (stepsEl) stepsEl.innerHTML = order.map((k, i) => {
+      const st = done[k] ? "done" : (i === nowIdx ? "now" : "todo");
+      const tag = st === "done" ? t("pd_step_done") : st === "now" ? t("pd_step_now") : t("pd_step_todo");
+      return `<li class="pstep pstep-${st}">
+        <span class="pstep-dot">${done[k] ? "✓" : i + 1}</span>
+        <div class="pstep-tx"><strong>${t("pd_step_" + k)}</strong><small>${t("pd_step_" + k + "_d")}</small></div>
+        <span class="pstep-tag">${tag}</span></li>`;
+    }).join("");
+    const pctEl = document.getElementById("pdRingPct"); if (pctEl) pctEl.textContent = pct + "%";
+    const ring = document.getElementById("pdRingFg");
+    if (ring) { const c = 2 * Math.PI * 19; ring.style.strokeDasharray = c; ring.style.strokeDashoffset = c * (1 - pct / 100); }
+    const stats = document.getElementById("pdStats");
+    if (stats) stats.innerHTML = [
+      ["map", prof ? prof.service_count : 0, t("pd_stat_listings"), "listings"],
+      ["globe", prof ? prof.event_count : 0, t("pd_stat_events"), "events"],
+      ["chat", prof ? prof.enquiry_count : 0, t("pd_stat_enquiries"), "enquiries"]
+    ].map(s => `<button class="pdash-stat" data-goto="${s[3]}"><span class="pdash-stat-ic">${svgIcon(s[0], 20)}</span>
+        <span class="pdash-stat-n">${s[1]}</span><span class="pdash-stat-l">${s[2]}</span></button>`).join("");
+    // enquiries badge on the tab
+    const nb = document.getElementById("pdBadge_enquiries");
+    if (nb && prof && prof.new_enquiry_count > 0) { nb.textContent = prof.new_enquiry_count; nb.hidden = false; }
   }
   function bindPartnerPortal() {
     const loginF = document.getElementById("pLoginForm");
@@ -1816,12 +1968,103 @@
     }
     const out = document.getElementById("pLogout");
     if (out) out.addEventListener("click", () => { clearPartner(); render(); });
-    const p = getPartner(); if (!p || p.status !== "approved") return;
+    const p = getPartner(); if (!p) return;
+
+    // ---- tab switching (hash #/partner#tab or click) ----
+    const tabs = document.getElementById("pdashTabs");
+    const panels = document.querySelectorAll(".pdash-panel");
+    const goTab = (id) => {
+      document.querySelectorAll(".pdash-tab").forEach(b => b.classList.toggle("is-active", b.dataset.ptab === id));
+      panels.forEach(pl => pl.classList.toggle("is-active", pl.dataset.ppanel === id));
+      if (id === "enquiries") loadEnquiries();
+      if (id === "listings" && window._svcMap) setTimeout(() => window._svcMap.invalidateSize(), 60);
+    };
+    if (tabs) tabs.addEventListener("click", (e) => { const b = e.target.closest(".pdash-tab"); if (b) goTab(b.dataset.ptab); });
+    document.querySelector('.pdash-tab[data-ptab="home"]')?.classList.add("is-active");
+    // overview stat cards jump to their tab
+    document.getElementById("pdStats") && document.body.addEventListener("click", function statJump(e) {
+      const s = e.target.closest("[data-goto]"); if (s && document.getElementById("pdStats")?.contains(s)) goTab(s.dataset.goto);
+    });
+
+    // ---- fetch profile → overview + fill form + public link ----
+    let prof = null;
+    sbRpcNamed("partner_my_profile", { p_email: p.email, p_pass: p.pass }).then(d => {
+      prof = d || {};
+      renderPartnerOverview(prof, p);
+      const setV = (id, val) => { const el2 = document.getElementById(id); if (el2 && val) el2.value = val; };
+      setV("pfAbout", prof.about); setV("pfWebsite", prof.website); setV("pfWa", prof.whatsapp);
+      setV("pfIg", prof.instagram); setV("pfFb", prof.facebook); setV("pfTk", prof.tiktok);
+      setV("pfYt", prof.youtube); setV("pfX", prof.x_handle);
+      if (prof.logo_path) { const pv = document.getElementById("pfLogoPrev"); if (pv) pv.innerHTML = `<img src="${svcPhotoUrl(prof.logo_path)}" alt="" onerror="this.remove()"/>`; }
+      if (prof.slug) {
+        const vp = document.getElementById("pdViewPublic"); if (vp) vp.href = "#/partner-profile/" + prof.slug;
+        p.slug = prof.slug; setPartner(p);
+      }
+    }).catch(() => {});
+
+    // ---- profile save (optional logo upload) ----
+    const pf = document.getElementById("pfProfile");
+    if (pf) pf.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const err = document.getElementById("pfErr"); err.hidden = true;
+      const v = (id) => (document.getElementById(id).value || "").trim();
+      const btn = pf.querySelector("button[type=submit]"); btn.disabled = true; btn.textContent = t("pd_saving");
+      const sb2 = window.CONFIG.supabase;
+      try {
+        let logoPath = null;
+        const lf = (document.getElementById("pfLogo") || { files: [] }).files[0];
+        if (lf) {
+          if (lf.size > 3 * 1024 * 1024) throw new Error("logo_big");
+          const ext = (lf.name.split(".").pop() || "jpg").toLowerCase().replace(/[^a-z0-9]/g, "") || "jpg";
+          logoPath = "logo-" + crypto.randomUUID() + "." + ext;
+          const up = await fetch(sb2.url + "/storage/v1/object/partner-photos/" + logoPath, {
+            method: "POST", headers: { "apikey": sb2.anonKey, "Authorization": "Bearer " + sb2.anonKey, "Content-Type": lf.type }, body: lf });
+          if (!up.ok) throw new Error("logo");
+        }
+        await sbRpcNamed("partner_update_profile", {
+          p_email: p.email, p_pass: p.pass, p_about: v("pfAbout") || null, p_website: v("pfWebsite") || null,
+          p_instagram: v("pfIg") || null, p_facebook: v("pfFb") || null, p_tiktok: v("pfTk") || null,
+          p_youtube: v("pfYt") || null, p_whatsapp: v("pfWa") || null, p_x: v("pfX") || null, p_logo: logoPath
+        });
+        document.getElementById("pfOk").hidden = false;
+        if (logoPath) { const pv = document.getElementById("pfLogoPrev"); if (pv) pv.innerHTML = `<img src="${svcPhotoUrl(logoPath)}" alt=""/>`; }
+        // refresh overview (profile now complete)
+        sbRpcNamed("partner_my_profile", { p_email: p.email, p_pass: p.pass }).then(d => renderPartnerOverview(d || {}, p)).catch(() => {});
+        setTimeout(() => { document.getElementById("pfOk").hidden = true; }, 3000);
+      } catch (ex) { err.textContent = t("acct_err"); err.hidden = false; }
+      btn.disabled = false; btn.textContent = t("pd_save");
+    });
+
+    // ---- enquiries loader + share ----
+    function loadEnquiries() {
+      const host = document.getElementById("pdEnq"); if (!host) return;
+      sbRpcNamed("partner_my_enquiries", { p_email: p.email, p_pass: p.pass }).then(rows => {
+        rows = Array.isArray(rows) ? rows : [];
+        const badge = document.getElementById("pdBadge_enquiries"); if (badge) badge.hidden = true;
+        host.innerHTML = rows.length ? `<div class="pdash-enq-list">${rows.map(q => `
+          <div class="pdash-enq${q.status === "new" ? " is-new" : ""}">
+            <div class="pdash-enq-top"><strong>${esc(q.tourist_name || t("mo_anon"))}</strong>
+              ${q.status === "new" ? `<span class="pdash-enq-new">${t("pd_enq_new")}</span>` : ""}
+              <span class="pdash-enq-date">${new Date(q.created_at).toLocaleDateString(lang === "sw" ? "sw-TZ" : lang, { day: "numeric", month: "short" })}</span></div>
+            <p class="pdash-enq-msg">${esc(q.message)}</p>
+            ${q.tourist_contact ? `<p class="pdash-enq-contact">${svgIcon("chat", 13)} <a href="${/@/.test(q.tourist_contact) ? "mailto:" : "https://wa.me/"}${esc(q.tourist_contact.replace(/[^0-9a-zA-Z@._+-]/g, ""))}">${esc(q.tourist_contact)}</a></p>` : ""}
+          </div>`).join("")}</div>` : `<div class="mo-empty"><span>💬</span><p class="muted">${t("pd_enq_none")}</p></div>`;
+      }).catch(() => { host.innerHTML = `<p class="form-error">${t("acct_err")}</p>`; });
+    }
+    const shareBtn = document.getElementById("pdShareProfile");
+    if (shareBtn) shareBtn.addEventListener("click", () => {
+      const url = location.origin + location.pathname + "#/partner-profile/" + (p.slug || prof?.slug || "");
+      if (navigator.share) navigator.share({ title: p.company, url }).catch(() => {});
+      else { navigator.clipboard?.writeText(url); shareBtn.textContent = "✓ " + url; }
+    });
+
+    if (p.status !== "approved") return;
 
     // map: tap to drop the service-area pin
     loadLeaflet().then(() => {
       const el2 = document.getElementById("svcMap"); if (!el2) return;
       const m = window.L.map("svcMap", { scrollWheelZoom: false }).setView([-3.37, 36.68], 11);
+      window._svcMap = m;
       window.L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", { maxZoom: 18, attribution: "&copy; OpenStreetMap" }).addTo(m);
       let mk = null;
       m.on("click", (ev) => {
@@ -1892,16 +2135,103 @@
       const v = (id) => (document.getElementById(id).value || "").trim();
       if (!v("peTitle") || !v("peStart")) { er.textContent = t("pe_err"); er.hidden = false; return; }
       const b = ef.querySelector("button[type=submit]"); b.disabled = true;
-      sbRpcNamed("partner_event_submit", {
+      const sbE = window.CONFIG.supabase;
+      const pf2 = (document.getElementById("pePhoto") || { files: [] }).files[0];
+      const uploadPhoto = (!pf2) ? Promise.resolve(null)
+        : (pf2.size > 3 * 1024 * 1024 ? Promise.reject(new Error("big"))
+          : (() => { const ext = (pf2.name.split(".").pop() || "jpg").toLowerCase().replace(/[^a-z0-9]/g, "") || "jpg";
+              const ph = "ev-" + crypto.randomUUID() + "." + ext;
+              return fetch(sbE.url + "/storage/v1/object/partner-photos/" + ph, {
+                method: "POST", headers: { "apikey": sbE.anonKey, "Authorization": "Bearer " + sbE.anonKey, "Content-Type": pf2.type }, body: pf2
+              }).then(r => { if (!r.ok) throw new Error("photo"); return ph; }); })());
+      uploadPhoto.then(photoPath => sbRpcNamed("partner_event_submit", {
         p_email: p.email, p_pass: p.pass, p_title: v("peTitle"), p_etype: v("peType"),
         p_start: v("peStart"), p_end: v("peEnd") || null, p_venue: v("peVenue") || null,
-        p_description: v("peDesc") || null, p_link: v("peLink") || null
-      }).then(() => {
+        p_description: v("peDesc") || null, p_link: v("peLink") || null, p_photo: photoPath
+      })).then(() => {
         document.getElementById("peOk").hidden = false; b.disabled = false;
-        ["peTitle", "peStart", "peEnd", "peVenue", "peDesc", "peLink"].forEach(id => { const el2 = document.getElementById(id); if (el2) el2.value = ""; });
+        ["peTitle", "peStart", "peEnd", "peVenue", "peDesc", "peLink", "pePhoto"].forEach(id => { const el2 = document.getElementById(id); if (el2) el2.value = ""; });
         loadMyEvents();
       }).catch(() => { er.textContent = t("acct_err"); er.hidden = false; b.disabled = false; });
     });
+  }
+
+  /* ---- tourist-facing partner profile (#/partner-profile/:slug) ---- */
+  function partnerSocials(prof) {
+    const abs = (v, base) => !v ? null : (/^https?:\/\//.test(v) ? v : base + String(v).replace(/^@/, "").replace(/^\/+/, ""));
+    return [
+      ["globe", t("pr_visit_site"), prof.website && (/^https?:\/\//.test(prof.website) ? prof.website : "https://" + prof.website)],
+      ["chat", "WhatsApp", prof.whatsapp ? "https://wa.me/" + String(prof.whatsapp).replace(/\D/g, "") : null],
+      ["camera", "Instagram", abs(prof.instagram, "https://instagram.com/")],
+      ["users", "Facebook", abs(prof.facebook, "https://facebook.com/")],
+      ["sparkle", "TikTok", abs(prof.tiktok, "https://tiktok.com/@")],
+      ["globe", "YouTube", abs(prof.youtube, "https://youtube.com/")],
+      ["globe", "X", abs(prof.x_handle, "https://x.com/")]
+    ].filter(s => s[2]);
+  }
+  function viewPartnerProfile(slug) {
+    return `
+      <section class="container section" id="prWrap" data-slug="${esc(slug || "")}">
+        <a class="link-inline pr-back" href="#/operators">← ${t("pr_back")}</a>
+        <div id="prBody"><p class="muted">${t("admin_loading")}</p></div>
+      </section>`;
+  }
+  function bindPartnerProfile(slug) {
+    const body = document.getElementById("prBody");
+    if (!body || !slug) return;
+    const sb = window.CONFIG.supabase;
+    const h = { "apikey": sb.anonKey, "Authorization": "Bearer " + sb.anonKey };
+    Promise.all([
+      fetch(`${sb.url}/rest/v1/public_partners?slug=eq.${encodeURIComponent(slug)}&select=*`, { headers: h }).then(r => r.json()),
+      fetch(`${sb.url}/rest/v1/public_services?partner_slug=eq.${encodeURIComponent(slug)}&select=*&order=created_at.desc`, { headers: h }).then(r => r.json())
+    ]).then(([partners, svcs]) => {
+      const prof = Array.isArray(partners) && partners[0];
+      if (!prof) { body.innerHTML = `<div class="mo-empty"><span>🔍</span><p class="muted">${t("pr_not_found")}</p></div>`; return; }
+      const initial = (prof.company_name || "?").trim().charAt(0).toUpperCase();
+      const socials = partnerSocials(prof);
+      const since = new Date(prof.created_at).getFullYear();
+      body.innerHTML = `
+        <div class="pr-hero card">
+          <span class="pr-avatar">${prof.logo_path ? `<img src="${svcPhotoUrl(prof.logo_path)}" alt="${esc(prof.company_name)}" onerror="this.parentNode.textContent='${initial}'"/>` : initial}</span>
+          <div class="pr-hero-tx">
+            <span class="pr-verified">${svgIcon("shield", 14)} ${t("pr_verified")}</span>
+            <h1>${esc(prof.company_name)}</h1>
+            <p class="muted">${t("pt_" + prof.ptype)} · ${t("pr_since")} ${since}</p>
+          </div>
+        </div>
+        ${prof.about ? `<div class="pr-about card"><p>${esc(prof.about).replace(/\n/g, "<br>")}</p></div>` : ""}
+        ${socials.length ? `<div class="pr-connect"><h2 class="pdash-h">${t("pr_connect_h")}</h2>
+          <div class="pr-links">${socials.map(s => `<a class="pr-link" target="_blank" rel="noopener" href="${esc(s[2])}">${svgIcon(s[0], 16)} ${s[1]}</a>`).join("")}</div></div>` : ""}
+        <h2 class="pdash-h pr-svc-h">${t("pr_services_h")}</h2>
+        <div class="svc-grid">${(Array.isArray(svcs) && svcs.length) ? svcs.map(svcPhotoCard).join("") : `<p class="muted">${t("pr_no_services")}</p>`}</div>
+        <div class="pr-enq card">
+          <h2 class="pdash-h">${t("pr_enquire_h")}</h2>
+          <form id="prEnqForm" class="reg-form pform" novalidate>
+            <div class="pf-grid2">
+              <div class="field"><label for="prName">${t("pr_enq_name")}</label><input id="prName" type="text" autocomplete="name" /></div>
+              <div class="field"><label for="prContact">${t("pr_enq_contact")}</label><input id="prContact" type="text" inputmode="email" /></div>
+            </div>
+            <div class="field"><label for="prMsg">${t("pr_enq_msg")} <span class="req">*</span></label>
+              <textarea id="prMsg" rows="4" class="acct-msg" maxlength="1200" placeholder="${t("pr_enq_msg_ph")}"></textarea></div>
+            <div id="prEnqErr" class="form-error" role="alert" hidden></div>
+            <button type="submit" class="btn btn-primary">${t("pr_enq_send")}</button>
+          </form>
+          <div id="prEnqOk" class="reg-success" hidden><div class="reg-success-mark">✓</div><p class="reg-success-msg">${t("pr_enq_ok")}</p></div>
+        </div>`;
+      const ef = document.getElementById("prEnqForm");
+      if (ef) ef.addEventListener("submit", (e) => {
+        e.preventDefault();
+        const err = document.getElementById("prEnqErr"); err.hidden = true;
+        const msg = (document.getElementById("prMsg").value || "").trim();
+        if (!msg) { err.textContent = t("pr_enq_empty"); err.hidden = false; return; }
+        const btn = ef.querySelector("button[type=submit]"); btn.disabled = true; btn.textContent = t("pr_enq_sending");
+        sbRpc("enquiry_submit", {
+          p_slug: slug, p_name: (document.getElementById("prName").value || "").trim() || null,
+          p_contact: (document.getElementById("prContact").value || "").trim() || null, p_message: msg, p_service: null
+        }).then(() => { ef.hidden = true; document.getElementById("prEnqOk").hidden = false; })
+          .catch(() => { err.textContent = t("pr_enq_err"); err.hidden = false; btn.disabled = false; btn.textContent = t("pr_enq_send"); });
+      });
+    }).catch(() => { body.innerHTML = `<p class="form-error">${t("acct_err")}</p>`; });
   }
 
   /* photo-first partner-service card (like a trip card) - used on Services + Home */
@@ -1920,7 +2250,7 @@
         </div>
         <div class="att-body">
           <span class="att-name">${esc(s.title)}</span>
-          <span class="muted small">${esc(s.company_name)}${s.website ? ` &middot; <a class="link-inline" target="_blank" rel="noopener" href="${esc(s.website)}">${t("sv_site")}</a>` : ""}</span>
+          <span class="muted small">${s.partner_slug ? `<a class="link-inline" href="#/partner-profile/${esc(s.partner_slug)}">${esc(s.company_name)}</a>` : esc(s.company_name)}${s.website ? ` &middot; <a class="link-inline" target="_blank" rel="noopener" href="${esc(s.website)}">${t("sv_site")}</a>` : ""}</span>
           ${s.description ? `<span class="att-desc">${esc(s.description)}</span>` : ""}
           <div class="svc-meta">
             ${s.area_name ? `<span>${svgIcon("pin", 14)} ${esc(s.area_name)}</span>` : ""}
@@ -2416,7 +2746,9 @@
       method: "POST",
       headers: { "Content-Type": "application/json", "apikey": sb.anonKey, "Authorization": "Bearer " + sb.anonKey },
       body: JSON.stringify(body)
-    }).then(r => { if (!r.ok) throw new Error("rpc " + r.status); return r.json(); });
+    }).then(r => { if (!r.ok) throw new Error("rpc " + r.status);
+      if (r.status === 204) return null;
+      return r.text().then(txt => txt ? JSON.parse(txt) : null); });
   }
   function renderAdminDashboard(data) {
     const regs = (data && data.registrations) || [];
@@ -2996,6 +3328,7 @@
       case "partners": html = viewPartners(); break;
       case "partner-signup": html = viewPartnerSignup(); break;
       case "partner": html = viewPartnerPortal(); break;
+      case "partner-profile": html = viewPartnerProfile(param); break;
       case "partner-reset": html = viewPartnerReset(param); break;
       case "services": html = viewServices(); break;
       case "ambassadors": html = viewAmbassadors(); break;
@@ -3039,8 +3372,10 @@
     if (route === "explore") bindExplore();
     if (route === "place") bindPlace(param);
     if (route === "itineraries") bindItineraries();
+    if (route === "partners") bindPartners();
     if (route === "partner-signup") bindPartnerSignup();
     if (route === "partner") bindPartnerPortal();
+    if (route === "partner-profile") bindPartnerProfile(param);
     if (route === "partner-reset") bindPartnerReset();
     if (route === "services") bindServices();
     if (route === "ambassadors") bindAmbassadors();

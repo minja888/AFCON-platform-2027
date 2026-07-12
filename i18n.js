@@ -869,3 +869,103 @@ window.I18N = {
     wa_msg: "Sannu! Na same ka a Karibu Arusha (AFCON 2027). Ina son tambaya game da: "
   }
 };
+
+/* ===== v53 — partner dashboard, profile, onboarding, enquiries, tourist profile ===== */
+(function () {
+  const EN = {
+    // dashboard shell + tabs
+    pd_welcome: "Welcome back",
+    pd_tab_home: "Overview", pd_tab_profile: "Profile", pd_tab_listings: "Listings",
+    pd_tab_events: "Events", pd_tab_enquiries: "Enquiries",
+    // onboarding steps
+    pd_setup_h: "Your setup", pd_setup_sub: "Complete these to get the most from Karibu Arusha.",
+    pd_step_register: "Register", pd_step_register_d: "Account created",
+    pd_step_verify: "Get verified", pd_step_verify_d: "Admin approves your documents",
+    pd_step_profile: "Complete profile", pd_step_profile_d: "Add your story & links",
+    pd_step_listing: "Add a listing", pd_step_listing_d: "List a service, trip or park",
+    pd_step_live: "You're live", pd_step_live_d: "Visitors can find & contact you",
+    pd_step_done: "Done", pd_step_now: "You are here", pd_step_todo: "To do",
+    pd_progress: "setup complete",
+    // overview stats
+    pd_stat_listings: "Listings", pd_stat_events: "Events", pd_stat_enquiries: "Enquiries",
+    pd_new_badge: "new",
+    // profile editor
+    pd_profile_h: "Your public profile",
+    pd_profile_sub: "This is what visitors see. Tell your story — the rest is optional.",
+    pd_about: "About your business", pd_about_ph: "What makes your safaris, guiding or service special? Who are you, and why should a visitor choose you?",
+    pd_socials_h: "Links (all optional)",
+    pd_ig: "Instagram", pd_fb: "Facebook", pd_tiktok: "TikTok", pd_yt: "YouTube",
+    pd_wa: "WhatsApp number", pd_x: "X (Twitter)", pd_website: "Website",
+    pd_logo: "Logo / profile photo", pd_logo_note: "Square image works best · max 3 MB",
+    pd_save: "Save profile", pd_saving: "Saving…", pd_saved: "Profile saved ✓",
+    pd_view_public: "View public profile",
+    // enquiries
+    pd_enq_h: "Enquiries from visitors", pd_enq_sub: "People who reached out through your profile.",
+    pd_enq_none: "No enquiries yet. Share your profile link to start receiving them.",
+    pd_enq_from: "From", pd_enq_contact: "Contact", pd_enq_new: "New",
+    pd_share_profile: "Share my profile",
+    // section intros inside tabs
+    pd_listings_intro: "Add tours, guiding, transport, stays or park experiences with a map pin.",
+    pd_events_intro: "List an event — it appears on the public calendar after admin approval.",
+    pe_photo: "Event photo", pe_photo_note: "Shown on the calendar & home · max 3 MB",
+    // why-partner slides
+    pw_slides_h: "How it works — 5 simple steps",
+    pw_slide_prev: "Previous", pw_slide_next: "Next",
+    // tourist-facing partner profile
+    pr_verified: "Verified partner", pr_since: "On Karibu Arusha since",
+    pr_services_h: "What they offer", pr_no_services: "This partner hasn't listed services yet.",
+    pr_connect_h: "Connect", pr_visit_site: "Website",
+    pr_enquire: "Send an enquiry", pr_enquire_h: "Message this partner",
+    pr_enq_name: "Your name", pr_enq_contact: "Email or WhatsApp", pr_enq_msg: "Your message",
+    pr_enq_msg_ph: "Hello! I'm coming to Arusha for AFCON and I'd like to ask about…",
+    pr_enq_send: "Send enquiry", pr_enq_sending: "Sending…",
+    pr_enq_ok: "Sent! The partner will get back to you directly.",
+    pr_enq_err: "Could not send. Please try again.", pr_enq_empty: "Please write a short message.",
+    pr_back: "All partners", pr_not_found: "Partner not found."
+  };
+  const SW = {
+    pd_welcome: "Karibu tena",
+    pd_tab_home: "Muhtasari", pd_tab_profile: "Wasifu", pd_tab_listings: "Huduma",
+    pd_tab_events: "Matukio", pd_tab_enquiries: "Maswali",
+    pd_setup_h: "Usanidi wako", pd_setup_sub: "Kamilisha haya ili kunufaika zaidi na Karibu Arusha.",
+    pd_step_register: "Jisajili", pd_step_register_d: "Akaunti imefunguliwa",
+    pd_step_verify: "Thibitishwa", pd_step_verify_d: "Msimamizi anaidhinisha nyaraka zako",
+    pd_step_profile: "Kamilisha wasifu", pd_step_profile_d: "Ongeza hadithi na viungo vyako",
+    pd_step_listing: "Ongeza huduma", pd_step_listing_d: "Orodhesha huduma, safari au hifadhi",
+    pd_step_live: "Uko hewani", pd_step_live_d: "Watalii wanaweza kukupata na kuwasiliana",
+    pd_step_done: "Imekamilika", pd_step_now: "Uko hapa", pd_step_todo: "Inasubiri",
+    pd_progress: "usanidi umekamilika",
+    pd_stat_listings: "Huduma", pd_stat_events: "Matukio", pd_stat_enquiries: "Maswali",
+    pd_new_badge: "mpya",
+    pd_profile_h: "Wasifu wako wa umma",
+    pd_profile_sub: "Hivi ndivyo watalii wanavyokuona. Eleza hadithi yako — mengine si lazima.",
+    pd_about: "Kuhusu biashara yako", pd_about_ph: "Ni nini kinachofanya safari, uongozi au huduma yako kuwa ya kipekee? Wewe ni nani, na kwa nini mtalii akuchague?",
+    pd_socials_h: "Viungo (yote si lazima)",
+    pd_ig: "Instagram", pd_fb: "Facebook", pd_tiktok: "TikTok", pd_yt: "YouTube",
+    pd_wa: "Namba ya WhatsApp", pd_x: "X (Twitter)", pd_website: "Tovuti",
+    pd_logo: "Nembo / picha ya wasifu", pd_logo_note: "Picha ya mraba ni bora · kiwango cha juu MB 3",
+    pd_save: "Hifadhi wasifu", pd_saving: "Inahifadhi…", pd_saved: "Wasifu umehifadhiwa ✓",
+    pd_view_public: "Ona wasifu wa umma",
+    pd_enq_h: "Maswali kutoka kwa watalii", pd_enq_sub: "Watu waliowasiliana kupitia wasifu wako.",
+    pd_enq_none: "Bado hakuna maswali. Shiriki kiungo cha wasifu wako ili kuanza kupokea.",
+    pd_enq_from: "Kutoka", pd_enq_contact: "Mawasiliano", pd_enq_new: "Mpya",
+    pd_share_profile: "Shiriki wasifu wangu",
+    pd_listings_intro: "Ongeza safari, uongozi, usafiri, malazi au uzoefu wa hifadhi na alama ya ramani.",
+    pd_events_intro: "Orodhesha tukio — litaonekana kwenye kalenda baada ya idhini ya msimamizi.",
+    pe_photo: "Picha ya tukio", pe_photo_note: "Inaonekana kwenye kalenda na nyumbani · kiwango cha juu MB 3",
+    pw_slides_h: "Jinsi inavyofanya kazi — hatua 5 rahisi",
+    pw_slide_prev: "Iliyopita", pw_slide_next: "Ifuatayo",
+    pr_verified: "Mshirika aliyethibitishwa", pr_since: "Kwenye Karibu Arusha tangu",
+    pr_services_h: "Wanachotoa", pr_no_services: "Mshirika huyu bado hajaorodhesha huduma.",
+    pr_connect_h: "Wasiliana", pr_visit_site: "Tovuti",
+    pr_enquire: "Tuma swali", pr_enquire_h: "Tuma ujumbe kwa mshirika huyu",
+    pr_enq_name: "Jina lako", pr_enq_contact: "Barua pepe au WhatsApp", pr_enq_msg: "Ujumbe wako",
+    pr_enq_msg_ph: "Habari! Naja Arusha kwa AFCON na ningependa kuuliza kuhusu…",
+    pr_enq_send: "Tuma swali", pr_enq_sending: "Inatuma…",
+    pr_enq_ok: "Imetumwa! Mshirika atakujibu moja kwa moja.",
+    pr_enq_err: "Imeshindikana kutuma. Tafadhali jaribu tena.", pr_enq_empty: "Tafadhali andika ujumbe mfupi.",
+    pr_back: "Washirika wote", pr_not_found: "Mshirika hakupatikana."
+  };
+  Object.assign(window.I18N.en, EN);
+  Object.assign(window.I18N.sw, SW);
+})();

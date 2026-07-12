@@ -446,8 +446,8 @@ window.ATTRACTIONS = [
     "materuni-falls":["1508233620744-7ff2b5b9f88f", "grad-brown"], // coffee falls
     "ndoro-falls":["1465146633011-14f8e0781093", "grad-teal"], // cascade
     "kalalani-falls":["1467890947394-8171244e5410", "grad-green"], // forest falls
-    "decl-museum":["1554907984-15263bfd63bd",    "grad-brown"], // museum interior
-    "nat-history":["1566127992631-137a642a90f4", "grad-brown"], // old building
+    "decl-museum":["1541963463532-d68292c34b19", "grad-brown"], // monument / museum
+    "nat-history":["1584285405429-136bf988919c", "grad-brown"], // historic building
     "tanzanite-mus":["1515562141207-7a88fb7ce338","grad-gold"], // gemstone
     "cultural-ctr":["1578321272176-b7bbc0679853", "grad-red"],  // african art
     "maasai-mkt": ["1528301040-b204c9b4c4b6",    "grad-red"],   // beadwork market
