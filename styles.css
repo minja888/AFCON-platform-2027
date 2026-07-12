@@ -1449,3 +1449,37 @@ a.exp-teaser-chip:hover { transform: translateY(-1px); border-color: var(--gold)
 .amb-code { font-size: .82rem; color: var(--ink-soft); margin-top: 2px; }
 .amb-code code { background: var(--cream-2); padding: 2px 8px; border-radius: 6px; color: var(--green-deep); }
 @media (max-width: 700px) { .vision-band { grid-template-columns: 1fr; } }
+
+/* =====================================================================
+   v46 — live clock bar · softer savannah option colours
+   ===================================================================== */
+/* top live-time strip */
+.topbar { display: flex; align-items: center; justify-content: center; gap: 12px; padding: 5px 14px;
+  background: linear-gradient(90deg, #3a4a1e, #4d5f28); color: #fff; font-size: .82rem; letter-spacing: .01em; }
+.topbar-live { display: inline-flex; align-items: center; gap: 6px; font-weight: 700; color: #fcd116; }
+.topbar-dot { width: 7px; height: 7px; border-radius: 50%; background: #7ee787; box-shadow: 0 0 0 0 rgba(126,231,135,.7); animation: capPulse 2s infinite; }
+.topbar-clock { font-variant-numeric: tabular-nums; font-weight: 700; letter-spacing: .04em; }
+.topbar-date { color: rgba(255,255,255,.72); }
+@media (max-width: 420px) { .topbar-date { display: none; } }
+
+/* soften option chips/tiers: swap vivid green for warm savannah olive/gold */
+.ptype-opt .ic, .zone-opt .ic { color: var(--brown); }
+.ptype-opt.active, .zone-opt.active { border-color: var(--gold); background: linear-gradient(135deg, rgba(224,165,46,.12), rgba(246,236,214,.6)); box-shadow: 0 0 0 3px rgba(224,165,46,.14); }
+.ptype-opt.active .ic, .zone-opt.active .ic { color: var(--gold-deep); }
+.cb-chip { border-color: var(--line); color: var(--brown); background: var(--sand); }
+.cb-chip:hover { background: var(--gold); color: #fff; border-color: var(--gold); }
+/* ambassador tier pills: muted savannah tones */
+.amb-tier { background: var(--sand); color: var(--brown); }
+.amb-tier-influencer { background: rgba(138,106,68,.14); color: #6b4f2e; }
+.amb-tier-campus { background: rgba(224,165,46,.14); color: var(--gold-deep); }
+.amb-tier-community { background: rgba(122,140,70,.16); color: #55621f; }
+.amb-photo { background: var(--sand); color: var(--brown); }
+/* value/pw cards: keep top accents but lighter */
+.val-card { border-top-color: var(--gold); }
+.val-card:nth-child(1) { border-top-color: var(--brown); }
+.val-card:nth-child(3) { border-top-color: var(--teal); }
+.val-card:nth-child(5) { border-top-color: var(--gold-deep); }
+
+/* v46 — chatbot scroll containment (don't scroll the page behind) */
+.cb-thread, .cb-quick, .help-body { overscroll-behavior: contain; -webkit-overflow-scrolling: touch; }
+.cb-panel { touch-action: pan-y; }

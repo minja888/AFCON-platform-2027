@@ -938,6 +938,7 @@
       </section>
       ${exploreHistoryBand()}
       <section class="container section">
+        <input type="search" id="attSearch" class="search-box" placeholder="${t("exp_search_ph")}" />
         <div class="chips" id="attFilters">${chips}</div>
         <div id="attMap" class="att-map" role="application" aria-label="${t("exp_map_label")}"></div>
         <div class="card-grid att-grid" id="attGrid">${atts.map(attCard).join("")}</div>
@@ -994,22 +995,28 @@
       });
     }).catch(() => { mapEl.innerHTML = `<p class="muted" style="padding:2rem;text-align:center">${t("exp_map_err")}</p>`; });
 
-    // category filter: cards + pins together
+    // category filter + text search work together
     const filters = document.getElementById("attFilters");
+    const search = document.getElementById("attSearch");
+    const applyAttFilter = () => {
+      const cat = filters ? (filters.querySelector(".chip.active")?.dataset.attcat || "all") : "all";
+      const q = (search?.value || "").trim().toLowerCase();
+      const grid = document.getElementById("attGrid");
+      const match = (a) => (cat === "all" || a.cat === cat) &&
+        (!q || L(a.name).toLowerCase().includes(q) || L(a.desc).toLowerCase().includes(q) || t("att_" + a.cat).toLowerCase().includes(q));
+      const list = (window.ATTRACTIONS || []).filter(match);
+      if (grid) grid.innerHTML = list.length ? list.map(attCard).join("") : `<p class="muted">${t("exp_no_match")}</p>`;
+      Object.keys(attMarkers).forEach(id => {
+        const a = window.ATTRACTIONS.find(x => x.id === id);
+        if (attMap) { if (a && match(a)) attMarkers[id].addTo(attMap); else attMap.removeLayer(attMarkers[id]); }
+      });
+    };
     if (filters) filters.addEventListener("click", (e) => {
       const b = e.target.closest("[data-attcat]"); if (!b) return;
       filters.querySelectorAll(".chip").forEach(c => c.classList.remove("active"));
-      b.classList.add("active");
-      const cat = b.dataset.attcat;
-      const grid = document.getElementById("attGrid");
-      const list = (window.ATTRACTIONS || []).filter(a => cat === "all" || a.cat === cat);
-      if (grid) grid.innerHTML = list.map(attCard).join("");
-      Object.keys(attMarkers).forEach(id => {
-        const a = window.ATTRACTIONS.find(x => x.id === id);
-        const show = cat === "all" || (a && a.cat === cat);
-        if (attMap) { if (show) attMarkers[id].addTo(attMap); else attMap.removeLayer(attMarkers[id]); }
-      });
+      b.classList.add("active"); applyAttFilter();
     });
+    if (search) search.addEventListener("input", applyAttFilter);
     // tap a card → fly the map to that attraction
     document.addEventListener("click", attCardJump);
     function attCardJump(e) {
@@ -1697,6 +1704,7 @@
         <div class="container"><h1>${t("sv_title")}</h1><p class="detail-meta">${t("sv_lead")}</p></div>
       </section>
       <section class="container section">
+        <input type="search" id="svcSearch" class="search-box" placeholder="${t("sv_search_ph")}" />
         <div class="chips" id="svcFilters">${chips}</div>
         <div class="card-grid" id="svcGrid"><p class="muted">${t("admin_loading")}</p></div>
         <p class="muted small center mt">${t("sv_note")}</p>
@@ -1707,20 +1715,27 @@
     const grid = document.getElementById("svcGrid");
     if (!grid) return;
     const card = svcPhotoCard;
-    const show = (cat) => {
-      const rows = (svcCache || []).filter(s => cat === "all" || s.category === cat);
+    const search = document.getElementById("svcSearch");
+    const apply = () => {
+      const cat = document.querySelector("#svcFilters .chip.active")?.dataset.svccat || "all";
+      const q = (search?.value || "").trim().toLowerCase();
+      const rows = (svcCache || []).filter(s => (cat === "all" || s.category === cat) &&
+        (!q || (s.title || "").toLowerCase().includes(q) || (s.company_name || "").toLowerCase().includes(q) ||
+               (s.area_name || "").toLowerCase().includes(q) || (s.description || "").toLowerCase().includes(q) ||
+               t("pt_" + (s.category || "other")).toLowerCase().includes(q)));
       grid.innerHTML = rows.length ? rows.map(card).join("") : `<p class="muted">${t("sv_none")}</p>`;
     };
     const sb = window.CONFIG.supabase;
     fetch(`${sb.url}/rest/v1/public_services?select=*&order=created_at.desc`, {
       headers: { "apikey": sb.anonKey, "Authorization": "Bearer " + sb.anonKey }
-    }).then(r => r.json()).then(rows => { svcCache = Array.isArray(rows) ? rows : []; show("all"); })
+    }).then(r => r.json()).then(rows => { svcCache = Array.isArray(rows) ? rows : []; apply(); })
       .catch(() => { grid.innerHTML = `<p class="form-error">${t("acct_err")}</p>`; });
     document.getElementById("svcFilters").addEventListener("click", (e) => {
       const b = e.target.closest("[data-svccat]"); if (!b) return;
       document.querySelectorAll("#svcFilters .chip").forEach(c => c.classList.remove("active"));
-      b.classList.add("active"); show(b.dataset.svccat);
+      b.classList.add("active"); apply();
     });
+    if (search) search.addEventListener("input", apply);
   }
 
   /* ===================================================================
@@ -2788,8 +2803,9 @@
      =================================================================== */
   // A node = { m:{en,sw} hook, o:[{g:goto, l:{en,sw}}] }. goto: node id,
   // "wa" (WhatsApp), "page:#/..." (navigate), or "root".
-  const WA = { g: "wa", l: { en: "💬 Talk to the Visitor Desk", sw: "💬 Ongea na Dawati la Wageni" } };
-  const HOME = { g: "root", l: { en: "↩︎ Back to start", sw: "↩︎ Rudi mwanzo" } };
+  const WA = { g: "wa", l: { en: "💬 Karibu Live — chat on WhatsApp", sw: "💬 Karibu Live — ongea WhatsApp" } };
+  const HOME = { g: "root", l: { en: "↩︎ Explore more topics", sw: "↩︎ Gundua mada zaidi" } };
+  const MORE = { g: "root", l: { en: "✨ Show me something else", sw: "✨ Nionyeshe kitu kingine" } };
   const WELCOME_ARUSHA = {
     root: {
       m: { en: "Karibu sana! 🦒 You're at the gateway to the Northern Safari Circuit — a city humming with energy under the peak of Mount Meru. Wildlife, coffee, culture… Arusha has a rhythm you'll love.\n\nWhat vibe are you feeling today?",
@@ -2798,11 +2814,73 @@
         { g: "thrill", l: { en: "🏔️ Thrill seeker", sw: "🏔️ Mpenda msisimko" } },
         { g: "culture", l: { en: "🪘 Culture lover", sw: "🪘 Mpenda utamaduni" } },
         { g: "relax", l: { en: "🌿 Relaxation", sw: "🌿 Pumziko" } },
+        { g: "book", l: { en: "🎟️ How to book / contact an operator", sw: "🎟️ Kuweka booking / kupata operator" } },
+        { g: "prices", l: { en: "💰 Prices & typical costs", sw: "💰 Bei na gharama za kawaida" } },
         { g: "logistics", l: { en: "✈️ Getting there & around", sw: "✈️ Kufika na kuzunguka" } },
         { g: "stay", l: { en: "🏨 Where to stay", sw: "🏨 Malazi" } },
         { g: "eat", l: { en: "🍽️ Food & nightlife", sw: "🍽️ Chakula na burudani" } },
+        { g: "practical", l: { en: "🧭 Practical tips (money, SIM, packing)", sw: "🧭 Vidokezo (pesa, SIM, kubeba)" } },
         { g: "shop", l: { en: "🛍️ Shopping & Tanzanite", sw: "🛍️ Ununuzi na Tanzanite" } }
       ]
+    },
+    book: {
+      m: { en: "Booking on Karibu Arusha is simple and safe: you always deal with a document-verified, licensed operator. Here's the flow — find what you love, then reach the operator directly on WhatsApp to lock in dates and details.",
+           sw: "Kuweka booking kwenye Karibu Arusha ni rahisi na salama: daima unashughulika na mwendeshaji mwenye leseni aliyekaguliwa. Njia yenyewe — pata unachopenda, kisha wasiliana na mwendeshaji moja kwa moja WhatsApp kuthibitisha tarehe na maelezo." },
+      o: [
+        { g: "page:#/trips", l: { en: "🎟️ Browse trips", sw: "🎟️ Angalia safari" } },
+        { g: "page:#/services", l: { en: "🧑‍🌾 Find a verified operator/service", sw: "🧑‍🌾 Pata operator/huduma" } },
+        { g: "prices", l: { en: "💰 What will it cost?", sw: "💰 Itagharimu kiasi gani?" } },
+        WA, MORE
+      ]
+    },
+    prices: {
+      m: { en: "Here's a realistic guide to Arusha day-trip prices (per person, with a licensed operator — 4x4, guide and park fees included):",
+           sw: "Hii hapa mwongozo halisi wa bei za safari za siku Arusha (kwa mtu, na mwendeshaji mwenye leseni — 4x4, kiongozi na ada):" },
+      o: [
+        { g: "prices2", l: { en: "🦁 Day trips (Ngorongoro, Tarangire…)", sw: "🦁 Safari za siku" } },
+        { g: "prices3", l: { en: "🌍 Multi-day safaris (3–7 days)", sw: "🌍 Safari za siku nyingi" } },
+        { g: "book", l: { en: "🎟️ How do I book?", sw: "🎟️ Naweza kuwekaje?" } },
+        WA, MORE
+      ]
+    },
+    prices2: {
+      m: { en: "Day trips from Arusha, indicative from-prices per person: Arusha National Park ~$220 · Materuni waterfalls & coffee ~$200 · Maasai boma ~$200 · Tarangire ~$280 · Ngorongoro Crater ~$320. These bundle transport, a guide and park fees; your operator confirms the final quote for your group size and season.",
+           sw: "Safari za siku kutoka Arusha, bei za kuanzia kwa mtu: Hifadhi ya Arusha ~$220 · Materuni na kahawa ~$200 · Boma la Kimaasai ~$200 · Tarangire ~$280 · Kreta ya Ngorongoro ~$320. Zinajumuisha usafiri, kiongozi na ada; mwendeshaji atathibitisha bei ya mwisho kulingana na idadi yenu na msimu." },
+      o: [ { g: "page:#/trips", l: { en: "🎟️ See all trips", sw: "🎟️ Ona safari zote" } }, WA, MORE ]
+    },
+    prices3: {
+      m: { en: "Multi-day safaris (from-prices per person, guided, with lodging): 3-day Serengeti + Ngorongoro ~$1,150 · 5-day AFCON-week explorer ~$1,590 · 7-day grand northern circuit ~$2,350. Longer trips cost more per day for premium lodges and fly-in options — just ask your operator.",
+           sw: "Safari za siku nyingi (bei za kuanzia kwa mtu, na malazi): siku 3 Serengeti + Ngorongoro ~$1,150 · siku 5 wiki ya AFCON ~$1,590 · siku 7 mzunguko mkuu ~$2,350. Safari ndefu zina gharama zaidi kwa loji za kifahari na ndege — uliza mwendeshaji." },
+      o: [ { g: "page:#/itineraries", l: { en: "🗺️ See itineraries", sw: "🗺️ Ona ratiba" } }, WA, MORE ]
+    },
+    practical: {
+      m: { en: "A few practical things make an Arusha trip smooth — money, connectivity and what to pack. Which one shall I cover?",
+           sw: "Vitu vichache vinafanya safari ya Arusha iwe rahisi — pesa, mtandao na cha kubeba. Nikueleze kipi?" },
+      o: [
+        { g: "money", l: { en: "💳 Money, ATMs & cash", sw: "💳 Pesa, ATM na fedha" } },
+        { g: "sim", l: { en: "📶 SIM cards & internet", sw: "📶 Laini za simu na intaneti" } },
+        { g: "pack", l: { en: "🎒 What to pack", sw: "🎒 Cha kubeba" } }
+      ]
+    },
+    money: {
+      m: { en: "The currency is the Tanzanian Shilling (TZS); USD is widely accepted for safaris and hotels (bring clean, newer notes). ATMs are common in Arusha city and accept Visa/Mastercard. Carry some cash for markets, tips and small vendors, and agree prices before services. Tipping guides/drivers is customary and appreciated.",
+           sw: "Sarafu ni Shilingi ya Tanzania (TZS); USD inakubalika sana kwa safari na hoteli (beba noti mpya, safi). ATM zipo nyingi jijini Arusha na zinakubali Visa/Mastercard. Beba fedha kidogo kwa masoko, tip na wauzaji wadogo, na kubaliana bei kabla ya huduma. Kutoa tip kwa viongozi/madereva ni desturi." },
+      o: [ { g: "sim", l: { en: "📶 What about SIM & internet?", sw: "📶 Vipi SIM na intaneti?" } }, WA, MORE ]
+    },
+    sim: {
+      m: { en: "Buy a local SIM (Vodacom, Airtel, Halotel or Tigo/Yas) at the airport or in town — cheap data bundles keep you online for maps and WhatsApp. You'll need your passport to register it. Most hotels and lodges have Wi-Fi, though it can be slow deep in the parks.",
+           sw: "Nunua laini ya ndani (Vodacom, Airtel, Halotel au Tigo/Yas) uwanjani au mjini — bando za bei nafuu zitakuweka mtandaoni kwa ramani na WhatsApp. Utahitaji pasipoti kuisajili. Hoteli nyingi zina Wi-Fi, ingawa inaweza kuwa polepole ndani ya hifadhi." },
+      o: [ { g: "pack", l: { en: "🎒 And what should I pack?", sw: "🎒 Na nibebe nini?" } }, WA, MORE ]
+    },
+    pack: {
+      m: { en: "For Arusha, pack layers: warm mornings and cool evenings at altitude, plus chilly game drives. Bring neutral colours for safari, a hat, sunscreen, sunglasses, insect repellent, sturdy shoes, a light rain jacket, binoculars and a good camera. For mountains (Meru/Kili) you'll need proper cold-weather gear — your operator provides a packing list.",
+           sw: "Kwa Arusha, beba nguo za tabaka: asubuhi joto na jioni baridi kwa mwinuko, pamoja na game drive za baridi. Beba rangi za wastani kwa safari, kofia, sunscreen, miwani, dawa ya wadudu, viatu imara, koti jepesi la mvua, darubini na kamera nzuri. Kwa milima (Meru/Kili) utahitaji vifaa vya baridi — mwendeshaji atakupa orodha." },
+      o: [ { g: "besttime", l: { en: "📅 Best time to visit?", sw: "📅 Wakati bora wa kuja?" } }, WA, MORE ]
+    },
+    besttime: {
+      m: { en: "Arusha is a year-round destination. June–October is dry, cooler and superb for game viewing (and AFCON 2027!). The Great Migration river crossings in the northern Serengeti peak around July–September. The green season (Nov–May) is lush, quieter and great for birds and calving in the south. There is no bad time — just different magic.",
+           sw: "Arusha ni kivutio cha mwaka mzima. Juni–Oktoba ni kavu, baridi kidogo na bora kwa kuona wanyama (na AFCON 2027!). Uvukaji wa Uhamiaji Mkuu kaskazini mwa Serengeti hupamba moto Julai–Septemba. Msimu wa kijani (Nov–Mei) ni wa majani, tulivu na mzuri kwa ndege na kuzaliana. Hakuna wakati mbaya — ni maajabu tofauti tu." },
+      o: [ { g: "prices", l: { en: "💰 And the costs?", sw: "💰 Na gharama?" } }, WA, MORE ]
     },
     thrill: {
       m: { en: "Excellent choice! Arusha is base camp for the world-famous Serengeti migration and the Ngorongoro Crater, and for climbers there's the underrated Mount Meru — technically challenging with breathtaking sunrise views.",
@@ -3030,9 +3108,15 @@
         ["night|club|bar|burudani|lounge", "night"], ["airport|jro|kia|ark|flight|ndege|kiwanja", "airport"],
         ["taxi|dala|bajaji|transport|usafiri|car|gari|rental|kukodi|around|zunguka", "around"],
         ["safe|safety|usalama|scam|theft|wizi", "safety"], ["duluti|chemka|hot spring|relax|pumziko", "duluti"],
-        ["invest|uwekezaji|business", "shop"], ["thrill|adventure|msisimko", "thrill"],
-        ["culture|utamaduni", "culture"], ["book|weka|price|bei|cost|gharama", "serengeti"],
-        ["visa|immigration|uhamiaji", null], ["match|afcon|mechi|stadium|uwanja", null], ["weather|hali ya hewa|joto", null]
+        ["thrill|adventure|msisimko", "thrill"], ["culture|utamaduni", "culture"],
+        ["book|weka booking|contact|wasiliana|operator|guide|kiongozi|reserve|reservation", "book"],
+        ["price|bei|cost|gharama|how much|kiasi gani|budget", "prices"],
+        ["money|cash|atm|currency|shilling|tzs|usd|dollar|fedha|pesa|tip", "money"],
+        ["sim|internet|wifi|data|network|mtandao|simu card", "sim"],
+        ["pack|packing|bring|wear|kubeba|nguo|luggage|nivae", "pack"],
+        ["best time|when to|season|msimu|wakati bora|when should", "besttime"],
+        ["invest|uwekezaji|business|tanzanite|gem", "shop"], ["hotel|lodge|stay|malazi|sleep|accommodation|kaa", "stay"],
+        ["visa|immigration|uhamiaji", null], ["match|afcon|mechi|stadium|uwanja", null], ["weather|hali ya hewa|joto|climate", null]
       ];
       const facts = {
         visa: { en: "Many nationalities get a visa on arrival or e-visa for Tanzania — check the official immigration portal before you fly. The Visitor Desk can point you to the current rules.",
@@ -3052,7 +3136,7 @@
         }
       }
       bubble("bot", esc(t("cb_fallback")));
-      renderOptions(WELCOME_ARUSHA.root.o.slice(0, 4).concat([WA]));
+      renderOptions(WELCOME_ARUSHA.root.o.slice(0, 6).concat([WA]));
     }
 
     function sendToAI(text) {
@@ -3068,7 +3152,12 @@
           aiMode = true;
           history.push({ role: "assistant", content: d.reply });
           bubble("bot", esc(d.reply).replace(/\n/g, "<br>"));
-          renderOptions([HOME, WA]);
+          // keep guiding: always offer a few next taps so the user never dead-ends
+          renderOptions([
+            { g: "book", l: { en: "🎟️ Help me book", sw: "🎟️ Nisaidie kuweka" } },
+            { g: "prices", l: { en: "💰 Prices", sw: "💰 Bei" } },
+            WA, MORE
+          ]);
         } else {
           aiMode = false;               // no key yet → scripted from here on
           scriptedReply(text);
@@ -3103,6 +3192,22 @@
     window.addEventListener("ka-lang", () => { if (!panel.hidden) { started = false; greet(); } });
   }
   setupChatbot();
+
+  /* ---------- live Arusha clock (East Africa Time, UTC+3) ---------- */
+  (function liveClock() {
+    const cEl = document.getElementById("topClock");
+    const dEl = document.getElementById("topDate");
+    if (!cEl) return;
+    const tick = () => {
+      const now = new Date();
+      // Arusha = UTC+3, independent of the viewer's timezone
+      const eat = new Date(now.getTime() + (now.getTimezoneOffset() + 180) * 60000);
+      const p = (n) => String(n).padStart(2, "0");
+      cEl.textContent = p(eat.getHours()) + ":" + p(eat.getMinutes()) + ":" + p(eat.getSeconds());
+      if (dEl) dEl.textContent = eat.toLocaleDateString(lang === "sw" ? "sw-TZ" : lang, { weekday: "short", day: "numeric", month: "short" });
+    };
+    tick(); setInterval(tick, 1000);
+  })();
 
   /* ---------- boot ---------- */
   window.addEventListener("hashchange", render);
