@@ -1092,46 +1092,73 @@
      =================================================================== */
   const EV_TYPES = ["all", "afcon", "sports", "conference", "culture"];
   const EV_ICON = { afcon: "globe", sports: "users", conference: "building", culture: "camera" };
+  let PARTNER_EVENTS = null;   // fetched approved partner events (normalised)
+  function allEvents() {
+    const nat = (window.EVENTS || []).map(e2 => ({
+      title: L(e2.name), etype: e2.type, date: e2.date, venue: e2.venue,
+      desc: L(e2.desc), link: e2.link, tbc: e2.tbc, by: null
+    }));
+    const partner = (PARTNER_EVENTS || []).map(e2 => ({
+      title: e2.title, etype: e2.etype, date: e2.date_start, venue: e2.venue,
+      desc: e2.description, link: e2.link, tbc: false, by: e2.company_name
+    }));
+    return nat.concat(partner).sort((a, b) => (a.date || "").localeCompare(b.date || ""));
+  }
+  function eventsHtml(f) {
+    const fmt = (d) => new Date(d + "T00:00:00").toLocaleDateString(lang === "sw" ? "sw-TZ" : lang, { weekday: "short", day: "numeric", month: "long", year: "numeric" });
+    const list = allEvents().filter(e2 => f === "all" || e2.etype === f);
+    return list.map(e2 => `
+      <article class="ev-item">
+        <div class="ev-date"><span class="ev-day">${new Date(e2.date + "T00:00:00").getDate()}</span><span class="ev-mon">${new Date(e2.date + "T00:00:00").toLocaleDateString(lang === "sw" ? "sw-TZ" : "en", { month: "short" })}</span></div>
+        <div class="ev-body">
+          <div class="ev-top">
+            <span class="ev-type ev-type-${e2.etype}">${svgIcon(EV_ICON[e2.etype] || "globe", 13)} ${t("ev_" + (e2.etype || "other"))}</span>
+            ${e2.tbc ? `<span class="ev-tbc">${t("ev_tbc")}</span>` : ""}
+            ${e2.by ? `<span class="ev-by">${svgIcon("shield", 12)} ${esc(e2.by)}</span>` : ""}
+          </div>
+          <h3>${esc(e2.title)}</h3>
+          ${e2.desc ? `<p class="muted">${esc(e2.desc)}</p>` : ""}
+          <p class="ev-meta">${e2.venue ? svgIcon("pin", 13) + " " + esc(e2.venue) + " · " : ""}${fmt(e2.date)}</p>
+          ${e2.link ? `<a class="link-inline" href="${esc(e2.link)}">${t("ev_more")} →</a>` : ""}
+        </div>
+      </article>`).join("") || `<p class="muted">${t("ev_none")}</p>`;
+  }
   function viewEvents(filter) {
     const f = filter || "all";
-    const list = (window.EVENTS || [])
-      .filter(e2 => f === "all" || e2.type === f)
-      .slice().sort((a, b) => a.date.localeCompare(b.date));
-    const chips = EV_TYPES.map(c =>
+    const chips = ["all", "afcon", "sports", "conference", "culture", "music"].map(c =>
       `<button class="chip ${c === f ? "active" : ""}" data-evtype="${c}">${t("ev_" + c)}</button>`).join("");
-    const fmt = (d) => new Date(d + "T00:00:00").toLocaleDateString(lang === "sw" ? "sw-TZ" : lang, { weekday: "short", day: "numeric", month: "long", year: "numeric" });
     return `
       <section class="detail-hero grad-green tz-band">
         <div class="container"><h1>${t("ev_title")}</h1><p class="detail-meta">${t("ev_lead")}</p></div>
       </section>
       <section class="container section">
-        <div class="chips" id="evFilters">${chips}</div>
-        <div class="ev-list">
-          ${list.map(e2 => `
-            <article class="ev-item">
-              <div class="ev-date"><span class="ev-day">${new Date(e2.date + "T00:00:00").getDate()}</span><span class="ev-mon">${new Date(e2.date + "T00:00:00").toLocaleDateString(lang === "sw" ? "sw-TZ" : "en", { month: "short" })}</span></div>
-              <div class="ev-body">
-                <div class="ev-top">
-                  <span class="ev-type ev-type-${e2.type}">${svgIcon(EV_ICON[e2.type] || "globe", 13)} ${t("ev_" + e2.type)}</span>
-                  ${e2.tbc ? `<span class="ev-tbc">${t("ev_tbc")}</span>` : ""}
-                </div>
-                <h3>${esc(L(e2.name))}</h3>
-                <p class="muted">${esc(L(e2.desc))}</p>
-                <p class="ev-meta">${svgIcon("pin", 13)} ${esc(e2.venue)} · ${fmt(e2.date)}</p>
-                ${e2.link ? `<a class="link-inline" href="${e2.link}">${t("ev_more")} →</a>` : ""}
-              </div>
-            </article>`).join("") || `<p class="muted">${t("ev_none")}</p>`}
+        <div class="ev-cta">
+          <span>${t("ev_partner_cta")}</span>
+          <a class="btn btn-small btn-gold" href="#/partner">${t("ev_partner_btn")} →</a>
         </div>
+        <div class="chips" id="evFilters">${chips}</div>
+        <div class="ev-list" id="evList">${eventsHtml(f)}</div>
         <p class="muted small center mt">${t("ev_note")}</p>
       </section>`;
   }
   function bindEvents() {
     const f = document.getElementById("evFilters");
+    const rerender = () => {
+      const cat = document.querySelector("#evFilters .chip.active")?.dataset.evtype || "all";
+      const list = document.getElementById("evList"); if (list) list.innerHTML = eventsHtml(cat);
+      setupReveal();
+    };
     if (f) f.onclick = (e) => {
       const b = e.target.closest("[data-evtype]"); if (!b) return;
-      app.innerHTML = viewEvents(b.dataset.evtype);
-      bindEvents(); setupReveal();
+      f.querySelectorAll(".chip").forEach(c => c.classList.remove("active"));
+      b.classList.add("active"); rerender();
     };
+    // always refresh so newly-approved partner events show up immediately
+    const sb = window.CONFIG.supabase;
+    fetch(`${sb.url}/rest/v1/public_events?select=*&order=date_start`, {
+      headers: { "apikey": sb.anonKey, "Authorization": "Bearer " + sb.anonKey }
+    }).then(r => r.json()).then(rows => { PARTNER_EVENTS = Array.isArray(rows) ? rows : []; rerender(); })
+      .catch(() => { if (PARTNER_EVENTS === null) PARTNER_EVENTS = []; });
   }
 
   /* ===================================================================
@@ -1529,7 +1556,36 @@
           <button type="submit" class="btn btn-primary">${t("pp_s_add")}</button>
         </form>
         <h2 class="acct-section-h">${t("pp_mine_h")}</h2>
-        <div id="mySvcs"><p class="muted">${t("admin_loading")}</p></div>`}
+        <div id="mySvcs"><p class="muted">${t("admin_loading")}</p></div>
+
+        <h2 class="acct-section-h">${t("pe_add_h")}</h2>
+        <p class="muted small">${t("pe_add_sub")}</p>
+        <form id="peForm" class="reg-form pform" novalidate>
+          <div class="field"><label for="peTitle">${t("pe_title")} <span class="req">*</span></label>
+            <input id="peTitle" type="text" placeholder="${t("pe_title_ph")}" /></div>
+          <div class="field"><label for="peType">${t("ev_type_l")}</label>
+            <select id="peType">
+              <option value="culture">${t("ev_culture")}</option>
+              <option value="sports">${t("ev_sports")}</option>
+              <option value="conference">${t("ev_conference")}</option>
+              <option value="music">${t("ev_music")}</option>
+              <option value="other">${t("pt_other")}</option>
+            </select></div>
+          <div class="field"><label for="peStart">${t("pe_start")} <span class="req">*</span></label>
+            <input id="peStart" type="date" /></div>
+          <div class="field"><label for="peEnd">${t("pe_end")}</label>
+            <input id="peEnd" type="date" /></div>
+          <div class="field"><label for="peVenue">${t("pe_venue")}</label>
+            <input id="peVenue" type="text" placeholder="${t("pe_venue_ph")}" /></div>
+          <div class="field"><label for="peDesc">${t("pp_s_desc")}</label>
+            <textarea id="peDesc" rows="3" class="acct-msg"></textarea></div>
+          <div class="field"><label for="peLink">${t("pe_link")}</label>
+            <input id="peLink" type="url" placeholder="https://..." /></div>
+          <div id="peErr" class="form-error" role="alert" hidden></div>
+          <div class="form-ok" id="peOk" hidden>✓ ${t("pe_ok")}</div>
+          <button type="submit" class="btn btn-primary">${t("pe_submit")}</button>
+        </form>
+        <div id="myEvents"></div>`}
         <div class="center mt"><button class="btn btn-ghost" id="pLogout">${t("admin_logout")}</button></div>
       </section>`;
   }
@@ -1621,6 +1677,34 @@
         ["sTitle", "sDesc", "sPrice", "sArea", "sWa", "sPhotos"].forEach(id => { const el2 = document.getElementById(id); if (el2) el2.value = ""; });
         loadMine();
       }).catch(() => { err.textContent = t("acct_err"); err.hidden = false; btn.disabled = false; btn.textContent = t("pp_s_add"); });
+    });
+
+    // ---- partner events: submit + list (pending until admin approves) ----
+    const evList = document.getElementById("myEvents");
+    const loadMyEvents = () => sbRpcNamed("partner_my_events", { p_email: p.email, p_pass: p.pass }).then(rows => {
+      if (!evList) return;
+      evList.innerHTML = (rows && rows.length) ? `<div class="table-wrap"><table class="reg-table">
+        <thead><tr><th>${t("pe_title")}</th><th>${t("pe_start")}</th><th>${t("admin_status")}</th></tr></thead>
+        <tbody>${rows.map(e2 => `<tr><td>${esc(e2.title)}</td><td>${esc(e2.date_start)}</td>
+          <td><span class="pstat pstat-${e2.status}">${e2.status === "approved" ? "✓" : e2.status === "rejected" ? "✕" : "⏳"} ${t("pp_st_" + e2.status)}</span></td></tr>`).join("")}</tbody></table></div>` : "";
+    }).catch(() => {});
+    loadMyEvents();
+    const ef = document.getElementById("peForm");
+    if (ef) ef.addEventListener("submit", (e) => {
+      e.preventDefault();
+      const er = document.getElementById("peErr"); er.hidden = true;
+      const v = (id) => (document.getElementById(id).value || "").trim();
+      if (!v("peTitle") || !v("peStart")) { er.textContent = t("pe_err"); er.hidden = false; return; }
+      const b = ef.querySelector("button[type=submit]"); b.disabled = true;
+      sbRpcNamed("partner_event_submit", {
+        p_email: p.email, p_pass: p.pass, p_title: v("peTitle"), p_etype: v("peType"),
+        p_start: v("peStart"), p_end: v("peEnd") || null, p_venue: v("peVenue") || null,
+        p_description: v("peDesc") || null, p_link: v("peLink") || null
+      }).then(() => {
+        document.getElementById("peOk").hidden = false; b.disabled = false;
+        ["peTitle", "peStart", "peEnd", "peVenue", "peDesc", "peLink"].forEach(id => { const el2 = document.getElementById(id); if (el2) el2.value = ""; });
+        loadMyEvents();
+      }).catch(() => { er.textContent = t("acct_err"); er.hidden = false; b.disabled = false; });
     });
   }
 
@@ -2152,6 +2236,7 @@
         <button class="admin-tab" data-tab="chal">⚠️ ${t("admin_sum_chal")} (${chal.length})</button>
         <button class="admin-tab" data-tab="partners">🤝 ${t("admin_sum_partners")}</button>
         <button class="admin-tab" data-tab="ambs">🌈 ${t("admin_sum_ambs")}</button>
+        <button class="admin-tab" data-tab="evs">📅 ${t("admin_sum_evs")}</button>
       </div>
       <div class="admin-cat" data-cat="reg">
         <div class="admin-head"><h3>${t("admin_sum_reg")}</h3><div class="admin-actions"><button class="btn btn-small" id="regExport"${regs.length ? "" : " disabled"}>⬇ ${t("admin_export")}</button></div></div>
@@ -2161,7 +2246,8 @@
       <div class="admin-cat" data-cat="rev" hidden><h3>⭐ ${t("admin_sum_rev")}</h3>${revTable}</div>
       <div class="admin-cat" data-cat="chal" hidden><h3>⚠️ ${t("admin_sum_chal")}</h3>${msgTable(chal)}</div>
       <div class="admin-cat" data-cat="partners" hidden><h3>🤝 ${t("admin_sum_partners")}</h3><div id="adminPartners"><p class="muted">${t("admin_loading")}</p></div></div>
-      <div class="admin-cat" data-cat="ambs" hidden><h3>🌈 ${t("admin_sum_ambs")}</h3><div id="adminAmbs"><p class="muted">${t("admin_loading")}</p></div></div>`;
+      <div class="admin-cat" data-cat="ambs" hidden><h3>🌈 ${t("admin_sum_ambs")}</h3><div id="adminAmbs"><p class="muted">${t("admin_loading")}</p></div></div>
+      <div class="admin-cat" data-cat="evs" hidden><h3>📅 ${t("admin_sum_evs")}</h3><div id="adminEvs"><p class="muted">${t("admin_loading")}</p></div></div>`;
   }
   function exportCentralCSV(rows) {
     const head = ["Registered", "Name", "Country", "Phone", "Email", "Interest", "Lang"];
@@ -2271,11 +2357,41 @@
         if (exp) exp.addEventListener("click", () => exportCentralCSV(data.registrations || []));
         loadAdminPartners(pass);
         loadAdminAmbassadors(pass);
+        loadAdminEvents(pass);
       })
       .catch(() => {
         sessionStorage.removeItem("ka_admin_pass");
         if (container) container.innerHTML = `<p class="form-error">${t("admin_login_err")}</p>`;
       });
+  }
+
+  /* admin: partner-event queue (approve / reject) */
+  function loadAdminEvents(pass) {
+    const host = document.getElementById("adminEvs");
+    if (!host) return;
+    sbRpc("admin_events", { p_pass: pass }).then(rows => {
+      rows = Array.isArray(rows) ? rows : [];
+      if (!rows.length) { host.innerHTML = `<p class="muted admin-empty">${t("admin_none")}</p>`; return; }
+      const stPill = (st) => `<span class="pstat pstat-${st}">${st === "approved" ? "✓" : st === "rejected" ? "✕" : "⏳"} ${t("pp_st_" + st)}</span>`;
+      host.innerHTML = `<div class="table-wrap"><table class="reg-table">
+        <thead><tr><th>${t("pe_title")}</th><th>${t("ev_type_l")}</th><th>${t("pe_start")}</th><th>${t("pe_venue")}</th><th>${t("ps_company")}</th><th>${t("admin_status")}</th><th></th></tr></thead>
+        <tbody>${rows.map(e2 => `<tr>
+          <td><strong>${esc(e2.title)}</strong></td>
+          <td>${t("ev_" + (e2.etype || "other"))}</td>
+          <td>${esc(e2.date_start)}${e2.date_end ? " – " + esc(e2.date_end) : ""}</td>
+          <td>${esc(e2.venue || "—")}</td>
+          <td>${esc(e2.company || "—")}</td>
+          <td>${stPill(e2.status)}</td>
+          <td class="admin-actions-cell">
+            ${e2.status !== "approved" ? `<button class="btn btn-small btn-gold" data-estat="approved" data-eid="${e2.id}">✓ ${t("admin_approve")}</button>` : ""}
+            ${e2.status !== "rejected" ? `<button class="btn btn-small" data-estat="rejected" data-eid="${e2.id}">✕ ${t("admin_reject")}</button>` : ""}
+          </td></tr>`).join("")}</tbody></table></div>`;
+      host.querySelectorAll("[data-estat]").forEach(b => b.addEventListener("click", () => {
+        b.disabled = true;
+        sbRpc("admin_event_status", { p_pass: pass, p_id: +b.dataset.eid, p_status: b.dataset.estat })
+          .then(() => loadAdminEvents(pass)).catch(() => { b.disabled = false; alert(t("acct_err")); });
+      }));
+    }).catch(() => { host.innerHTML = `<p class="form-error">${t("acct_err")}</p>`; });
   }
 
   /* admin: ambassadors queue (approve / reject) */

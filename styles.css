@@ -1483,3 +1483,11 @@ a.exp-teaser-chip:hover { transform: translateY(-1px); border-color: var(--gold)
 /* v46 — chatbot scroll containment (don't scroll the page behind) */
 .cb-thread, .cb-quick, .help-body { overscroll-behavior: contain; -webkit-overflow-scrolling: touch; }
 .cb-panel { touch-action: pan-y; }
+
+/* v46 — partner events on calendar */
+.ev-cta { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap;
+  background: var(--sand); border: 1px solid var(--line); border-radius: var(--radius); padding: 14px 18px; margin-bottom: 14px; font-weight: 600; color: var(--green-deep); }
+.ev-by { display: inline-flex; align-items: center; gap: 4px; font-size: .72rem; font-weight: 700; padding: 3px 9px; border-radius: 999px; background: rgba(224,165,46,.16); color: var(--gold-deep); }
+.ev-by .ic { color: var(--gold-deep); }
+.ev-type-music { background: rgba(138,106,68,.14); color: #6b4f2e; }
+.ev-type-other { background: var(--cream-2); color: var(--green-deep); }
