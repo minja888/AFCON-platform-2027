@@ -493,23 +493,58 @@ window.EVENTS = [
     name: { en: "AFCON Quarter-final in Arusha", sw: "Robo fainali ya AFCON Arusha" },
     desc: { en: "Quarter-final night — kick-off 19:00.", sw: "Usiku wa robo fainali — saa 19:00." }, link: "#/matches" },
 
-  /* ---- national Tanzania events (context around AFCON) ---- */
-  { id: "nat-saba", type: "conference", date: "2027-07-07", tbc: false, national: true, venue: "Dar es Salaam",
-    name: { en: "Saba Saba — Dar Int'l Trade Fair", sw: "Saba Saba — Maonyesho ya Biashara Dar" },
-    desc: { en: "Tanzania's biggest trade fair — business, industry and international exhibitors.", sw: "Maonyesho makubwa ya biashara Tanzania — biashara, viwanda na waonyeshaji wa kimataifa." } },
-  { id: "nat-nane", type: "culture", date: "2027-08-08", tbc: false, national: true, venue: "Nationwide",
-    name: { en: "Nane Nane — Farmers' Day", sw: "Nane Nane — Siku ya Wakulima" },
-    desc: { en: "National agricultural day celebrating Tanzania's farmers, with regional exhibitions.", sw: "Siku ya kitaifa ya kilimo kusherehekea wakulima wa Tanzania, na maonyesho ya mikoa." } },
-  { id: "nat-migration", type: "culture", date: "2027-07-15", tbc: false, national: true, venue: "Serengeti",
-    name: { en: "The Great Migration season", sw: "Msimu wa Uhamiaji Mkuu" },
-    desc: { en: "Peak river-crossing season in the northern Serengeti — one of Earth's greatest wildlife shows.", sw: "Kilele cha msimu wa kuvuka mito kaskazini mwa Serengeti — moja ya maonyesho makubwa ya wanyamapori duniani." } },
-  { id: "nat-kilimarathon", type: "sports", date: "2027-03-07", tbc: true, national: true, venue: "Moshi / Kilimanjaro",
-    name: { en: "Kilimanjaro Marathon", sw: "Marathon ya Kilimanjaro" },
-    desc: { en: "One of East Africa's most scenic marathons, run in the shadow of Kilimanjaro.", sw: "Moja ya marathon za mandhari zaidi Afrika Mashariki, chini ya Kilimanjaro." } },
-  { id: "nat-union", type: "culture", date: "2027-04-26", tbc: false, national: true, venue: "Nationwide",
-    name: { en: "Union Day", sw: "Siku ya Muungano" },
-    desc: { en: "National holiday marking the union of Tanganyika and Zanzibar.", sw: "Sikukuu ya kitaifa ya Muungano wa Tanganyika na Zanzibar." } }
 ];
+
+/* ---------- NATIONAL TANZANIA EVENTS — recurring annuals, generated 2027 → 2030 ----------
+   Each entry repeats every year with a stable month-day (md). Dates for festivals/marathons
+   are approximate and carry a "date to confirm" flag (tbc). */
+(function () {
+  const ANNUAL = [
+    { md: "01-01", type: "culture",    tbc: false, grad: "grad-gold",  venue: "Nationwide",
+      name: { en: "New Year's Day", sw: "Siku ya Mwaka Mpya" },
+      desc: { en: "Public holiday — celebrations across Tanzania.", sw: "Sikukuu ya kitaifa — sherehe kote Tanzania." } },
+    { md: "02-14", type: "music",      tbc: true,  grad: "grad-red",   venue: "Stone Town, Zanzibar",
+      name: { en: "Sauti za Busara Music Festival", sw: "Tamasha la Muziki Sauti za Busara" },
+      desc: { en: "East Africa's celebrated live-music festival in historic Stone Town.", sw: "Tamasha maarufu la muziki wa moja kwa moja Afrika Mashariki, Mji Mkongwe." } },
+    { md: "03-07", type: "sports",     tbc: true,  grad: "grad-teal",  venue: "Moshi / Kilimanjaro",
+      name: { en: "Kilimanjaro Marathon", sw: "Marathon ya Kilimanjaro" },
+      desc: { en: "One of East Africa's most scenic marathons, run in the shadow of Kilimanjaro.", sw: "Moja ya marathon za mandhari zaidi Afrika Mashariki, chini ya Kilimanjaro." } },
+    { md: "04-26", type: "culture",    tbc: false, grad: "grad-green", venue: "Nationwide",
+      name: { en: "Union Day", sw: "Siku ya Muungano" },
+      desc: { en: "National holiday marking the union of Tanganyika and Zanzibar.", sw: "Sikukuu ya kitaifa ya Muungano wa Tanganyika na Zanzibar." } },
+    { md: "05-01", type: "culture",    tbc: false, grad: "grad-red",   venue: "Nationwide",
+      name: { en: "Workers' Day (May Day)", sw: "Siku ya Wafanyakazi (Mei Mosi)" },
+      desc: { en: "National public holiday honouring workers.", sw: "Sikukuu ya kitaifa kuwaenzi wafanyakazi." } },
+    { md: "06-14", type: "conference", tbc: true,  grad: "grad-gold",  venue: "AICC, Arusha",
+      name: { en: "Karibu / KiliFair Travel & Tourism Fair", sw: "Karibu / KiliFair — Maonyesho ya Utalii" },
+      desc: { en: "Arusha's flagship international travel trade fair for operators and buyers.", sw: "Maonyesho makuu ya kimataifa ya biashara ya utalii Arusha kwa waendeshaji na wanunuzi." } },
+    { md: "07-07", type: "conference", tbc: false, grad: "grad-gold",  venue: "Dar es Salaam",
+      name: { en: "Saba Saba — Dar Int'l Trade Fair", sw: "Saba Saba — Maonyesho ya Biashara Dar" },
+      desc: { en: "Tanzania's biggest trade fair — business, industry and international exhibitors.", sw: "Maonyesho makubwa ya biashara Tanzania — biashara, viwanda na waonyeshaji wa kimataifa." } },
+    { md: "07-08", type: "music",      tbc: true,  grad: "grad-teal",  venue: "Stone Town, Zanzibar",
+      name: { en: "Zanzibar International Film Festival", sw: "Tamasha la Filamu la Kimataifa Zanzibar" },
+      desc: { en: "The Indian Ocean's largest film and arts festival.", sw: "Tamasha kubwa zaidi la filamu na sanaa la Bahari ya Hindi." } },
+    { md: "07-15", type: "culture",    tbc: true,  grad: "grad-green", venue: "Serengeti",
+      name: { en: "The Great Migration season", sw: "Msimu wa Uhamiaji Mkuu" },
+      desc: { en: "Peak river-crossing season in the northern Serengeti — one of Earth's greatest wildlife shows.", sw: "Kilele cha msimu wa kuvuka mito kaskazini mwa Serengeti — moja ya maonyesho makubwa ya wanyamapori duniani." } },
+    { md: "08-08", type: "culture",    tbc: false, grad: "grad-green", venue: "Nationwide",
+      name: { en: "Nane Nane — Farmers' Day", sw: "Nane Nane — Siku ya Wakulima" },
+      desc: { en: "National agricultural day celebrating Tanzania's farmers, with regional exhibitions.", sw: "Siku ya kitaifa ya kilimo kusherehekea wakulima, na maonyesho ya mikoa." } },
+    { md: "10-14", type: "culture",    tbc: false, grad: "grad-brown", venue: "Nationwide",
+      name: { en: "Nyerere Day", sw: "Siku ya Nyerere" },
+      desc: { en: "National day remembering the Father of the Nation, Mwalimu Julius Nyerere.", sw: "Siku ya kitaifa kumkumbuka Baba wa Taifa, Mwalimu Julius Nyerere." } },
+    { md: "12-09", type: "culture",    tbc: false, grad: "grad-gold",  venue: "Nationwide",
+      name: { en: "Independence Day (Uhuru Day)", sw: "Siku ya Uhuru" },
+      desc: { en: "Tanzania's national independence celebrations.", sw: "Sherehe za kitaifa za uhuru wa Tanzania." } }
+  ];
+  const YEARS = [2027, 2028, 2029, 2030];
+  YEARS.forEach(y => ANNUAL.forEach((e, i) => {
+    window.EVENTS.push({
+      id: "nat-" + y + "-" + i, type: e.type, date: y + "-" + e.md, tbc: e.tbc,
+      national: true, grad: e.grad, venue: e.venue, name: e.name, desc: e.desc
+    });
+  }));
+})();
 
 /* ---------- SUGGESTED ITINERARIES (Destination-Tanzania style, Arusha edition) ----------
    Day-by-day plans timed around AFCON match gaps. Prices = our real trip prices

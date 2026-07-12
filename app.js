@@ -1123,10 +1123,11 @@
   const EV_TYPES = ["all", "afcon", "sports", "conference", "culture"];
   const EV_ICON = { afcon: "globe", sports: "users", conference: "building", culture: "camera" };
   let PARTNER_EVENTS = null;   // fetched approved partner events (normalised)
+  const EV_GRAD = { afcon: "grad-teal", sports: "grad-green", conference: "grad-gold", culture: "grad-red", music: "grad-brown", other: "grad-green" };
   function allEvents() {
     const nat = (window.EVENTS || []).map(e2 => ({
       title: L(e2.name), etype: e2.type, date: e2.date, venue: e2.venue,
-      desc: L(e2.desc), link: e2.link, tbc: e2.tbc, by: null, national: e2.national
+      desc: L(e2.desc), link: e2.link, tbc: e2.tbc, by: null, national: e2.national, grad: e2.grad
     }));
     const partner = (PARTNER_EVENTS || []).map(e2 => ({
       title: e2.title, etype: e2.etype, date: e2.date_start, venue: e2.venue,
@@ -1134,25 +1135,41 @@
     }));
     return nat.concat(partner).sort((a, b) => (a.date || "").localeCompare(b.date || ""));
   }
-  function eventsHtml(f) {
-    const fmt = (d) => new Date(d + "T00:00:00").toLocaleDateString(lang === "sw" ? "sw-TZ" : lang, { weekday: "short", day: "numeric", month: "long", year: "numeric" });
-    const list = allEvents().filter(e2 => f === "all" || e2.etype === f);
-    return list.map(e2 => `
-      <article class="ev-item">
-        <div class="ev-date"><span class="ev-day">${new Date(e2.date + "T00:00:00").getDate()}</span><span class="ev-mon">${new Date(e2.date + "T00:00:00").toLocaleDateString(lang === "sw" ? "sw-TZ" : "en", { month: "short" })}</span></div>
-        <div class="ev-body">
+  /* trip-style event card (media header + date badge) for horizontal scrollers */
+  function eventCard(e2) {
+    const d = new Date(e2.date + "T00:00:00");
+    const day = d.getDate(), mon = d.toLocaleDateString(lang === "sw" ? "sw-TZ" : "en", { month: "short" });
+    const yr = d.getFullYear();
+    const inner = `
+        <div class="ev-card-media ${e2.grad || EV_GRAD[e2.etype] || "grad-green"}">
+          <span class="ev-card-icon">${svgIcon(EV_ICON[e2.etype] || "globe", 30)}</span>
+          <span class="ev-card-date"><b>${day}</b><small>${mon} ${yr}</small></span>
+          ${e2.national ? `<span class="ev-card-nat">🇹🇿</span>` : ""}
+        </div>
+        <div class="ev-card-body">
           <div class="ev-top">
-            <span class="ev-type ev-type-${e2.etype}">${svgIcon(EV_ICON[e2.etype] || "globe", 13)} ${t("ev_" + (e2.etype || "other"))}</span>
+            <span class="ev-type ev-type-${e2.etype}">${t("ev_" + (e2.etype || "other"))}</span>
             ${e2.tbc ? `<span class="ev-tbc">${t("ev_tbc")}</span>` : ""}
-            ${e2.national ? `<span class="ev-nat">🇹🇿 ${t("ev_national")}</span>` : ""}
             ${e2.by ? `<span class="ev-by">${svgIcon("shield", 12)} ${esc(e2.by)}</span>` : ""}
           </div>
           <h3>${esc(e2.title)}</h3>
-          ${e2.desc ? `<p class="muted">${esc(e2.desc)}</p>` : ""}
-          <p class="ev-meta">${e2.venue ? svgIcon("pin", 13) + " " + esc(e2.venue) + " · " : ""}${fmt(e2.date)}</p>
-          ${e2.link ? `<a class="link-inline" href="${esc(e2.link)}">${t("ev_more")} →</a>` : ""}
-        </div>
-      </article>`).join("") || `<p class="muted">${t("ev_none")}</p>`;
+          ${e2.venue ? `<p class="ev-meta">${svgIcon("pin", 13)} ${esc(e2.venue)}</p>` : ""}
+        </div>`;
+    return e2.link
+      ? `<a class="card ev-card" href="${esc(e2.link)}">${inner}</a>`
+      : `<div class="card ev-card">${inner}</div>`;
+  }
+  function eventsHtml(f) {
+    const list = allEvents().filter(e2 => f === "all" || e2.etype === f);
+    if (!list.length) return `<p class="muted">${t("ev_none")}</p>`;
+    // group by year → one horizontal-scroll row per year (like trip carousels)
+    const byYear = {};
+    list.forEach(e2 => { const y = (e2.date || "").slice(0, 4) || "—"; (byYear[y] = byYear[y] || []).push(e2); });
+    return Object.keys(byYear).sort().map(y => `
+      <div class="ev-year">
+        <div class="ev-year-head"><h3>${y}</h3><span class="ev-year-count">${byYear[y].length} ${t("ev_count")}</span></div>
+        <div class="ev-scroller">${byYear[y].map(eventCard).join("")}</div>
+      </div>`).join("");
   }
   function viewEvents(filter) {
     const f = filter || "all";
@@ -1951,22 +1968,10 @@
     if (!host) return;
     const render = () => {
       const today = new Date().toISOString().slice(0, 10);
-      const upcoming = allEvents().filter(e2 => (e2.date || "") >= today).slice(0, 5);
-      const past = allEvents().slice(0, 5);
-      const list = upcoming.length ? upcoming : past;
-      host.innerHTML = list.length ? list.map(e2 => `
-        <article class="ev-item">
-          <div class="ev-date"><span class="ev-day">${new Date(e2.date + "T00:00:00").getDate()}</span><span class="ev-mon">${new Date(e2.date + "T00:00:00").toLocaleDateString(lang === "sw" ? "sw-TZ" : "en", { month: "short" })}</span></div>
-          <div class="ev-body">
-            <div class="ev-top">
-              <span class="ev-type ev-type-${e2.etype}">${svgIcon(EV_ICON[e2.etype] || "globe", 13)} ${t("ev_" + (e2.etype || "other"))}</span>
-              ${e2.national ? `<span class="ev-nat">🇹🇿 ${t("ev_national")}</span>` : ""}
-              ${e2.by ? `<span class="ev-by">${svgIcon("shield", 12)} ${esc(e2.by)}</span>` : ""}
-            </div>
-            <h3>${esc(e2.title)}</h3>
-            <p class="ev-meta">${e2.venue ? svgIcon("pin", 13) + " " + esc(e2.venue) + " · " : ""}${new Date(e2.date + "T00:00:00").toLocaleDateString(lang === "sw" ? "sw-TZ" : lang, { day: "numeric", month: "long", year: "numeric" })}</p>
-          </div>
-        </article>`).join("") : `<p class="muted">${t("ev_none")}</p>`;
+      const upcoming = allEvents().filter(e2 => (e2.date || "") >= today).slice(0, 12);
+      const list = upcoming.length ? upcoming : allEvents().slice(0, 12);
+      host.className = "ev-scroller";
+      host.innerHTML = list.length ? list.map(eventCard).join("") : `<p class="muted">${t("ev_none")}</p>`;
     };
     render();
     const sb = window.CONFIG.supabase;
