@@ -987,3 +987,35 @@ window.I18N = {
   Object.assign(window.I18N.en, { admin_doc_missing: "File not found — the partner may not have uploaded it." });
   Object.assign(window.I18N.sw, { admin_doc_missing: "Faili halikupatikana — huenda mshirika hakulipakia." });
 })();
+
+/* ===== v57 — operators = real partners, booking desk, service edit, experience ===== */
+(function () {
+  Object.assign(window.I18N.en, {
+    ops_none: "No verified partners are listed yet — be the first to join.",
+    pr_view_profile: "View profile",
+    admin_services_1: "service", admin_services_n: "services",
+    book_visitor_desk: "Message the Visitor Desk", book_visitor_sub: "Official Karibu Arusha help — we connect you to a verified partner.",
+    book_browse_ops: "Browse verified operators",
+    pf_experience: "Your experience", pf_experience_ph: "e.g. 8 years running licensed safaris across northern Tanzania…",
+    pf_activities: "What you offer", pf_activities_ph: "Type an activity and press Enter (e.g. Day safari)",
+    pf_activities_hint: "Add the things travellers can do with you. Press Enter after each.",
+    pr_experience_h: "Experience", pr_offers_h: "What they offer",
+    ps_edit: "Edit", ps_delete: "Delete", ps_edit_title: "Edit service", ps_save: "Save changes",
+    ps_cancel: "Cancel", ps_del_confirm: "Delete this service permanently?",
+    ps_updated: "Service updated.", ps_deleted: "Service removed.", ps_active: "Visible to tourists"
+  });
+  Object.assign(window.I18N.sw, {
+    ops_none: "Bado hakuna washirika waliothibitishwa — kuwa wa kwanza kujiunga.",
+    pr_view_profile: "Ona wasifu",
+    admin_services_1: "huduma", admin_services_n: "huduma",
+    book_visitor_desk: "Tuma ujumbe Dawati la Wageni", book_visitor_sub: "Msaada rasmi wa Karibu Arusha — tunakuunganisha na mshirika aliyethibitishwa.",
+    book_browse_ops: "Angalia waendeshaji waliothibitishwa",
+    pf_experience: "Uzoefu wako", pf_experience_ph: "mf. Miaka 8 nikiendesha safari zenye leseni kaskazini mwa Tanzania…",
+    pf_activities: "Unachotoa", pf_activities_ph: "Andika shughuli kisha bonyeza Enter (mf. Safari ya siku)",
+    pf_activities_hint: "Ongeza vitu wageni wanaweza kufanya nawe. Bonyeza Enter baada ya kila kimoja.",
+    pr_experience_h: "Uzoefu", pr_offers_h: "Wanachotoa",
+    ps_edit: "Hariri", ps_delete: "Futa", ps_edit_title: "Hariri huduma", ps_save: "Hifadhi mabadiliko",
+    ps_cancel: "Ghairi", ps_del_confirm: "Futa huduma hii kabisa?",
+    ps_updated: "Huduma imesasishwa.", ps_deleted: "Huduma imeondolewa.", ps_active: "Inaonekana kwa watalii"
+  });
+})();

@@ -1844,3 +1844,65 @@ img { background: var(--sand); }   /* soft placeholder tone while loading */
 /* event card entrance inside the year scrollers */
 .ev-card{ transition:transform .18s ease, box-shadow .18s ease; }
 .ev-card:hover{ transform:translateY(-4px); box-shadow:0 12px 26px rgba(0,0,0,.14); }
+
+/* ======================================================================
+   v57 — real-partner operators, profile experience/activities,
+          service edit UI, activity tag input
+   ====================================================================== */
+/* operator directory cards = real verified partners */
+.op-grid { margin-top: 4px; }
+.op-partner-card { display: flex; flex-direction: column; gap: 8px; padding: 18px; }
+.op-partner-top { display: flex; align-items: center; justify-content: space-between; }
+.op-partner-avatar {
+  width: 54px; height: 54px; border-radius: 14px; overflow: hidden; flex: none;
+  display: grid; place-items: center; font-family: var(--display); font-weight: 800; font-size: 1.4rem;
+  color: #fff; background: linear-gradient(135deg, var(--green), var(--gold-deep));
+}
+.op-partner-avatar img { width: 100%; height: 100%; object-fit: cover; }
+.op-partner-card h3 { margin: 2px 0 0; color: var(--green-deep); line-height: 1.2; }
+.op-partner-type { display: inline-flex; align-items: center; gap: 6px; font-size: .82rem; font-weight: 600; color: var(--ink-soft); }
+.op-partner-type .ic { color: var(--gold-deep); }
+.op-partner-about { font-size: .9rem; line-height: 1.45; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+.op-partner-foot { display: flex; align-items: center; justify-content: space-between; margin-top: auto; padding-top: 8px; border-top: 1px solid var(--line); }
+.op-svc-count { display: inline-flex; align-items: center; gap: 5px; font-size: .8rem; font-weight: 700; color: var(--green-deep); }
+.op-svc-count .ic { color: var(--gold-deep); }
+.op-partner-go { font-family: var(--display); font-weight: 700; font-size: .85rem; color: var(--gold-deep); }
+.op-partner-card:hover .op-partner-go { text-decoration: underline; }
+.op-empty { grid-column: 1 / -1; text-align: center; padding: 42px 20px; display: flex; flex-direction: column; align-items: center; gap: 12px; }
+.op-empty .ic { color: var(--gold-deep); opacity: .8; }
+
+/* public profile: experience + activities tags */
+.pr-exp { margin-bottom: 16px; }
+.pr-exp p { line-height: 1.6; }
+.pr-offers { margin: 0 0 20px; }
+.pr-tags { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+.pr-tag { display: inline-flex; align-items: center; gap: 6px; padding: 7px 13px; border-radius: 999px;
+  background: var(--cream-2); color: var(--green-deep); font-weight: 600; font-size: .86rem; border: 1px solid var(--line); }
+.pr-tag .ic { color: var(--gold-deep); }
+
+/* dashboard: activity tag input */
+.pf-tags { display: flex; flex-wrap: wrap; gap: 7px; margin-bottom: 8px; }
+.pf-tag { display: inline-flex; align-items: center; gap: 4px; padding: 5px 6px 5px 12px; border-radius: 999px;
+  background: var(--green-deep); color: #fff; font-weight: 600; font-size: .84rem; }
+.pf-tag-x { border: none; background: rgba(255,255,255,.22); color: #fff; width: 20px; height: 20px; border-radius: 50%;
+  cursor: pointer; font-size: 1rem; line-height: 1; display: grid; place-items: center; }
+.pf-tag-x:hover { background: rgba(255,255,255,.4); }
+
+/* dashboard: my-services list with edit/delete */
+.psvc-list { display: flex; flex-direction: column; gap: 10px; margin-top: 8px; }
+.psvc-row { display: flex; align-items: center; gap: 12px; padding: 12px; border: 1px solid var(--line);
+  border-radius: var(--radius-sm); background: var(--white); }
+.psvc-thumb { width: 52px; height: 52px; border-radius: 10px; overflow: hidden; flex: none; display: grid; place-items: center;
+  background: var(--cream-2); color: var(--gold-deep); }
+.psvc-thumb img { width: 100%; height: 100%; object-fit: cover; }
+.psvc-info { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.psvc-info strong { color: var(--green-deep); }
+.psvc-actions { display: flex; gap: 6px; flex: none; }
+.psvc-edit-tag { color: var(--gold-deep); font-weight: 700; margin-bottom: 10px; }
+.btn-danger { border-color: var(--red); color: var(--red); }
+.btn-danger:hover { background: var(--red); color: #fff; }
+@media (max-width: 560px) {
+  .psvc-row { flex-wrap: wrap; }
+  .psvc-actions { width: 100%; }
+  .psvc-actions .btn { flex: 1; }
+}

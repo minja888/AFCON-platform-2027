@@ -511,7 +511,7 @@
           </div>
           <a href="#/operators" class="link-more">${t("nav_operators")} →</a>
         </div>
-        <div class="card-grid">${window.OPERATORS.slice(0, 4).map(operatorCard).join("")}</div>
+        <div class="card-grid op-grid" id="homeOps"><p class="muted">${t("admin_loading")}</p></div>
       </section>
 
       <section class="container section">
@@ -678,46 +678,69 @@
   /* ===================================================================
      VIEW: OPERATORS (search + category filter)
      =================================================================== */
-  function viewOperators() {
-    const cats = ["all", "safari", "culture", "stay", "food", "transport", "trek"];
-    const chips = cats.map(c =>
-      `<button class="chip ${c === "all" ? "active" : ""}" data-cat="${c}">${t("cat_" + c)}</button>`).join("");
-    // spotlight the highest-rated verified operator as "Certified tour operator of the tournament"
-    const top = window.OPERATORS.slice().sort((a, b) => (b.rating || 0) - (a.rating || 0))[0];
-    const topCard = top ? `
-      <div class="op-spotlight">
-        <div class="op-spot-badge">${svgIcon("shield", 18)} ${t("ops_top_badge")}</div>
-        <div class="op-spot-body">
-          <span class="op-icon">${top.icon}</span>
-          <div>
-            <h3>${esc(L(top.name))} ${top.verified ? `<span class="verified-pill">✔ ${t("verified")}</span>` : ""}</h3>
-            <p class="muted">${esc(L(top.desc))}</p>
-            <div class="op-spot-meta"><span class="card-rating">★ ${top.rating}</span> · <span>${t("cat_" + top.category)}</span> · <code>${esc(top.license)}</code></div>
-          </div>
-          <a class="btn btn-gold" href="#/operator/${top.id}">${t("view_trip")} →</a>
-        </div>
-      </div>` : "";
+  // Operator directory is now driven by REAL approved partners (public_partners),
+  // not seed data — clicking a card opens that partner's verified profile + services.
+  function partnerOpCard(p) {
+    const initial = (p.company_name || "?").trim().charAt(0).toUpperCase();
+    const n = p.service_count || 0;
     return `
+      <a class="card op-card op-partner-card" href="#/partner-profile/${esc(p.slug)}">
+        <div class="op-partner-top">
+          <span class="op-partner-avatar">${p.logo_path
+            ? `<img src="${svcPhotoUrl(p.logo_path)}" alt="${esc(p.company_name)}" loading="lazy" onerror="this.parentNode.textContent='${initial}'"/>`
+            : initial}</span>
+          <span class="verified-pill">${svgIcon("shield", 13)} ${t("verified")}</span>
+        </div>
+        <h3>${esc(p.company_name)}</h3>
+        <span class="op-partner-type">${svgIcon(P_ICON[p.ptype] || "globe", 14)} ${t("pt_" + p.ptype)}</span>
+        ${p.about ? `<p class="muted op-partner-about">${esc(p.about)}</p>` : ""}
+        <div class="op-partner-foot">
+          <span class="op-svc-count">${svgIcon("sparkle", 13)} ${n} ${n === 1 ? t("admin_services_1") : t("admin_services_n")}</span>
+          <span class="op-partner-go">${t("pr_view_profile")} →</span>
+        </div>
+      </a>`;
+  }
+  function viewOperators() {
+    const chips = ["all"].concat(P_TYPES).map(c =>
+      `<button class="chip ${c === "all" ? "active" : ""}" data-opcat="${c}">${c === "all" ? t("att_all") : t("pt_" + c)}</button>`).join("");
+    return `
+      <section class="detail-hero grad-green tz-band">
+        <div class="container"><h1>${t("sec_ops_title")}</h1><p class="detail-meta">${t("sec_ops_sub")}</p></div>
+      </section>
       <section class="container section">
-        <h2 class="page-title">${t("sec_ops_title")}</h2>
-        <p class="muted">${t("sec_ops_sub")}</p>
-        ${topCard}
         <input type="search" id="opSearch" class="search-box" placeholder="${t("search_ph")}" />
         <div class="chips" id="opFilters">${chips}</div>
-        <div class="card-grid" id="opGrid">${window.OPERATORS.map(operatorCard).join("")}</div>
+        <div class="card-grid op-grid" id="opGrid"><p class="muted">${t("admin_loading")}</p></div>
       </section>`;
   }
-
-  function filterOperators() {
-    const q = (document.getElementById("opSearch")?.value || "").toLowerCase();
-    const cat = document.querySelector("#opFilters .chip.active")?.dataset.cat || "all";
-    const list = window.OPERATORS.filter(op => {
-      const matchCat = cat === "all" || op.category === cat;
-      const matchQ = !q || L(op.name).toLowerCase().includes(q) || L(op.desc).toLowerCase().includes(q);
-      return matchCat && matchQ;
-    });
+  let opCache = null;
+  function bindOperators() {
     const grid = document.getElementById("opGrid");
-    if (grid) grid.innerHTML = list.length ? list.map(operatorCard).join("") : `<p class="muted">—</p>`;
+    if (!grid) return;
+    const apply = () => {
+      const q = (document.getElementById("opSearch")?.value || "").trim().toLowerCase();
+      const cat = document.querySelector("#opFilters .chip.active")?.dataset.opcat || "all";
+      const list = (opCache || []).filter(p =>
+        (cat === "all" || p.ptype === cat) &&
+        (!q || (p.company_name || "").toLowerCase().includes(q) || (p.about || "").toLowerCase().includes(q) ||
+               t("pt_" + p.ptype).toLowerCase().includes(q)));
+      grid.innerHTML = list.length ? list.map(partnerOpCard).join("")
+        : `<div class="op-empty"><span>${svgIcon("users", 34)}</span><p class="muted">${t("ops_none")}</p>
+             <a class="btn btn-primary" href="#/partners">${t("nav_partners")} →</a></div>`;
+    };
+    const sb = window.CONFIG.supabase;
+    fetch(`${sb.url}/rest/v1/public_partners?select=*&order=service_count.desc,created_at.desc`, {
+      headers: { "apikey": sb.anonKey, "Authorization": "Bearer " + sb.anonKey }
+    }).then(r => r.json()).then(rows => { opCache = Array.isArray(rows) ? rows : []; apply(); })
+      .catch(() => { grid.innerHTML = `<p class="form-error">${t("acct_err")}</p>`; });
+    const search = document.getElementById("opSearch");
+    if (search) search.addEventListener("input", apply);
+    const opf = document.getElementById("opFilters");
+    if (opf) opf.addEventListener("click", e => {
+      const b = e.target.closest("[data-opcat]"); if (!b) return;
+      opf.querySelectorAll(".chip").forEach(c => c.classList.remove("active"));
+      b.classList.add("active"); apply();
+    });
   }
 
   /* ===================================================================
@@ -1886,6 +1909,12 @@
             </div>
             <div class="field"><label for="pfAbout">${t("pd_about")}</label>
               <textarea id="pfAbout" rows="5" class="acct-msg" maxlength="1500" placeholder="${t("pd_about_ph")}"></textarea></div>
+            <div class="field"><label for="pfExp">${t("pf_experience")}</label>
+              <textarea id="pfExp" rows="3" class="acct-msg" maxlength="1500" placeholder="${t("pf_experience_ph")}"></textarea></div>
+            <div class="field"><label for="pfActInput">${t("pf_activities")}</label>
+              <div class="pf-tags" id="pfActTags"></div>
+              <input id="pfActInput" type="text" placeholder="${t("pf_activities_ph")}" autocomplete="off" />
+              <p class="field-note">${t("pf_activities_hint")}</p></div>
             <h3 class="pdash-subh">${t("pd_socials_h")}</h3>
             <div class="pf-grid2">
               <div class="field"><label for="pfWebsite">${t("pd_website")}</label><input id="pfWebsite" type="url" inputmode="url" placeholder="https://…" /></div>
@@ -2057,6 +2086,26 @@
       const s = e.target.closest("[data-goto]"); if (s && document.getElementById("pdStats")?.contains(s)) goTab(s.dataset.goto);
     });
 
+    // ---- activities tag input (chips the partner adds) ----
+    let pfActivities = [];
+    function renderActTags() {
+      const host = document.getElementById("pfActTags"); if (!host) return;
+      host.innerHTML = pfActivities.map((a, i) =>
+        `<span class="pf-tag">${esc(a)}<button type="button" class="pf-tag-x" data-act-rm="${i}" aria-label="remove">×</button></span>`).join("");
+      host.querySelectorAll("[data-act-rm]").forEach(b => b.addEventListener("click", () => {
+        pfActivities.splice(+b.dataset.actRm, 1); renderActTags();
+      }));
+    }
+    const actInput = document.getElementById("pfActInput");
+    if (actInput) actInput.addEventListener("keydown", (e) => {
+      if (e.key === "Enter" || e.key === ",") {
+        e.preventDefault();
+        const val = actInput.value.trim().replace(/,$/, "");
+        if (val && pfActivities.length < 20 && !pfActivities.includes(val)) { pfActivities.push(val); renderActTags(); }
+        actInput.value = "";
+      }
+    });
+
     // ---- fetch profile → overview + fill form + public link ----
     let prof = null;
     sbRpcNamed("partner_my_profile", { p_email: p.email, p_pass: p.pass }).then(d => {
@@ -2065,7 +2114,9 @@
       const setV = (id, val) => { const el2 = document.getElementById(id); if (el2 && val) el2.value = val; };
       setV("pfAbout", prof.about); setV("pfWebsite", prof.website); setV("pfWa", prof.whatsapp);
       setV("pfIg", prof.instagram); setV("pfFb", prof.facebook); setV("pfTk", prof.tiktok);
-      setV("pfYt", prof.youtube); setV("pfX", prof.x_handle);
+      setV("pfYt", prof.youtube); setV("pfX", prof.x_handle); setV("pfExp", prof.experience);
+      pfActivities = Array.isArray(prof.activities) ? prof.activities.slice() : [];
+      renderActTags();
       if (prof.logo_path) { const pv = document.getElementById("pfLogoPrev"); if (pv) pv.innerHTML = `<img src="${svcPhotoUrl(prof.logo_path)}" alt="" onerror="this.remove()"/>`; }
       if (prof.slug) {
         const vp = document.getElementById("pdViewPublic"); if (vp) vp.href = "#/partner-profile/" + prof.slug;
@@ -2095,7 +2146,8 @@
         await sbRpcNamed("partner_update_profile", {
           p_email: p.email, p_pass: p.pass, p_about: v("pfAbout") || null, p_website: v("pfWebsite") || null,
           p_instagram: v("pfIg") || null, p_facebook: v("pfFb") || null, p_tiktok: v("pfTk") || null,
-          p_youtube: v("pfYt") || null, p_whatsapp: v("pfWa") || null, p_x: v("pfX") || null, p_logo: logoPath
+          p_youtube: v("pfYt") || null, p_whatsapp: v("pfWa") || null, p_x: v("pfX") || null, p_logo: logoPath,
+          p_experience: v("pfExp") || null, p_activities: pfActivities
         });
         document.getElementById("pfOk").hidden = false;
         if (logoPath) { const pv = document.getElementById("pfLogoPrev"); if (pv) pv.innerHTML = `<img src="${svcPhotoUrl(logoPath)}" alt=""/>`; }
@@ -2146,15 +2198,55 @@
     }).catch(() => {});
 
     const list = document.getElementById("mySvcs");
+    const svcFormEl = document.getElementById("svcForm");
+    const setV2 = (id, val) => { const el2 = document.getElementById(id); if (el2) el2.value = (val == null ? "" : val); };
+    let editingSvc = null;   // when set, the form edits this service id instead of adding
+    const submitBtn = () => svcFormEl && svcFormEl.querySelector("button[type=submit]");
+    function resetSvcForm() {
+      editingSvc = null;
+      ["sTitle", "sDesc", "sPrice", "sArea", "sWa", "sPhotos", "sLat", "sLng"].forEach(id => setV2(id, ""));
+      const b = submitBtn(); if (b) b.textContent = t("pp_s_add");
+      ["svcCancel", "svcEditTag"].forEach(id => { const e2 = document.getElementById(id); if (e2) e2.remove(); });
+    }
+    function enterEdit(s) {
+      editingSvc = s.id;
+      setV2("sTitle", s.title); setV2("sCat", s.category); setV2("sDesc", s.description);
+      setV2("sPrice", s.price_from); setV2("sArea", s.area_name); setV2("sWa", s.whatsapp);
+      setV2("sLat", s.lat); setV2("sLng", s.lng);
+      const b = submitBtn(); if (b) b.textContent = t("ps_save");
+      if (b && !document.getElementById("svcCancel")) {
+        const c = document.createElement("button");
+        c.type = "button"; c.id = "svcCancel"; c.className = "btn btn-ghost"; c.style.marginLeft = "8px";
+        c.textContent = t("ps_cancel"); c.addEventListener("click", resetSvcForm); b.after(c);
+      }
+      if (svcFormEl && !document.getElementById("svcEditTag")) {
+        const tag = document.createElement("p");
+        tag.id = "svcEditTag"; tag.className = "field-note psvc-edit-tag";
+        tag.textContent = t("ps_edit_title") + " — " + s.title; svcFormEl.prepend(tag);
+      }
+      if (svcFormEl) svcFormEl.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
     const loadMine = () => sbRpcNamed("partner_my_services", { p_email: p.email, p_pass: p.pass })
       .then(rows => {
-        list.innerHTML = (rows && rows.length) ? `<div class="table-wrap"><table class="reg-table">
-          <thead><tr><th>${t("pp_s_title")}</th><th>${t("ps_type")}</th><th>${t("pp_s_price")}</th><th>${t("pp_s_area")}</th><th></th></tr></thead>
-          <tbody>${rows.map(s => `<tr><td>${esc(s.title)}</td><td>${t("pt_" + s.category)}</td><td>${s.price_from ? "$" + s.price_from : "—"}</td><td>${esc(s.area_name || "—")}</td>
-            <td><button class="btn btn-small" data-del-svc="${s.id}">🗑</button></td></tr>`).join("")}</tbody></table></div>`
+        window._mySvcRows = Array.isArray(rows) ? rows : [];
+        list.innerHTML = (rows && rows.length) ? `<div class="psvc-list">${rows.map(s => {
+          const ph = Array.isArray(s.photos) ? s.photos : [];
+          const thumb = ph.length ? `<img src="${svcPhotoUrl(ph[0])}" alt="" loading="lazy" onerror="this.remove()"/>` : svgIcon(P_ICON[s.category] || "globe", 22);
+          return `<div class="psvc-row">
+            <span class="psvc-thumb">${thumb}</span>
+            <div class="psvc-info"><strong>${esc(s.title)}</strong>
+              <span class="muted small">${t("pt_" + s.category)}${s.price_from ? " · $" + s.price_from : ""}${s.area_name ? " · " + esc(s.area_name) : ""}</span></div>
+            <div class="psvc-actions">
+              <button class="btn btn-small" data-edit-svc="${s.id}">${svgIcon("map", 13)} ${t("ps_edit")}</button>
+              <button class="btn btn-small btn-danger" data-del-svc="${s.id}">${t("ps_delete")}</button>
+            </div></div>`;
+        }).join("")}</div>`
           : `<p class="muted">${t("pp_none")}</p>`;
+        list.querySelectorAll("[data-edit-svc]").forEach(b => b.addEventListener("click", () => {
+          const s = (window._mySvcRows || []).find(x => String(x.id) === b.dataset.editSvc); if (s) enterEdit(s);
+        }));
         list.querySelectorAll("[data-del-svc]").forEach(b => b.addEventListener("click", () => {
-          if (!confirm(t("pp_del_confirm"))) return;
+          if (!confirm(t("ps_del_confirm"))) return;
           sbRpcNamed("partner_delete_service", { p_email: p.email, p_pass: p.pass, p_id: +b.dataset.delSvc }).then(loadMine).catch(() => {});
         }));
       }).catch(() => { list.innerHTML = `<p class="form-error">${t("acct_err")}</p>`; });
@@ -2168,7 +2260,8 @@
       if (!v("sTitle") || !v("sArea") || !v("sWa")) { err.textContent = t("pp_s_err"); err.hidden = false; return; }
       const files = Array.from((document.getElementById("sPhotos") || { files: [] }).files || []).slice(0, 10);
       if (files.find(fl => fl.size > 5 * 1024 * 1024)) { err.textContent = t("pp_s_photo_big"); err.hidden = false; return; }
-      const btn = f.querySelector("button[type=submit]"); btn.disabled = true; btn.textContent = "\u23F3 " + t("ps_uploading");
+      const btn = f.querySelector("button[type=submit]"); const wasEditing = editingSvc;
+      btn.disabled = true; btn.textContent = "\u23F3 " + t("ps_uploading");
       const sb3 = window.CONFIG.supabase;
       Promise.all(files.map(fl => {
         const ext = (fl.name.split(".").pop() || "jpg").toLowerCase().replace(/[^a-z0-9]/g, "") || "jpg";
@@ -2177,16 +2270,23 @@
           method: "POST", headers: { "apikey": sb3.anonKey, "Authorization": "Bearer " + sb3.anonKey, "Content-Type": fl.type },
           body: fl
         }).then(r => { if (!r.ok) throw new Error("photo"); return ph; });
-      })).then(paths => sbRpcNamed("partner_add_service", {
-        p_email: p.email, p_pass: p.pass, p_title: v("sTitle"), p_category: v("sCat"),
-        p_description: v("sDesc") || null, p_price: v("sPrice") ? +v("sPrice") : null, p_currency: "USD",
-        p_area: v("sArea"), p_lat: v("sLat") ? +v("sLat") : null, p_lng: v("sLng") ? +v("sLng") : null,
-        p_whatsapp: v("sWa").replace(/\D/g, ""), p_photos: paths
-      })).then(() => {
-        document.getElementById("sOk").hidden = false; btn.disabled = false; btn.textContent = t("pp_s_add");
-        ["sTitle", "sDesc", "sPrice", "sArea", "sWa", "sPhotos"].forEach(id => { const el2 = document.getElementById(id); if (el2) el2.value = ""; });
+      })).then(paths => {
+        const common = {
+          p_email: p.email, p_pass: p.pass, p_title: v("sTitle"), p_category: v("sCat"),
+          p_description: v("sDesc") || null, p_price: v("sPrice") ? +v("sPrice") : null, p_currency: "USD",
+          p_area: v("sArea"), p_lat: v("sLat") ? +v("sLat") : null, p_lng: v("sLng") ? +v("sLng") : null,
+          p_whatsapp: v("sWa").replace(/\D/g, "")
+        };
+        // when editing and no new photos uploaded, pass null \u2192 COALESCE keeps existing photos
+        return wasEditing
+          ? sbRpcNamed("partner_update_service", Object.assign(common, { p_id: wasEditing, p_photos: paths.length ? paths : null }))
+          : sbRpcNamed("partner_add_service", Object.assign(common, { p_photos: paths }));
+      }).then(() => {
+        const ok = document.getElementById("sOk"); ok.textContent = "\u2713 " + (wasEditing ? t("ps_updated") : t("pp_s_ok")); ok.hidden = false;
+        btn.disabled = false; resetSvcForm();
+        setTimeout(() => { ok.hidden = true; }, 3000);
         loadMine();
-      }).catch(() => { err.textContent = t("acct_err"); err.hidden = false; btn.disabled = false; btn.textContent = t("pp_s_add"); });
+      }).catch(() => { err.textContent = t("acct_err"); err.hidden = false; btn.disabled = false; btn.textContent = wasEditing ? t("ps_save") : t("pp_s_add"); });
     });
 
     // ---- partner events: submit + list (pending until admin approves) ----
@@ -2271,6 +2371,9 @@
           </div>
         </div>
         ${prof.about ? `<div class="pr-about card"><p>${esc(prof.about).replace(/\n/g, "<br>")}</p></div>` : ""}
+        ${prof.experience ? `<div class="pr-exp card"><h2 class="pdash-h">${t("pr_experience_h")}</h2><p>${esc(prof.experience).replace(/\n/g, "<br>")}</p></div>` : ""}
+        ${(Array.isArray(prof.activities) && prof.activities.length) ? `<div class="pr-offers"><h2 class="pdash-h">${t("pr_offers_h")}</h2>
+          <div class="pr-tags">${prof.activities.map(a => `<span class="pr-tag">${svgIcon("sparkle", 12)} ${esc(a)}</span>`).join("")}</div></div>` : ""}
         ${socials.length ? `<div class="pr-connect"><h2 class="pdash-h">${t("pr_connect_h")}</h2>
           <div class="pr-links">${socials.map(s => `<a class="pr-link" target="_blank" rel="noopener" href="${esc(s[2])}">${svgIcon(s[0], 16)} ${s[1]}</a>`).join("")}</div></div>` : ""}
         <h2 class="pdash-h pr-svc-h">${t("pr_services_h")}</h2>
@@ -2347,6 +2450,20 @@
       }
       applyHomeFilter();
     }).catch(() => {});
+  }
+  // home: featured verified partners (real registered operators)
+  function loadHomeOps() {
+    const grid = document.getElementById("homeOps");
+    if (!grid) return;
+    const sb = window.CONFIG.supabase;
+    fetch(`${sb.url}/rest/v1/public_partners?select=*&order=service_count.desc,created_at.desc&limit=4`, {
+      headers: { "apikey": sb.anonKey, "Authorization": "Bearer " + sb.anonKey }
+    }).then(r => r.json()).then(rows => {
+      grid.innerHTML = (Array.isArray(rows) && rows.length)
+        ? rows.map(partnerOpCard).join("")
+        : `<div class="op-empty"><span>${svgIcon("users", 30)}</span><p class="muted">${t("ops_none")}</p>
+             <a class="btn btn-primary" href="#/partners">${t("nav_partners")} →</a></div>`;
+    }).catch(() => { grid.innerHTML = `<p class="muted">—</p>`; });
   }
   function applyHomeFilter() {
     const grid = document.getElementById("homeDiscover");
@@ -3359,22 +3476,24 @@
   function openBooking(tripId) {
     const tr = window.TRIPS.find(x => x.id === tripId);
     if (!tr) return;
-    // suggest operators relevant to the trip (safari ↔ safari, else all)
-    const safariTrip = tr.tags.includes("safari");
-    const ops = window.OPERATORS.filter(o => safariTrip ? o.category === "safari" : true);
-    const list = (ops.length ? ops : window.OPERATORS).slice(0, 5).map(op => `
-      <a class="book-op" target="_blank" rel="noopener"
-         href="${waLink(op.whatsapp, L(tr.name))}">
-        <span class="op-icon">${op.icon}</span>
-        <span class="book-op-text"><strong>${esc(L(op.name))}</strong><small>★ ${op.rating} · ${t("cat_" + op.category)}</small></span>
-        <span class="book-op-go">💬</span>
-      </a>`).join("");
+    // route enquiries to the official Visitor Desk + the verified-partner directory
     modalBody.innerHTML = `
       <h3 id="modalTitle">${t("book_title")}</h3>
       <p class="muted">${t("book_intro")}</p>
       <p class="book-trip">🎟️ <strong>${esc(L(tr.name))}</strong> · ${t("from")} $${tr.priceFrom}</p>
       <p class="book-choose">${t("book_choose")}</p>
-      <div class="book-list">${list}</div>`;
+      <div class="book-list">
+        <a class="book-op" target="_blank" rel="noopener" href="${waLink(window.CONFIG.visitorDeskWhatsApp, L(tr.name))}">
+          <span class="op-icon">${svgIcon("chat", 22)}</span>
+          <span class="book-op-text"><strong>${t("book_visitor_desk")}</strong><small>${t("book_visitor_sub")}</small></span>
+          <span class="book-op-go">→</span>
+        </a>
+        <a class="book-op" href="#/operators">
+          <span class="op-icon">${svgIcon("shield", 22)}</span>
+          <span class="book-op-text"><strong>${t("book_browse_ops")}</strong><small>${t("sec_ops_sub")}</small></span>
+          <span class="book-op-go">→</span>
+        </a>
+      </div>`;
     backdrop.hidden = false;
     document.body.style.overflow = "hidden";
   }
@@ -3432,17 +3551,6 @@
     // trip filter chips
     bindTripFilters();
 
-    // operator search + category
-    const search = document.getElementById("opSearch");
-    if (search) search.addEventListener("input", filterOperators);
-    const opf = document.getElementById("opFilters");
-    if (opf) opf.addEventListener("click", e => {
-      const b = e.target.closest("[data-cat]"); if (!b) return;
-      opf.querySelectorAll(".chip").forEach(c => c.classList.remove("active"));
-      b.classList.add("active");
-      filterOperators();
-    });
-
     // booking buttons
     document.querySelectorAll("[data-book]").forEach(b =>
       b.addEventListener("click", () => openBooking(b.dataset.book)));
@@ -3454,6 +3562,7 @@
     if (route === "admin") bindAdminPage();
     if (route === "explore") bindExplore();
     if (route === "place") bindPlace(param);
+    if (route === "operators") bindOperators();
     if (route === "itineraries") bindItineraries();
     if (route === "partners") bindPartners();
     if (route === "partner-signup") bindPartnerSignup();
@@ -3466,7 +3575,7 @@
     if (route === "trip") loadTripMoments(param);
     if (route === "ambassador-apply") bindAmbassadorApply();
     if (route === "events") bindEvents();
-    if (route === "home") { buildScrollHero(); setupCineVideo(); bindHomeDiscovery(); loadHomeServices(); loadHomeEvents(); } else stopScrollHero();
+    if (route === "home") { buildScrollHero(); setupCineVideo(); bindHomeDiscovery(); loadHomeServices(); loadHomeEvents(); loadHomeOps(); } else stopScrollHero();
     setupReveal();
   }
 

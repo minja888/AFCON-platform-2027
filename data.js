@@ -198,96 +198,9 @@ window.TRIPS = [
 ];
 
 /* ---------- OPERATORS (licensed & region-verified) ---------- */
-window.OPERATORS = [
-  {
-    id: "kilimanjaro-wonders",
-    icon: "🚙",
-    category: "safari",
-    verified: true,
-    rating: 4.9,
-    license: "TALA-AR-2024-118",
-    name: { en: "Kilimanjaro Wonders Safaris", sw: "Kilimanjaro Wonders Safaris" },
-    desc: { en: "Licensed tour operator running day & multi-day safaris with English/French-speaking guides.", sw: "Mwendesha safari mwenye leseni — safari za siku na za siku nyingi, viongozi wa Kiingereza/Kifaransa." },
-    whatsapp: "255700000001"
-  },
-  {
-    id: "serengeti-pride",
-    icon: "🦓",
-    category: "safari",
-    verified: true,
-    rating: 4.8,
-    license: "TALA-AR-2023-204",
-    name: { en: "Serengeti Pride Adventures", sw: "Serengeti Pride Adventures" },
-    desc: { en: "Family-run safari company specialising in Serengeti & Ngorongoro overnight trips.", sw: "Kampuni ya familia ya safari, bingwa wa safari za Serengeti na Ngorongoro za kulala." },
-    whatsapp: "255700000002"
-  },
-  {
-    id: "arusha-coffee-plantation",
-    icon: "☕",
-    category: "culture",
-    verified: true,
-    rating: 4.9,
-    license: "TTB-AGRI-AR-208",
-    name: { en: "Arusha Coffee Plantation Tour", sw: "Ziara ya Shamba la Kahawa Arusha" },
-    desc: { en: "Walk a working Arusha coffee estate — from cherry to cup, with roasting and a fresh tasting.", sw: "Tembea shamba halisi la kahawa Arusha — kutoka tunda hadi kikombe, na kukaanga na kuonja." },
-    whatsapp: "255787540009"
-  },
-  {
-    id: "maasai-heritage",
-    icon: "🛖",
-    category: "culture",
-    verified: true,
-    rating: 4.8,
-    license: "ACC-CULT-2023-031",
-    name: { en: "Maasai Heritage Boma", sw: "Boma la Urithi wa Kimaasai" },
-    desc: { en: "Community-run cultural visits — dance, beadwork and homestead experiences.", sw: "Ziara za kiutamaduni za jamii — ngoma, shanga na maisha ya boma." },
-    whatsapp: "255700000004"
-  },
-  {
-    id: "mount-meru-lodge",
-    icon: "🏨",
-    category: "stay",
-    verified: true,
-    rating: 4.7,
-    license: "TTB-HOTEL-AR-559",
-    name: { en: "Mount Meru View Lodge", sw: "Mount Meru View Lodge" },
-    desc: { en: "Mid-range lodge near the stadium, halal-friendly kitchen and airport transfers.", sw: "Lodge ya kati karibu na uwanja, jiko la halali na usafiri wa uwanja wa ndege." },
-    whatsapp: "255700000005"
-  },
-  {
-    id: "arusha-bites",
-    icon: "🍽️",
-    category: "food",
-    verified: true,
-    rating: 4.6,
-    license: "ACC-FOOD-2024-412",
-    name: { en: "Arusha Bites Restaurant", sw: "Mgahawa wa Arusha Bites" },
-    desc: { en: "Local & international dishes with clearly-marked halal and vegetarian options.", sw: "Vyakula vya kienyeji na kimataifa, na chaguo la halali na mboga." },
-    whatsapp: "255700000006"
-  },
-  {
-    id: "twiga-transport",
-    icon: "🚖",
-    category: "transport",
-    verified: true,
-    rating: 4.7,
-    license: "SUMATRA-AR-9921",
-    name: { en: "Twiga Taxi & Boda Service", sw: "Huduma ya Teksi na Boda ya Twiga" },
-    desc: { en: "Vetted drivers for stadium, airport and town transfers — fixed, fair fares.", sw: "Madereva waliothibitishwa kwa uwanja, ndege na mjini — nauli za uhakika." },
-    whatsapp: "255700000007"
-  },
-  {
-    id: "snowcap-guides",
-    icon: "🥾",
-    category: "trek",
-    verified: true,
-    rating: 4.9,
-    license: "TALA-AR-2023-150",
-    name: { en: "Snow Cap Mountain Guides", sw: "Snow Cap Mountain Guides" },
-    desc: { en: "Certified guides for Mount Meru day hikes and Kilimanjaro day-route walks.", sw: "Viongozi waliothibitishwa kwa Mlima Meru na njia za siku za Kilimanjaro." },
-    whatsapp: "255700000008"
-  }
-];
+/* OPERATORS directory is now driven by real approved partners (public_partners).
+   Seed demo operators removed — only self-registered, verified partners appear. */
+window.OPERATORS = [];
 
 /* ---------- MATCH SCHEDULE (placeholder — update when CAF confirms) ---------- */
 window.MATCHES = [
