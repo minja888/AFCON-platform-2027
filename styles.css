@@ -1906,3 +1906,43 @@ img { background: var(--sand); }   /* soft placeholder tone while loading */
   .psvc-actions { width: 100%; }
   .psvc-actions .btn { flex: 1; }
 }
+
+/* ======================================================================
+   v58 — smart calendar agenda (date-anchored, countdown, month groups)
+   ====================================================================== */
+.ev-ag-month { margin: 0 0 26px; }
+.ev-ag-month-head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px;
+  padding: 0 2px 10px; border-bottom: 2px solid var(--line); margin-bottom: 14px; }
+.ev-ag-month-name { font-family: var(--display); font-weight: 800; font-size: 1.2rem; color: var(--green-deep); }
+.ev-ag-month-n { font-size: .78rem; font-weight: 700; color: var(--gold-deep); text-transform: uppercase; letter-spacing: .06em; }
+.ev-ag-rows { display: flex; flex-direction: column; gap: 12px; }
+.ev-ag-row { display: flex; gap: 14px; padding: 14px; border: 1px solid var(--line); border-radius: 16px;
+  background: var(--white); color: var(--ink); transition: transform .16s ease, box-shadow .16s ease, border-color .16s ease; }
+a.ev-ag-row:hover { transform: translateY(-2px); box-shadow: var(--shadow-lg); border-color: var(--gold); }
+.ev-ag-row.is-past { opacity: .55; }
+.ev-ag-date { flex: none; width: 66px; border-radius: 13px; color: #fff; display: flex; flex-direction: column;
+  align-items: center; justify-content: center; padding: 10px 0; text-align: center; line-height: 1; }
+.ev-ag-date b { font-family: var(--display); font-size: 1.7rem; font-weight: 800; }
+.ev-ag-date small { font-size: .72rem; text-transform: uppercase; letter-spacing: .08em; margin-top: 3px; opacity: .95; }
+.ev-ag-date em { font-style: normal; font-size: .64rem; opacity: .8; margin-top: 2px; text-transform: uppercase; }
+.ev-ag-body { display: flex; flex-direction: column; gap: 5px; min-width: 0; }
+.ev-ag-top { display: flex; flex-wrap: wrap; align-items: center; gap: 7px; }
+.ev-ag-title { font-family: var(--display); font-size: 1.08rem; color: var(--green-deep); line-height: 1.25; }
+.ev-ag-meta { font-size: .84rem; color: var(--ink-soft); display: inline-flex; align-items: center; gap: 5px; }
+.ev-ag-desc { font-size: .88rem; line-height: 1.5; color: var(--ink-soft);
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.ev-ag-count { display: inline-flex; align-items: center; font-size: .74rem; font-weight: 800; color: var(--gold-deep);
+  background: rgba(224,165,46,.14); padding: 3px 10px; border-radius: 999px; }
+.ev-ag-count.is-today { color: #fff; background: var(--red); animation: evPulse 2s ease-in-out infinite; }
+.ev-ag-nat { font-size: .95rem; }
+.ev-ag-past { margin-top: 8px; border-top: 1px dashed var(--line); padding-top: 14px; }
+.ev-ag-past > summary { cursor: pointer; font-family: var(--display); font-weight: 700; color: var(--ink-soft); padding: 6px 0; list-style: none; }
+.ev-ag-past > summary::-webkit-details-marker { display: none; }
+.ev-ag-past > summary::before { content: "▸ "; color: var(--gold-deep); }
+.ev-ag-past[open] > summary::before { content: "▾ "; }
+.ev-ag-past .ev-ag-rows { margin-top: 12px; }
+@media (max-width: 560px) {
+  .ev-ag-date { width: 54px; }
+  .ev-ag-date b { font-size: 1.4rem; }
+  .ev-ag-row { padding: 12px; gap: 11px; }
+}

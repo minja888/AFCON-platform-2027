@@ -1019,3 +1019,9 @@ window.I18N = {
     ps_updated: "Huduma imesasishwa.", ps_deleted: "Huduma imeondolewa.", ps_active: "Inaonekana kwa watalii"
   });
 })();
+
+/* ===== v58 — smart calendar agenda ===== */
+(function () {
+  Object.assign(window.I18N.en, { ev_past: "Past events", ev_none_upcoming: "No upcoming events in this category." });
+  Object.assign(window.I18N.sw, { ev_past: "Matukio yaliyopita", ev_none_upcoming: "Hakuna matukio yajayo katika kundi hili." });
+})();

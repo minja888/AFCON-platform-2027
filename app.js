@@ -1185,17 +1185,61 @@
       ? `<a class="card ev-card" href="${esc(e2.link)}">${inner}</a>`
       : `<div class="card ev-card">${inner}</div>`;
   }
+  /* Smart agenda row: big date chip + live countdown + details (anchored to today) */
+  function evAgendaRow(e2) {
+    const d = new Date((e2.date || "") + "T00:00:00");
+    const day = d.getDate();
+    const mon = d.toLocaleDateString(lang === "sw" ? "sw-TZ" : "en", { month: "short" });
+    const wd = d.toLocaleDateString(lang === "sw" ? "sw-TZ" : lang, { weekday: "short" });
+    const dd = evDaysAway(e2.date);
+    const past = dd < 0;
+    const countdown = past ? "" : dd === 0 ? `<span class="ev-ag-count is-today">${t("ev_today")}</span>`
+      : dd === 1 ? `<span class="ev-ag-count">${t("ev_tomorrow")}</span>`
+      : `<span class="ev-ag-count">${t("ev_in")} ${dd} ${dd === 1 ? t("ev_day") : t("ev_days")}</span>`;
+    const inner = `
+      <span class="ev-ag-date ${e2.grad || EV_GRAD[e2.etype] || "grad-green"}">
+        <b>${day}</b><small>${mon}</small><em>${wd}</em>
+      </span>
+      <span class="ev-ag-body">
+        <span class="ev-ag-top">
+          <span class="ev-type ev-type-${e2.etype}">${svgIcon(EV_ICON[e2.etype] || "globe", 12)} ${t("ev_" + (e2.etype || "other"))}</span>
+          ${e2.national ? `<span class="ev-ag-nat">🇹🇿</span>` : ""}
+          ${e2.tbc ? `<span class="ev-tbc">${t("ev_tbc")}</span>` : ""}
+          ${e2.by ? `<span class="ev-by">${svgIcon("shield", 11)} ${esc(e2.by)}</span>` : ""}
+          ${countdown}
+        </span>
+        <strong class="ev-ag-title">${esc(e2.title)}</strong>
+        ${e2.venue ? `<span class="ev-ag-meta">${svgIcon("pin", 12)} ${esc(e2.venue)}</span>` : ""}
+        ${e2.desc ? `<span class="ev-ag-desc">${esc(e2.desc)}</span>` : ""}
+      </span>`;
+    return e2.link ? `<a class="ev-ag-row${past ? " is-past" : ""}" href="${esc(e2.link)}">${inner}</a>`
+                   : `<div class="ev-ag-row${past ? " is-past" : ""}">${inner}</div>`;
+  }
   function eventsHtml(f) {
     const list = allEvents().filter(e2 => f === "all" || e2.etype === f);
     if (!list.length) return `<p class="muted">${t("ev_none")}</p>`;
-    // group by year → one horizontal-scroll row per year (like trip carousels)
-    const byYear = {};
-    list.forEach(e2 => { const y = (e2.date || "").slice(0, 4) || "—"; (byYear[y] = byYear[y] || []).push(e2); });
-    return Object.keys(byYear).sort().map(y => `
-      <div class="ev-year">
-        <div class="ev-year-head"><h3>${y}</h3><span class="ev-year-count">${byYear[y].length} ${t("ev_count")}</span></div>
-        <div class="ev-scroller">${byYear[y].map(eventCard).join("")}</div>
+    const today = new Date(); today.setHours(0, 0, 0, 0);
+    const isPast = (e2) => { const d = new Date((e2.date || "") + "T00:00:00"); return !isNaN(d) && d < today; };
+    const upcoming = list.filter(e2 => !isPast(e2));
+    const past = list.filter(isPast).reverse(); // most-recent past first
+    // group upcoming by "Month Year"
+    const groups = {};
+    upcoming.forEach(e2 => {
+      const d = new Date((e2.date || "") + "T00:00:00");
+      const key = d.toLocaleDateString(lang === "sw" ? "sw-TZ" : lang, { month: "long", year: "numeric" });
+      (groups[key] = groups[key] || []).push(e2);
+    });
+    const upHtml = Object.keys(groups).map(k => `
+      <div class="ev-ag-month">
+        <div class="ev-ag-month-head"><span class="ev-ag-month-name">${k}</span><span class="ev-ag-month-n">${groups[k].length} ${t("ev_count")}</span></div>
+        <div class="ev-ag-rows">${groups[k].map(evAgendaRow).join("")}</div>
       </div>`).join("");
+    const pastHtml = past.length ? `
+      <details class="ev-ag-past">
+        <summary>${t("ev_past")} (${past.length})</summary>
+        <div class="ev-ag-rows">${past.map(evAgendaRow).join("")}</div>
+      </details>` : "";
+    return (upHtml || `<p class="muted">${t("ev_none_upcoming")}</p>`) + pastHtml;
   }
   /* upcoming events from today (for the animated hero) */
   function upcomingEvents(n) {

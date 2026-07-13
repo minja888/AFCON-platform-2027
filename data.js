@@ -450,7 +450,8 @@ window.EVENTS = [
       name: { en: "Independence Day (Uhuru Day)", sw: "Siku ya Uhuru" },
       desc: { en: "Tanzania's national independence celebrations.", sw: "Sherehe za kitaifa za uhuru wa Tanzania." } }
   ];
-  const YEARS = [2027, 2028, 2029, 2030];
+  // Tournament-year focus only — a smart, near-term calendar (no far-future clutter).
+  const YEARS = [2027];
   YEARS.forEach(y => ANNUAL.forEach((e, i) => {
     window.EVENTS.push({
       id: "nat-" + y + "-" + i, type: e.type, date: y + "-" + e.md, tbc: e.tbc,
