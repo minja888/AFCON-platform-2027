@@ -713,16 +713,27 @@
         </div>
       </a>`;
   }
+  /* compact category dropdown (replaces the long chip row) */
+  function catSelect(id) {
+    return `
+      <label class="cat-select">
+        <span class="cat-select-ic">${svgIcon("map", 15)}</span>
+        <select id="${id}">
+          <option value="all">${t("att_all")}</option>
+          ${P_TYPES.map(c => `<option value="${c}">${t("pt_" + c)}</option>`).join("")}
+        </select>
+      </label>`;
+  }
   function viewOperators() {
-    const chips = ["all"].concat(P_TYPES).map(c =>
-      `<button class="chip ${c === "all" ? "active" : ""}" data-opcat="${c}">${c === "all" ? t("att_all") : t("pt_" + c)}</button>`).join("");
     return `
       <section class="detail-hero grad-green tz-band">
         <div class="container"><h1>${t("sec_ops_title")}</h1><p class="detail-meta">${t("sec_ops_sub")}</p></div>
       </section>
       <section class="container section">
-        <input type="search" id="opSearch" class="search-box" placeholder="${t("search_ph")}" />
-        <div class="chips" id="opFilters">${chips}</div>
+        <div class="filter-bar">
+          <input type="search" id="opSearch" class="search-box" placeholder="${t("search_ph")}" />
+          ${catSelect("opCat")}
+        </div>
         <div class="card-grid op-grid" id="opGrid"><p class="muted">${t("admin_loading")}</p></div>
       </section>`;
   }
@@ -732,7 +743,7 @@
     if (!grid) return;
     const apply = () => {
       const q = (document.getElementById("opSearch")?.value || "").trim().toLowerCase();
-      const cat = document.querySelector("#opFilters .chip.active")?.dataset.opcat || "all";
+      const cat = document.getElementById("opCat")?.value || "all";
       const list = (opCache || []).filter(p =>
         (cat === "all" || p.ptype === cat) &&
         (!q || (p.company_name || "").toLowerCase().includes(q) || (p.about || "").toLowerCase().includes(q) ||
@@ -748,12 +759,8 @@
       .catch(() => { grid.innerHTML = `<p class="form-error">${t("acct_err")}</p>`; });
     const search = document.getElementById("opSearch");
     if (search) search.addEventListener("input", apply);
-    const opf = document.getElementById("opFilters");
-    if (opf) opf.addEventListener("click", e => {
-      const b = e.target.closest("[data-opcat]"); if (!b) return;
-      opf.querySelectorAll(".chip").forEach(c => c.classList.remove("active"));
-      b.classList.add("active"); apply();
-    });
+    const catSel = document.getElementById("opCat");
+    if (catSel) catSel.addEventListener("change", apply);
   }
 
   /* ===================================================================
@@ -1345,7 +1352,7 @@
     return e2.link ? `<a class="dcal-card" href="${esc(e2.link)}">${inner}</a>` : `<div class="dcal-card">${inner}</div>`;
   }
   function dailyStripHtml() {
-    const up = upcomingEvents(14);
+    const up = upcomingEvents(Infinity);   // every upcoming event, today → the very last date
     if (!up.length) return "";
     return `<div class="dcal" id="dcal">
       <div class="dcal-head">
@@ -2656,15 +2663,15 @@
 
   /* ---- public services marketplace (approved partners only) ---- */
   function viewServices() {
-    const chips = ["all"].concat(P_TYPES).map(c =>
-      `<button class="chip ${c === "all" ? "active" : ""}" data-svccat="${c}">${c === "all" ? t("att_all") : t("pt_" + c)}</button>`).join("");
     return `
       <section class="detail-hero grad-gold tz-band">
         <div class="container"><h1>${t("sv_title")}</h1><p class="detail-meta">${t("sv_lead")}</p></div>
       </section>
       <section class="container section">
-        <input type="search" id="svcSearch" class="search-box" placeholder="${t("sv_search_ph")}" />
-        <div class="chips" id="svcFilters">${chips}</div>
+        <div class="filter-bar">
+          <input type="search" id="svcSearch" class="search-box" placeholder="${t("sv_search_ph")}" />
+          ${catSelect("svcCat")}
+        </div>
         <div class="card-grid" id="svcGrid"><p class="muted">${t("admin_loading")}</p></div>
         <p class="muted small center mt">${t("sv_note")}</p>
       </section>`;
@@ -2676,7 +2683,7 @@
     const card = svcPhotoCard;
     const search = document.getElementById("svcSearch");
     const apply = () => {
-      const cat = document.querySelector("#svcFilters .chip.active")?.dataset.svccat || "all";
+      const cat = document.getElementById("svcCat")?.value || "all";
       const q = (search?.value || "").trim().toLowerCase();
       const rows = (svcCache || []).filter(s => (cat === "all" || s.category === cat) &&
         (!q || (s.title || "").toLowerCase().includes(q) || (s.company_name || "").toLowerCase().includes(q) ||
@@ -2689,11 +2696,8 @@
       headers: { "apikey": sb.anonKey, "Authorization": "Bearer " + sb.anonKey }
     }).then(r => r.json()).then(rows => { svcCache = Array.isArray(rows) ? rows : []; apply(); })
       .catch(() => { grid.innerHTML = `<p class="form-error">${t("acct_err")}</p>`; });
-    document.getElementById("svcFilters").addEventListener("click", (e) => {
-      const b = e.target.closest("[data-svccat]"); if (!b) return;
-      document.querySelectorAll("#svcFilters .chip").forEach(c => c.classList.remove("active"));
-      b.classList.add("active"); apply();
-    });
+    const catSel = document.getElementById("svcCat");
+    if (catSel) catSel.addEventListener("change", apply);
     if (search) search.addEventListener("input", apply);
   }
 

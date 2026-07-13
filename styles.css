@@ -2065,3 +2065,22 @@ a.dcal-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-lg); b
 .dcal-grid { display: grid; grid-template-columns: repeat(3, 1fr); text-align: center; gap: 6px; border-top: 1px solid var(--line); padding-top: 11px; }
 .dcal-grid small { display: block; font-size: .68rem; color: var(--ink-soft); text-transform: uppercase; letter-spacing: .04em; }
 .dcal-grid b { display: block; font-size: .82rem; color: var(--ink); margin-top: 3px; }
+
+/* ======================================================================
+   v62 — category dropdown (replaces long chip rows) + filter bar
+   ====================================================================== */
+.filter-bar { display: flex; gap: 10px; align-items: center; margin-bottom: 18px; flex-wrap: wrap; }
+.filter-bar .search-box { flex: 1 1 240px; margin: 0; }
+.cat-select { position: relative; display: inline-flex; align-items: center; gap: 8px; flex: 0 0 auto;
+  background: var(--white); border: 1px solid var(--line); border-radius: 12px; padding: 0 12px;
+  height: 48px; transition: border-color .15s; }
+.cat-select:focus-within, .cat-select:hover { border-color: var(--gold); }
+.cat-select-ic { color: var(--gold-deep); display: grid; place-items: center; }
+.cat-select select { border: none; background: transparent; font: inherit; font-weight: 600;
+  color: var(--green-deep); cursor: pointer; height: 100%; padding-right: 4px; max-width: 220px; }
+.cat-select select:focus { outline: none; }
+@media (max-width: 560px) {
+  .filter-bar { flex-direction: column; align-items: stretch; }
+  .cat-select { width: 100%; }
+  .cat-select select { width: 100%; max-width: none; }
+}
