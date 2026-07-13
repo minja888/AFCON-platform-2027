@@ -981,3 +981,9 @@ window.I18N = {
     ev_today: "Yanafanyika leo", ev_tomorrow: "Kesho", ev_view: "Ona kwenye kalenda"
   });
 })();
+
+/* ===== v56 — admin doc download fallback message ===== */
+(function () {
+  Object.assign(window.I18N.en, { admin_doc_missing: "File not found — the partner may not have uploaded it." });
+  Object.assign(window.I18N.sw, { admin_doc_missing: "Faili halikupatikana — huenda mshirika hakulipakia." });
+})();

@@ -100,10 +100,11 @@ img { max-width: 100%; display: block; }
 .brand-text strong { font-family: var(--display); font-size: 1.05rem; }
 .brand-text small { color: var(--ink-soft); font-size: .7rem; letter-spacing: .3px; }
 
-.main-nav { display: flex; gap: 4px; margin-left: auto; }
+.main-nav { display: flex; flex-wrap: nowrap; gap: 2px; margin-left: auto; align-items: center; }
+.main-nav a, .nav-group-btn { white-space: nowrap; }
 .main-nav a {
-  font-family: var(--display); font-weight: 600; font-size: .9rem;
-  padding: 8px 13px; border-radius: 999px; color: var(--ink-soft); transition: .15s;
+  font-family: var(--display); font-weight: 600; font-size: .88rem;
+  padding: 8px 11px; border-radius: 999px; color: var(--ink-soft); transition: .15s;
 }
 .main-nav a:hover { color: var(--ink); background: var(--cream-2); }
 .main-nav a.active { color: var(--ink); background: var(--cream-2); }
@@ -853,10 +854,12 @@ img { max-width: 100%; display: block; }
 }
 
 /* ---------- responsive ---------- */
-@media (max-width: 860px) {
+@media (max-width: 1024px) {
   .main-nav {
-    position: absolute; top: 66px; left: 0; right: 0; flex-direction: column; gap: 0;
+    position: absolute; top: 66px; left: 0; right: 0; flex-direction: column; flex-wrap: wrap; gap: 0;
+    align-items: stretch;
     background: var(--cream); border-bottom: 1px solid var(--line); padding: 8px;
+    max-height: calc(100vh - 66px); overflow-y: auto;
     transform: translateY(-150%); transition: transform .25s ease; box-shadow: var(--shadow);
   }
   .main-nav.open { transform: translateY(0); }
@@ -1218,7 +1221,7 @@ img { max-width: 100%; display: block; }
 .nav-group.open .nav-drop { display: grid; }
 .nav-drop a { display: block; padding: 10px 14px; border-radius: 8px; }
 .nav-drop a:hover, .nav-drop a.active { background: var(--cream-2); }
-@media (max-width: 860px) {
+@media (max-width: 1024px) {
   .nav-group { width: 100%; }
   .nav-group-btn { width: 100%; text-align: left; padding: 12px 16px; }
   .nav-drop { position: static; display: none; box-shadow: none; border: none; background: transparent; padding-left: 14px; }

@@ -3122,11 +3122,23 @@
       }));
       host.querySelectorAll("[data-doc]").forEach(b => b.addEventListener("click", () => {
         b.disabled = true;
+        const isDl = b.dataset.dl === "1";
+        // Open the tab synchronously (inside the user gesture) so the pop-up blocker
+        // doesn't kill it — we redirect it once the signed URL arrives.
+        const win = window.open("", "_blank");
         fetch(window.CONFIG.supabase.url + "/functions/v1/partner-doc", {
           method: "POST", headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ pass, path: b.dataset.doc, download: b.dataset.dl === "1" })
-        }).then(r => r.json()).then(d2 => { b.disabled = false; if (d2 && d2.url) window.open(d2.url, "_blank", "noopener"); else alert(t("acct_err")); })
-          .catch(() => { b.disabled = false; alert(t("acct_err")); });
+          body: JSON.stringify({ pass, path: b.dataset.doc, download: isDl })
+        }).then(r => r.json()).then(d2 => {
+          b.disabled = false;
+          if (d2 && d2.url) {
+            if (win) { win.location = d2.url; }
+            else { const a = document.createElement("a"); a.href = d2.url; a.target = "_blank"; a.rel = "noopener"; a.click(); }
+          } else {
+            if (win) win.close();
+            alert((d2 && d2.error === "not-found") ? t("admin_doc_missing") : t("acct_err"));
+          }
+        }).catch(() => { b.disabled = false; if (win) win.close(); alert(t("acct_err")); });
       }));
       const exp = document.getElementById("partExport");
       if (exp) exp.addEventListener("click", () => exportPartnersCSV(rows));
