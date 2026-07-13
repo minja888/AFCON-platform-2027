@@ -1946,3 +1946,40 @@ a.ev-ag-row:hover { transform: translateY(-2px); box-shadow: var(--shadow-lg); b
   .ev-ag-date b { font-size: 1.4rem; }
   .ev-ag-row { padding: 12px; gap: 11px; }
 }
+
+/* ======================================================================
+   v59 — admin redesign: big clickable cards + SVG icons
+   ====================================================================== */
+.admin-cards { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 26px; }
+.admin-card {
+  position: relative; display: flex; flex-direction: column; align-items: flex-start; gap: 8px;
+  padding: 18px 16px; border-radius: 18px; border: 1px solid var(--line); background: var(--white);
+  cursor: pointer; text-align: left; transition: transform .16s ease, box-shadow .16s ease, border-color .16s ease, background .16s ease;
+  font: inherit; color: var(--ink);
+}
+.admin-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-lg); border-color: var(--gold); }
+.admin-card .ac-icon {
+  width: 46px; height: 46px; border-radius: 13px; display: grid; place-items: center; flex: none;
+  background: var(--cream-2); color: var(--green-deep); transition: background .16s ease, color .16s ease;
+}
+.admin-card .ac-count { font-family: var(--display); font-size: 1.7rem; font-weight: 800; line-height: 1; color: var(--green-deep); }
+.admin-card .ac-label { font-size: .82rem; font-weight: 600; color: var(--ink-soft); line-height: 1.2; }
+.admin-card.active { background: var(--green-deep); border-color: var(--green-deep); }
+.admin-card.active .ac-icon { background: rgba(255,255,255,.16); color: var(--gold); }
+.admin-card.active .ac-count { color: #fff; }
+.admin-card.active .ac-label { color: rgba(255,255,255,.85); }
+.admin-card .admin-badge {
+  position: absolute; top: 12px; right: 12px; min-width: 20px; height: 20px; padding: 0 6px;
+  border-radius: 999px; background: var(--red); color: #fff; font-size: .72rem; font-weight: 800;
+  display: inline-grid; place-items: center;
+}
+.admin-cat-h { display: flex; align-items: center; gap: 9px; color: var(--green-deep); margin-bottom: 14px; }
+.admin-cat-h .ic { color: var(--gold-deep); }
+.pdash-avatar { cursor: pointer; overflow: hidden; }
+.pdash-avatar img { width: 100%; height: 100%; object-fit: cover; border-radius: inherit; }
+@media (max-width: 900px) { .admin-cards { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 480px) {
+  .admin-cards { grid-template-columns: repeat(2, 1fr); gap: 9px; }
+  .admin-card { padding: 14px 12px; }
+  .admin-card .ac-count { font-size: 1.4rem; }
+}

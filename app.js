@@ -201,7 +201,12 @@
     plane:    '<path d="M21 3 3 10l6 3 3 6z"/><path d="m13 13 4 8 4-18"/>',
     dove:     '<path d="M12 21s-7-4.5-7-10a4 4 0 0 1 7-2 4 4 0 0 1 7 2c0 5.5-7 10-7 10z"/>',
     sparkle:  '<path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8z"/><path d="M19 15l.7 2 2 .7-2 .7-.7 2-.7-2-2-.7 2-.7z"/>',
-    chat:     '<path d="M4 5h16v10H9l-4 4V5z"/><path d="M8 9h8M8 12h5"/>'
+    chat:     '<path d="M4 5h16v10H9l-4 4V5z"/><path d="M8 9h8M8 12h5"/>',
+    star:     '<path d="m12 3 2.6 5.6 6 .7-4.5 4.1 1.2 6L12 16.9 6.7 19.4l1.2-6L3.4 9.3l6-.7z"/>',
+    calendar: '<rect x="4" y="5" width="16" height="16" rx="2"/><path d="M4 9h16M8 3v4M16 3v4M8 13h3M8 17h6"/>',
+    rainbow:  '<path d="M4 20a8 8 0 0 1 16 0"/><path d="M7 20a5 5 0 0 1 10 0"/><path d="M10 20a2 2 0 0 1 4 0"/>',
+    receipt:  '<path d="M6 3h12v18l-3-2-3 2-3-2-3 2z"/><path d="M9 8h6M9 12h6"/>',
+    alert:    '<path d="M12 4 3 20h18z"/><path d="M12 10v4M12 17h.01"/>'
   };
   function svgIcon(name, size) {
     const s = size || 22;
@@ -1804,6 +1809,12 @@
   function bindPartnerSignup() {
     const form = document.getElementById("pForm");
     if (!form) return;
+    // TIN auto-formats into groups of three digits: 123456789 → 123-456-789
+    const tinEl = document.getElementById("pTin");
+    if (tinEl) tinEl.addEventListener("input", () => {
+      const digits = tinEl.value.replace(/\D/g, "").slice(0, 12);
+      tinEl.value = (digits.match(/.{1,3}/g) || []).join("-");
+    });
     let ptype = P_TYPES[0], entity = "company";
     document.getElementById("pTypes").addEventListener("click", (e) => {
       const b = e.target.closest(".ptype-opt"); if (!b) return;
@@ -1909,7 +1920,7 @@
     return `
       <section class="pdash-hero tz-band">
         <div class="container pdash-hero-in">
-          <span class="pdash-avatar" id="pdAvatar">${(p.company || "?").trim().charAt(0).toUpperCase()}</span>
+          <a class="pdash-avatar" id="pdAvatar" href="#/partner-profile/${esc(p.slug || "")}" title="${t("pd_view_public")}">${(p.company || "?").trim().charAt(0).toUpperCase()}</a>
           <div class="pdash-hero-tx">
             <p class="pdash-hi">${t("pd_welcome")}</p>
             <h1>${esc(p.company)}</h1>
@@ -2161,9 +2172,11 @@
       setV("pfYt", prof.youtube); setV("pfX", prof.x_handle); setV("pfExp", prof.experience);
       pfActivities = Array.isArray(prof.activities) ? prof.activities.slice() : [];
       renderActTags();
-      if (prof.logo_path) { const pv = document.getElementById("pfLogoPrev"); if (pv) pv.innerHTML = `<img src="${svcPhotoUrl(prof.logo_path)}" alt="" onerror="this.remove()"/>`; }
+      if (prof.logo_path) { const pv = document.getElementById("pfLogoPrev"); if (pv) pv.innerHTML = `<img src="${svcPhotoUrl(prof.logo_path)}" alt="" onerror="this.remove()"/>`;
+        const av2 = document.getElementById("pdAvatar"); if (av2) av2.innerHTML = `<img src="${svcPhotoUrl(prof.logo_path)}" alt="" onerror="this.parentNode.textContent='${(p.company || "?").trim().charAt(0).toUpperCase()}'"/>`; }
       if (prof.slug) {
         const vp = document.getElementById("pdViewPublic"); if (vp) vp.href = "#/partner-profile/" + prof.slug;
+        const av = document.getElementById("pdAvatar"); if (av) av.href = "#/partner-profile/" + prof.slug;
         p.slug = prof.slug; setPartner(p);
       }
     }).catch(() => {});
@@ -2992,13 +3005,19 @@
     const contact = r => esc([r.phone, r.email].filter(Boolean).join(" · ")) || "—";
     const avg = rev.length ? (rev.reduce((a, b) => a + (b.rating || 0), 0) / rev.length).toFixed(1) : null;
 
-    const stat = (icon, val, label) => `<div class="stat-card-sm"><span class="ssm-icon">${icon}</span><strong>${val}</strong><span>${label}</span></div>`;
-    const summary = `<div class="admin-summary">
-      ${stat("🧾", regs.length, t("admin_sum_reg"))}
-      ${stat("📨", enq.length, t("admin_sum_enq"))}
-      ${stat("⭐", avg ? `${rev.length} · ${avg}★` : rev.length, t("admin_sum_rev"))}
-      ${stat("⚠️", chal.length, t("admin_sum_chal"))}
-    </div>`;
+    // big, clickable admin cards — each jumps to its category panel
+    const ADMIN_META = [
+      { tab: "reg", icon: "receipt", label: t("admin_sum_reg"), count: regs.length },
+      { tab: "enq", icon: "chat", label: t("admin_sum_enq"), count: enq.length },
+      { tab: "rev", icon: "star", label: t("admin_sum_rev"), count: avg ? `${rev.length} · ${avg}★` : rev.length },
+      { tab: "chal", icon: "alert", label: t("admin_sum_chal"), count: chal.length },
+      { tab: "partners", icon: "shield", label: t("admin_sum_partners"), badge: "badgePartners" },
+      { tab: "ambs", icon: "rainbow", label: t("admin_sum_ambs"), badge: "badgeAmbs" },
+      { tab: "evs", icon: "calendar", label: t("admin_sum_evs"), badge: "badgeEvs" },
+      { tab: "moms", icon: "camera", label: t("admin_sum_moms"), badge: "badgeMoms" }
+    ];
+    const catHead = (m) => `<h3 class="admin-cat-h">${svgIcon(m.icon, 20)} ${m.label}</h3>`;
+    const M = Object.fromEntries(ADMIN_META.map(m => [m.tab, m]));
 
     const regTable = regs.length ? `<div class="table-wrap"><table class="reg-table">
       <thead><tr><th>${t("admin_name")}</th><th>${t("admin_country")}</th><th>${t("admin_phone")}</th><th>${t("admin_email")}</th><th>${t("admin_interest")}</th><th>${t("admin_when")}</th></tr></thead>
@@ -3022,28 +3041,25 @@
       : `<p class="muted admin-empty">${t("admin_none")}</p>`;
 
     return `
-      ${summary}
-      <div class="admin-tabs" id="adminTabs">
-        <button class="admin-tab active" data-tab="reg">🧾 ${t("admin_sum_reg")} (${regs.length})</button>
-        <button class="admin-tab" data-tab="enq">📨 ${t("admin_sum_enq")} (${enq.length})</button>
-        <button class="admin-tab" data-tab="rev">⭐ ${t("admin_sum_rev")} (${rev.length})</button>
-        <button class="admin-tab" data-tab="chal">⚠️ ${t("admin_sum_chal")} (${chal.length})</button>
-        <button class="admin-tab" data-tab="partners">🤝 ${t("admin_sum_partners")}<span class="admin-badge" id="badgePartners" hidden></span></button>
-        <button class="admin-tab" data-tab="ambs">🌈 ${t("admin_sum_ambs")}<span class="admin-badge" id="badgeAmbs" hidden></span></button>
-        <button class="admin-tab" data-tab="evs">📅 ${t("admin_sum_evs")}<span class="admin-badge" id="badgeEvs" hidden></span></button>
-        <button class="admin-tab" data-tab="moms">📸 ${t("admin_sum_moms")}<span class="admin-badge" id="badgeMoms" hidden></span></button>
+      <div class="admin-cards" id="adminTabs">
+        ${ADMIN_META.map((m, i) => `
+          <button class="admin-card admin-tab${i === 0 ? " active" : ""}" data-tab="${m.tab}">
+            <span class="ac-icon">${svgIcon(m.icon, 26)}</span>
+            <strong class="ac-count">${m.count != null ? m.count : ""}${m.badge ? `<span class="admin-badge" id="${m.badge}" hidden></span>` : ""}</strong>
+            <span class="ac-label">${m.label}</span>
+          </button>`).join("")}
       </div>
       <div class="admin-cat" data-cat="reg">
-        <div class="admin-head"><h3>${t("admin_sum_reg")}</h3><div class="admin-actions"><button class="btn btn-small" id="regExport"${regs.length ? "" : " disabled"}>⬇ ${t("admin_export")}</button></div></div>
+        <div class="admin-head">${catHead(M.reg)}<div class="admin-actions"><button class="btn btn-small" id="regExport"${regs.length ? "" : " disabled"}>${svgIcon("map", 13)} ${t("admin_export")}</button></div></div>
         ${regTable}
       </div>
-      <div class="admin-cat" data-cat="enq" hidden><h3>📨 ${t("admin_sum_enq")}</h3>${msgTable(enq)}</div>
-      <div class="admin-cat" data-cat="rev" hidden><h3>⭐ ${t("admin_sum_rev")}</h3>${revTable}</div>
-      <div class="admin-cat" data-cat="chal" hidden><h3>⚠️ ${t("admin_sum_chal")}</h3>${msgTable(chal)}</div>
-      <div class="admin-cat" data-cat="partners" hidden><h3>🤝 ${t("admin_sum_partners")}</h3><div id="adminPartners"><p class="muted">${t("admin_loading")}</p></div></div>
-      <div class="admin-cat" data-cat="ambs" hidden><h3>🌈 ${t("admin_sum_ambs")}</h3><div id="adminAmbs"><p class="muted">${t("admin_loading")}</p></div></div>
-      <div class="admin-cat" data-cat="evs" hidden><h3>📅 ${t("admin_sum_evs")}</h3><div id="adminEvs"><p class="muted">${t("admin_loading")}</p></div></div>
-      <div class="admin-cat" data-cat="moms" hidden><h3>📸 ${t("admin_sum_moms")}</h3><div id="adminMoms"><p class="muted">${t("admin_loading")}</p></div></div>`;
+      <div class="admin-cat" data-cat="enq" hidden>${catHead(M.enq)}${msgTable(enq)}</div>
+      <div class="admin-cat" data-cat="rev" hidden>${catHead(M.rev)}${revTable}</div>
+      <div class="admin-cat" data-cat="chal" hidden>${catHead(M.chal)}${msgTable(chal)}</div>
+      <div class="admin-cat" data-cat="partners" hidden>${catHead(M.partners)}<div id="adminPartners"><p class="muted">${t("admin_loading")}</p></div></div>
+      <div class="admin-cat" data-cat="ambs" hidden>${catHead(M.ambs)}<div id="adminAmbs"><p class="muted">${t("admin_loading")}</p></div></div>
+      <div class="admin-cat" data-cat="evs" hidden>${catHead(M.evs)}<div id="adminEvs"><p class="muted">${t("admin_loading")}</p></div></div>
+      <div class="admin-cat" data-cat="moms" hidden>${catHead(M.moms)}<div id="adminMoms"><p class="muted">${t("admin_loading")}</p></div></div>`;
   }
   function exportCentralCSV(rows) {
     const head = ["Registered", "Name", "Country", "Phone", "Email", "Interest", "Lang"];
@@ -3269,8 +3285,8 @@
           <td>${p.website ? `<a class="link-inline" target="_blank" rel="noopener" href="${esc(p.website)}">${t("sv_site")}</a>` : "—"}</td>
           <td>${esc(p.tin || "—")}<br><small>${esc(p.license_no || "—")}</small></td>
           <td class="admin-doc-cell">
-              ${p.doc_path ? `<button class="btn btn-small" data-doc="${esc(p.doc_path)}">📄 ${t("admin_view_doc")}</button><button class="btn btn-small" data-doc="${esc(p.doc_path)}" data-dl="1" title="${t("admin_download")}">⬇</button>` : "—"}
-              ${p.tin_doc_path ? `<div style="margin-top:4px"><button class="btn btn-small" data-doc="${esc(p.tin_doc_path)}">🧾 TIN</button><button class="btn btn-small" data-doc="${esc(p.tin_doc_path)}" data-dl="1" title="${t("admin_download")}">⬇</button></div>` : ""}</td>
+              ${p.doc_path ? `<button class="btn btn-small" data-doc="${esc(p.doc_path)}">${svgIcon("receipt", 13)} ${t("admin_view_doc")}</button><button class="btn btn-small" data-doc="${esc(p.doc_path)}" data-dl="1" title="${t("admin_download")}">${svgIcon("map", 13)}</button>` : "—"}
+              ${p.tin_doc_path ? `<div style="margin-top:4px"><button class="btn btn-small" data-doc="${esc(p.tin_doc_path)}">${svgIcon("receipt", 13)} TIN</button><button class="btn btn-small" data-doc="${esc(p.tin_doc_path)}" data-dl="1" title="${t("admin_download")}">${svgIcon("map", 13)}</button></div>` : ""}</td>
           <td>${stPill(p.status)}<br><small class="muted">${p.services} ${t("admin_services_n")}</small></td>
           <td class="admin-actions-cell">
             ${p.status !== "approved" ? `<button class="btn btn-small btn-gold" data-pstat="approved" data-pid="${p.id}">✓ ${t("admin_approve")}</button>` : ""}
