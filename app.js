@@ -1319,6 +1319,59 @@
     hero.addEventListener("mouseenter", stop); hero.addEventListener("mouseleave", start);
     start();
   }
+  /* Daily calendar strip (economic-calendar style) — horizontal day-by-day cards,
+     starting from TODAY. Re-reads today each render so the start advances with the date. */
+  function dcalCard(e2) {
+    const d = new Date((e2.date || "") + "T00:00:00");
+    const dd = evDaysAway(e2.date);
+    const dayLabel = dd <= 0 ? t("cal_today") : d.toLocaleDateString(lang === "sw" ? "sw-TZ" : lang, { weekday: "long" });
+    const dateShort = d.toLocaleDateString(lang === "sw" ? "sw-TZ" : lang, { day: "numeric", month: "short" });
+    const count = dd <= 0 ? t("ev_today") : dd === 1 ? t("ev_tomorrow") : `${dd} ${t("ev_days")}`;
+    const badge = e2.national ? "🇹🇿" : `${svgIcon(EV_ICON[e2.etype] || "globe", 18)}`;
+    const inner = `
+      <div class="dcal-top">
+        <span class="dcal-day">${dayLabel}</span>
+        <span class="dcal-time">${dateShort}</span>
+      </div>
+      <div class="dcal-mid">
+        <span class="dcal-badge ${e2.grad || EV_GRAD[e2.etype] || "grad-green"}">${badge}</span>
+        <h3 class="dcal-name">${esc(e2.title)}</h3>
+      </div>
+      <div class="dcal-grid">
+        <div><small>${t("cal_when")}</small><b>${dateShort}</b></div>
+        <div><small>${t("cal_count")}</small><b>${count}</b></div>
+        <div><small>${t("cal_kind")}</small><b>${t("ev_" + (e2.etype || "other"))}</b></div>
+      </div>`;
+    return e2.link ? `<a class="dcal-card" href="${esc(e2.link)}">${inner}</a>` : `<div class="dcal-card">${inner}</div>`;
+  }
+  function dailyStripHtml() {
+    const up = upcomingEvents(14);
+    if (!up.length) return "";
+    return `<div class="dcal" id="dcal">
+      <div class="dcal-head">
+        <h2 class="dcal-title">${svgIcon("calendar", 18)} ${t("cal_daily_h")}</h2>
+        <div class="dcal-nav">
+          <button type="button" class="dcal-btn" id="dcalPrev" aria-label="${t("cal_scroll_left")}">‹</button>
+          <button type="button" class="dcal-btn" id="dcalNext" aria-label="${t("cal_scroll_right")}">›</button>
+        </div>
+      </div>
+      <div class="dcal-scroller" id="dcalScroller">${up.map(dcalCard).join("")}</div>
+    </div>`;
+  }
+  function bindDailyStrip() {
+    const sc = document.getElementById("dcalScroller"); if (!sc) return;
+    const prev = document.getElementById("dcalPrev"), next = document.getElementById("dcalNext");
+    const upd = () => {
+      const max = sc.scrollWidth - sc.clientWidth - 1;
+      if (prev) prev.disabled = sc.scrollLeft <= 0;
+      if (next) next.disabled = sc.scrollLeft >= max;
+    };
+    const by = () => Math.max(240, sc.clientWidth * 0.8);
+    if (prev) prev.addEventListener("click", () => sc.scrollBy({ left: -by(), behavior: "smooth" }));
+    if (next) next.addEventListener("click", () => sc.scrollBy({ left: by(), behavior: "smooth" }));
+    sc.addEventListener("scroll", upd, { passive: true });
+    upd();
+  }
   function viewEvents(filter) {
     const f = filter || "all";
     const chips = ["all", "afcon", "sports", "conference", "culture", "music"].map(c =>
@@ -1328,7 +1381,7 @@
         <div class="container"><h1>${t("ev_title")}</h1><p class="detail-meta">${t("ev_lead")}</p></div>
       </section>
       <section class="container section">
-        <div id="evHeroHost">${eventsHeroHtml()}</div>
+        <div id="evStripHost">${dailyStripHtml()}</div>
         <div class="ev-cta">
           <span>${t("ev_partner_cta")}</span>
           <a class="btn btn-small btn-gold" href="#/partner">${t("ev_partner_btn")} →</a>
@@ -1339,14 +1392,12 @@
   }
   function bindEvents() {
     const f = document.getElementById("evFilters");
-    let heroBound = false;
-    const bindHeroOnce = () => { if (!heroBound) { bindEventsHero(); heroBound = true; } };
+    let stripBound = false;
     const rerender = () => {
       const cat = document.querySelector("#evFilters .chip.active")?.dataset.evtype || "all";
       const list = document.getElementById("evList"); if (list) list.innerHTML = eventsHtml(cat);
-      const host = document.getElementById("evHeroHost");
-      if (host && !heroBound) { host.innerHTML = eventsHeroHtml(); }  // rebuild once with partner events
-      bindHeroOnce();
+      const host = document.getElementById("evStripHost");
+      if (host && !stripBound) { host.innerHTML = dailyStripHtml(); bindDailyStrip(); stripBound = true; }  // rebuild once with partner events
       setupReveal();
     };
     if (f) f.onclick = (e) => {
@@ -1901,7 +1952,8 @@
     const p = getPartner();
     if (!p) {
       return `
-        <section class="container auth-wrap">
+        <section class="container auth-wrap auth-split">
+          ${authArt("partner")}
           <form id="pLoginForm" class="auth-card" novalidate>
             <div class="auth-icon">🤝</div>
             <h1 class="auth-title">${t("pp_login_title")}</h1>
@@ -3091,7 +3143,8 @@
   function viewAdmin() {
     if (!isAdmin()) {
       return `
-        <section class="container auth-wrap">
+        <section class="container auth-wrap auth-split">
+          ${authArt("admin")}
           <form id="adminLogin" class="auth-card" novalidate>
             <div class="auth-icon">🔒</div>
             <h1 class="auth-title">${t("admin_login_title")}</h1>
@@ -3333,6 +3386,31 @@
   /* ===================================================================
      VIEW: TOURIST LOGIN (sign in with the account made at registration)
      =================================================================== */
+  /* Split-screen auth art panel — "Visit Arusha" branding + animated Arusha photos
+     (replaces the cartoon concept with real, floating destination imagery). */
+  const AUTH_ART_IMGS = [
+    "1547471080-7cc2caa01a7e",   // acacia savanna + giraffe
+    "1516426122078-c23e76319801",// elephants
+    "1523805009345-7448845a9e53",// giraffe golden hour
+    "1464822759023-fed622ff2c3b" // Kilimanjaro / Meru mood
+  ].map(id => `https://images.unsplash.com/photo-${id}?w=900&q=72&auto=format&fit=crop`);
+  function authArt(kind) {
+    const tag = t("auth_art_" + (kind || "tourist"));
+    return `
+      <div class="auth-art" aria-hidden="true">
+        <div class="auth-art-photos">
+          ${AUTH_ART_IMGS.map((u, i) => `<span class="aa-tile aa-tile-${i}" style="background-image:url('${u}')"></span>`).join("")}
+          <span class="aa-orb aa-orb-1"></span><span class="aa-orb aa-orb-2"></span>
+        </div>
+        <div class="auth-art-scrim"></div>
+        <div class="auth-art-tx">
+          <span class="auth-brand"><span class="auth-brand-mark">${svgIcon("mountain", 20)}</span> ${t("auth_brand")}</span>
+          <h2 class="auth-art-title">${t("auth_art_h")}</h2>
+          <p class="auth-art-sub">${tag}</p>
+          <div class="auth-art-foot">${svgIcon("shield", 14)} <span>${t("auth_art_trust")}</span></div>
+        </div>
+      </div>`;
+  }
   function viewLogin() {
     const u = getCurrentUser();
     if (u && u.name) {
@@ -3347,7 +3425,8 @@
         </section>`;
     }
     return `
-      <section class="container auth-wrap">
+      <section class="container auth-wrap auth-split">
+        ${authArt("tourist")}
         <form id="loginForm" class="auth-card" novalidate>
           <div class="auth-icon">👋</div>
           <h1 class="auth-title">${t("login_title")}</h1>

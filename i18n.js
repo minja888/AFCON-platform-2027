@@ -1025,3 +1025,27 @@ window.I18N = {
   Object.assign(window.I18N.en, { ev_past: "Past events", ev_none_upcoming: "No upcoming events in this category." });
   Object.assign(window.I18N.sw, { ev_past: "Matukio yaliyopita", ev_none_upcoming: "Hakuna matukio yajayo katika kundi hili." });
 })();
+
+/* ===== v61 — split-screen "Visit Arusha" auth art + daily calendar strip ===== */
+(function () {
+  Object.assign(window.I18N.en, {
+    auth_brand: "Visit Arusha",
+    auth_art_h: "Karibu — the heart of Safari",
+    auth_art_trust: "Official RAS Arusha welcome platform · AFCON Pamoja 2027",
+    auth_art_tourist: "Sign in to plan trips, save moments and discover verified operators around Arusha.",
+    auth_art_partner: "Sign in to manage your listings, events and traveller enquiries.",
+    auth_art_admin: "Secure access for the Karibu Arusha administration team.",
+    cal_today: "Today", cal_daily_h: "Day by day", cal_scroll_left: "Scroll left", cal_scroll_right: "Scroll right",
+    cal_when: "Date", cal_count: "Countdown", cal_kind: "Type", cal_see_all: "See the full calendar"
+  });
+  Object.assign(window.I18N.sw, {
+    auth_brand: "Visit Arusha",
+    auth_art_h: "Karibu — moyo wa Safari",
+    auth_art_trust: "Jukwaa rasmi la RAS Arusha · AFCON Pamoja 2027",
+    auth_art_tourist: "Ingia kupanga safari, kuhifadhi kumbukumbu na kugundua waendeshaji waliothibitishwa Arusha.",
+    auth_art_partner: "Ingia kusimamia huduma zako, matukio na maswali ya wageni.",
+    auth_art_admin: "Ufikiaji salama kwa timu ya utawala ya Karibu Arusha.",
+    cal_today: "Leo", cal_daily_h: "Siku baada ya siku", cal_scroll_left: "Sogeza kushoto", cal_scroll_right: "Sogeza kulia",
+    cal_when: "Tarehe", cal_count: "Muda uliobaki", cal_kind: "Aina", cal_see_all: "Ona kalenda kamili"
+  });
+})();
