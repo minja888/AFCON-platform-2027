@@ -1995,25 +1995,25 @@ a.ev-ag-row:hover { transform: translateY(-2px); box-shadow: var(--shadow-lg); b
    ====================================================================== */
 /* --- split login: art panel + form side by side --- */
 .auth-split { max-width: 1000px; width: 100%; display: grid; grid-template-columns: 1.05fr .95fr;
-  gap: 0; align-items: stretch; border-radius: 26px; overflow: hidden; box-shadow: var(--shadow-lg); background: var(--white); }
+  gap: 0; place-items: stretch;   /* override .auth-wrap's place-items:center, which collapsed the art panel to 0 width */
+  border-radius: 26px; overflow: hidden; box-shadow: var(--shadow-lg); background: var(--white); }
 .auth-split .auth-card { width: 100%; max-width: none; border-radius: 0; box-shadow: none; border: 0; margin: 0;
   align-self: center; padding: 44px clamp(24px, 4vw, 52px); }
 .auth-split .auth-card::after { display: none; }
 
 .auth-art { position: relative; min-height: 560px; overflow: hidden;
   background: linear-gradient(150deg, var(--green-deep), #24331a 60%, #14180f); color: #fff; }
-.auth-art-photos { position: absolute; inset: 0; }
-.aa-tile { position: absolute; background-size: cover; background-position: center; border-radius: 18px;
-  box-shadow: 0 18px 40px rgba(0,0,0,.4); will-change: transform; }
-.aa-tile-0 { width: 58%; height: 42%; left: 8%;  top: 9%;  transform: rotate(-3deg); animation: aaFloat 9s ease-in-out infinite; }
-.aa-tile-1 { width: 40%; height: 32%; right: 7%; top: 30%; transform: rotate(4deg);  animation: aaFloat 11s ease-in-out infinite reverse; }
-.aa-tile-2 { width: 46%; height: 34%; left: 14%; bottom: 10%; transform: rotate(3deg); animation: aaFloat 10s ease-in-out infinite .4s; }
-.aa-tile-3 { width: 34%; height: 26%; right: 10%; bottom: 14%; transform: rotate(-5deg); animation: aaFloat 12s ease-in-out infinite reverse .8s; }
-@keyframes aaFloat { 0%,100% { transform: translateY(0) rotate(var(--r,0)); } 50% { transform: translateY(-14px); } }
-.aa-tile-0 { --r: -3deg; } .aa-tile-1 { --r: 4deg; } .aa-tile-2 { --r: 3deg; } .aa-tile-3 { --r: -5deg; }
-.aa-orb { position: absolute; border-radius: 50%; filter: blur(40px); opacity: .5; }
-.aa-orb-1 { width: 220px; height: 220px; background: rgba(224,165,46,.5); top: -40px; right: -30px; }
-.aa-orb-2 { width: 260px; height: 260px; background: rgba(122,140,70,.5); bottom: -60px; left: -50px; }
+/* full-bleed safari collage — photos tile the WHOLE panel edge to edge, no gaps */
+.auth-art-photos { position: absolute; inset: 0; display: grid;
+  grid-template-columns: 1.25fr 1fr; grid-template-rows: 1.2fr 1fr; gap: 0; }
+.aa-tile { position: relative; width: 100%; height: 100%; overflow: hidden;
+  background-size: cover; background-position: center; will-change: transform;
+  animation: aaZoom 18s ease-in-out infinite alternate; }
+.aa-tile-1 { animation-delay: 4.5s; }
+.aa-tile-2 { animation-delay: 9s; }
+.aa-tile-3 { animation-delay: 13.5s; }
+@keyframes aaZoom { from { transform: scale(1); } to { transform: scale(1.14); } }
+.aa-orb { display: none; }
 .auth-art-scrim { position: absolute; inset: 0;
   background: linear-gradient(180deg, rgba(14,18,10,.30) 0%, rgba(14,18,10,.55) 60%, rgba(14,18,10,.86) 100%); }
 .auth-art-tx { position: absolute; inset: auto 0 0 0; padding: 34px clamp(24px,3vw,40px); z-index: 2; }

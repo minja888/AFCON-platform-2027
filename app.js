@@ -3397,7 +3397,7 @@
     "1516426122078-c23e76319801",// elephants
     "1523805009345-7448845a9e53",// giraffe golden hour
     "1464822759023-fed622ff2c3b" // Kilimanjaro / Meru mood
-  ].map(id => `https://images.unsplash.com/photo-${id}?w=900&q=72&auto=format&fit=crop`);
+  ].map(id => `https://images.unsplash.com/photo-${id}?w=1200&q=76&auto=format&fit=crop`);
   function authArt(kind) {
     const tag = t("auth_art_" + (kind || "tourist"));
     return `
