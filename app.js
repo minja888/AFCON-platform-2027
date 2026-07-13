@@ -205,6 +205,7 @@
     star:     '<path d="m12 3 2.6 5.6 6 .7-4.5 4.1 1.2 6L12 16.9 6.7 19.4l1.2-6L3.4 9.3l6-.7z"/>',
     calendar: '<rect x="4" y="5" width="16" height="16" rx="2"/><path d="M4 9h16M8 3v4M16 3v4M8 13h3M8 17h6"/>',
     rainbow:  '<path d="M4 20a8 8 0 0 1 16 0"/><path d="M7 20a5 5 0 0 1 10 0"/><path d="M10 20a2 2 0 0 1 4 0"/>',
+    megaphone:'<path d="M4 10v4a1 1 0 0 0 1 1h2l7 4V5L7 9H5a1 1 0 0 0-1 1Z"/><path d="M8 15v3a1 1 0 0 0 1 1h1.5"/><path d="M18 9a3.5 3.5 0 0 1 0 6"/>',
     receipt:  '<path d="M6 3h12v18l-3-2-3 2-3-2-3 2z"/><path d="M9 8h6M9 12h6"/>',
     alert:    '<path d="M12 4 3 20h18z"/><path d="M12 10v4M12 17h.01"/>'
   };
@@ -227,11 +228,18 @@
   ].map(id => `https://images.unsplash.com/photo-${id}?w=900&q=60&auto=format&fit=crop`);
 
   /* ---------- cinematic 4K hero background (crossfading Ken-Burns slides) ---------- */
+  // Higher-resolution, less-compressed stills on desktop / retina; lighter on phones.
+  const _cineVW = (typeof window !== "undefined")
+    ? Math.max(window.innerWidth || 0, (window.screen && window.screen.width) || 0) : 0;
+  const _cineWide = _cineVW >= 1024 ||
+                    (typeof window !== "undefined" && (window.devicePixelRatio || 1) > 1.5);
+  const _cineW = _cineWide ? 3840 : 1600;
+  const _cineQ = _cineWide ? 82 : 68;
   const CINE_SLIDES = [
     "1547471080-7cc2caa01a7e",    // acacia + giraffe savanna
     "1523805009345-7448845a9e53", // giraffe at golden hour
     "1464822759023-fed622ff2c3b"  // mountain / Kilimanjaro mood
-  ].map(id => `https://images.unsplash.com/photo-${id}?w=2560&q=70&auto=format&fit=crop`);
+  ].map(id => `https://images.unsplash.com/photo-${id}?w=${_cineW}&q=${_cineQ}&auto=format&fit=crop`);
 
   /* the configured list of hero videos — normalised to {src,title,note,from,to} */
   function heroVideoList() {
@@ -425,7 +433,7 @@
       <section class="cine-hero" id="cineHero">
         <div class="cine-bg" aria-hidden="true">
           ${CINE_SLIDES.map((u, i) => `<div class="cine-slide" style="background-image:url('${u}');animation-delay:${(i * 6 - 2).toFixed(0)}s"></div>`).join("")}
-          ${heroVideoList().map((v, i) => `<video class="cine-video" data-vi="${i}" muted loop playsinline preload="${i === 0 ? "auto" : "metadata"}" poster="${CINE_SLIDES[0]}"><source src="${v.src}" type="${/\.webm(\?|$)/i.test(v.src) ? "video/webm" : "video/mp4"}"></video>`).join("")}
+          ${heroVideoList().map((v, i) => `<video class="cine-video" data-vi="${i}" muted loop playsinline preload="${(i === 0 || _cineWide) ? "auto" : "metadata"}" poster="${CINE_SLIDES[0]}"><source src="${v.src}" type="${/\.webm(\?|$)/i.test(v.src) ? "video/webm" : "video/mp4"}"></video>`).join("")}
           <div class="cine-grain"></div>
           <div class="cine-scrim"></div>
         </div>
@@ -3012,7 +3020,7 @@
       { tab: "rev", icon: "star", label: t("admin_sum_rev"), count: avg ? `${rev.length} · ${avg}★` : rev.length },
       { tab: "chal", icon: "alert", label: t("admin_sum_chal"), count: chal.length },
       { tab: "partners", icon: "shield", label: t("admin_sum_partners"), badge: "badgePartners" },
-      { tab: "ambs", icon: "rainbow", label: t("admin_sum_ambs"), badge: "badgeAmbs" },
+      { tab: "ambs", icon: "megaphone", label: t("admin_sum_ambs"), badge: "badgeAmbs" },
       { tab: "evs", icon: "calendar", label: t("admin_sum_evs"), badge: "badgeEvs" },
       { tab: "moms", icon: "camera", label: t("admin_sum_moms"), badge: "badgeMoms" }
     ];

@@ -1073,6 +1073,12 @@ img { max-width: 100%; display: block; }
   opacity: 0; transition: opacity .8s ease; pointer-events: none; }
 .cine-video.ready { opacity: 1; }
 .cine-grain, .cine-scrim { z-index: 1; }
+/* desktop: richer, crisper hero — subtle grade + lighter grain so the footage reads sharp */
+@media (min-width: 1024px) {
+  .cine-video { filter: saturate(1.07) contrast(1.04); }
+  .cine-slide { filter: saturate(1.05) contrast(1.03); }
+  .cine-grain { opacity: .03; }
+}
 
 .footer-credit { display:block; margin-top:6px; font-size:.72rem; opacity:.6; }
 
