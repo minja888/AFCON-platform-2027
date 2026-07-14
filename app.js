@@ -187,6 +187,7 @@
   const ICONS = {
     pin:      '<path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="2.6"/>',
     map:      '<path d="m9 4 6 2 6-2v14l-6 2-6-2-6 2V6z"/><path d="M9 4v14M15 6v14"/>',
+    download: '<path d="M12 3v12"/><path d="m7 11 5 5 5-5"/><path d="M4 19h16"/>',
     mountain: '<path d="m3 19 6-11 4 6 2-3 6 8z"/>',
     tree:     '<path d="M12 3 7 11h3l-3 5h4v5h2v-5h4l-3-5h3z"/>',
     building: '<path d="M4 21V6l8-3 8 3v15"/><path d="M9 21v-5h6v5M8 9h.01M12 9h.01M16 9h.01M8 13h.01M16 13h.01"/>',
@@ -2537,11 +2538,18 @@
   function svcPhotoCard(s) {
     const ph = Array.isArray(s.photos) ? s.photos : [];
     const first = ph.length ? svcPhotoUrl(ph[0]) : null;
+    /* every uploaded photo is viewable: 2+ photos become a swipe/scroll gallery with dots */
+    const media = ph.length > 1
+      ? `<div class="svc-gal" onscroll="var i=Math.round(this.scrollLeft/this.clientWidth);this.parentNode.querySelectorAll('.svc-dot').forEach(function(d,j){d.classList.toggle('on',j===i)})">
+           ${ph.map((p, i) => `<img src="${svcPhotoUrl(p)}" alt="${esc(s.title)} ${i + 1}" loading="lazy" decoding="async" onerror="this.remove()" />`).join("")}
+         </div>
+         <span class="svc-dots">${ph.map((_, i) => `<i class="svc-dot${i === 0 ? " on" : ""}"></i>`).join("")}</span>`
+      : (first ? `<img class="att-img" src="${first}" alt="${esc(s.title)}" loading="lazy" decoding="async" onerror="this.remove()" />`
+               : `<span class="att-media-fallback">${svgIcon(P_ICON[s.category] || "globe", 40)}</span>`);
     return `
       <div class="card svc-card svc-photo-card">
         <div class="att-media grad-green">
-          ${first ? `<img class="att-img" src="${first}" alt="${esc(s.title)}" loading="lazy" decoding="async" onerror="this.remove()" />`
-                  : `<span class="att-media-fallback">${svgIcon(P_ICON[s.category] || "globe", 40)}</span>`}
+          ${media}
           <span class="att-scrim"></span>
           <span class="att-cat-pill">${svgIcon(P_ICON[s.category] || "globe", 14)} ${t("pt_" + (s.category || "other"))}</span>
           ${ph.length > 1 ? `<span class="svc-photo-n">${svgIcon("camera", 13)} ${ph.length}</span>` : ""}
@@ -3350,8 +3358,8 @@
           <td>${p.website ? `<a class="link-inline" target="_blank" rel="noopener" href="${esc(p.website)}">${t("sv_site")}</a>` : "—"}</td>
           <td>${esc(p.tin || "—")}<br><small>${esc(p.license_no || "—")}</small></td>
           <td class="admin-doc-cell">
-              ${p.doc_path ? `<button class="btn btn-small" data-doc="${esc(p.doc_path)}">${svgIcon("receipt", 13)} ${t("admin_view_doc")}</button><button class="btn btn-small" data-doc="${esc(p.doc_path)}" data-dl="1" title="${t("admin_download")}">${svgIcon("map", 13)}</button>` : "—"}
-              ${p.tin_doc_path ? `<div style="margin-top:4px"><button class="btn btn-small" data-doc="${esc(p.tin_doc_path)}">${svgIcon("receipt", 13)} TIN</button><button class="btn btn-small" data-doc="${esc(p.tin_doc_path)}" data-dl="1" title="${t("admin_download")}">${svgIcon("map", 13)}</button></div>` : ""}</td>
+              ${p.doc_path ? `<span class="doc-pair"><button class="btn btn-small" data-doc="${esc(p.doc_path)}">${svgIcon("receipt", 13)} ${t("admin_view_doc")}</button><button class="doc-dl" data-doc="${esc(p.doc_path)}" data-dl="1" title="${t("admin_download")}" aria-label="${t("admin_download")}">${svgIcon("download", 15)}</button></span>` : "—"}
+              ${p.tin_doc_path ? `<span class="doc-pair"><button class="btn btn-small" data-doc="${esc(p.tin_doc_path)}">${svgIcon("receipt", 13)} TIN</button><button class="doc-dl" data-doc="${esc(p.tin_doc_path)}" data-dl="1" title="${t("admin_download")}" aria-label="${t("admin_download")}">${svgIcon("download", 15)}</button></span>` : ""}</td>
           <td>${stPill(p.status)}<br><small class="muted">${p.services} ${t("admin_services_n")}</small></td>
           <td class="admin-actions-cell">
             ${p.status !== "approved" ? `<button class="btn btn-small btn-gold" data-pstat="approved" data-pid="${p.id}">✓ ${t("admin_approve")}</button>` : ""}

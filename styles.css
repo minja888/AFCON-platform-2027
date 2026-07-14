@@ -2084,3 +2084,33 @@ a.dcal-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-lg); b
   .cat-select { width: 100%; }
   .cat-select select { width: 100%; max-width: none; }
 }
+
+/* ======================================================================
+   v64 — service photo gallery (all partner photos scroll) + admin download btn
+   ====================================================================== */
+/* scroll-snap gallery inside the service card media area */
+.svc-gal { position: absolute; inset: 0; display: flex; overflow-x: auto; overflow-y: hidden;
+  scroll-snap-type: x mandatory; -webkit-overflow-scrolling: touch;
+  scrollbar-width: none; }
+.svc-gal::-webkit-scrollbar { display: none; }
+.svc-gal img { flex: 0 0 100%; width: 100%; height: 100%; object-fit: cover;
+  scroll-snap-align: start; scroll-snap-stop: always; }
+/* overlays must not steal the swipe */
+.svc-photo-card .att-scrim, .svc-photo-card .att-cat-pill, .svc-photo-card .svc-photo-n { pointer-events: none; }
+.svc-dots { position: absolute; left: 0; right: 0; bottom: 8px; display: flex; justify-content: center;
+  gap: 5px; z-index: 2; pointer-events: none; }
+.svc-dot { width: 6px; height: 6px; border-radius: 50%; background: rgba(255,255,255,.45);
+  transition: .2s; }
+.svc-dot.on { background: #fff; width: 16px; border-radius: 4px; }
+.svc-photo-n { z-index: 2; }
+
+/* admin: neat gold circular download button, paired with View */
+.doc-pair { display: inline-flex; align-items: center; gap: 6px; margin: 2px 0; }
+.doc-dl { display: inline-grid; place-items: center; width: 32px; height: 32px; border-radius: 50%;
+  border: 1.5px solid var(--gold); background: var(--white); color: var(--gold-deep);
+  cursor: pointer; transition: .15s; flex: none; }
+.doc-dl:hover { background: var(--gold); color: #fff; transform: translateY(-1px);
+  box-shadow: 0 4px 10px rgba(224,165,46,.35); }
+.doc-dl:disabled { opacity: .5; cursor: wait; }
+.admin-doc-cell { min-width: 150px; }
+.admin-doc-cell .doc-pair + .doc-pair, .admin-doc-cell span + span { margin-top: 4px; }
