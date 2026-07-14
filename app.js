@@ -3805,10 +3805,10 @@
       const next = (Math.round(g.scrollLeft / w) + 1) % n;
       slowGlide(g, next * w);
     });
-  }, 3000);
-  /* a slower, eased glide (~900ms) than the browser's default smooth scroll */
+  }, 5000);
+  /* a slower, eased glide (~1.2s) than the browser's default smooth scroll */
   function slowGlide(el, to) {
-    const from = el.scrollLeft, dist = to - from, dur = 900, t0 = performance.now();
+    const from = el.scrollLeft, dist = to - from, dur = 1200, t0 = performance.now();
     el._gliding = true;
     (function step(now) {
       const p = Math.min(1, (now - t0) / dur);
