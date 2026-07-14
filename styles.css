@@ -2114,3 +2114,30 @@ a.dcal-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-lg); b
 .doc-dl:disabled { opacity: .5; cursor: wait; }
 .admin-doc-cell { min-width: 150px; }
 .admin-doc-cell .doc-pair + .doc-pair, .admin-doc-cell span + span { margin-top: 4px; }
+
+/* ======================================================================
+   v65 - lightbox (click a service photo to enlarge) + gallery cursor
+   ====================================================================== */
+.svc-gal img, .svc-photo-card .att-img { cursor: zoom-in; }
+.lb { position: fixed; inset: 0; z-index: 400; background: rgba(10,12,7,.92);
+  display: grid; place-items: center; animation: lbIn .2s ease; }
+@keyframes lbIn { from { opacity: 0; } to { opacity: 1; } }
+.lb-img { max-width: 94vw; max-height: 88vh; border-radius: 12px;
+  box-shadow: 0 24px 70px rgba(0,0,0,.6); animation: lbImgIn .22s ease; }
+@keyframes lbImgIn { from { opacity: 0; transform: scale(.96); } to { opacity: 1; transform: none; } }
+.lb-x { position: absolute; top: 16px; right: 18px; width: 42px; height: 42px; border-radius: 50%;
+  border: 0; cursor: pointer; background: rgba(255,255,255,.14); color: #fff; font-size: 1.15rem;
+  display: grid; place-items: center; transition: .15s; }
+.lb-x:hover { background: rgba(255,255,255,.3); }
+.lb-nav { position: absolute; top: 50%; transform: translateY(-50%); width: 46px; height: 46px;
+  border-radius: 50%; border: 0; cursor: pointer; background: rgba(255,255,255,.14); color: #fff;
+  font-size: 1.9rem; line-height: 1; display: grid; place-items: center; transition: .15s; z-index: 2; }
+.lb-nav:hover { background: var(--gold); color: var(--green-deep); }
+.lb-prev { left: 14px; } .lb-next { right: 14px; }
+.lb-count { position: absolute; bottom: 18px; left: 50%; transform: translateX(-50%);
+  color: #fff; font-weight: 700; font-size: .85rem; background: rgba(255,255,255,.14);
+  padding: 5px 14px; border-radius: 20px; }
+@media (max-width: 560px) {
+  .lb-nav { width: 40px; height: 40px; font-size: 1.5rem; }
+  .lb-prev { left: 8px; } .lb-next { right: 8px; }
+}
