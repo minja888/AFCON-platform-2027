@@ -215,7 +215,7 @@
     return `<svg class="ic" viewBox="0 0 24 24" width="${s}" height="${s}" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICONS[name] || ICONS.pin}</svg>`;
   }
   const CAT_ICON  = { park: "tree", mountain: "mountain", museum: "building", culture: "users", nature: "water", conference: "building" };
-  const CAT_COLOR = { park: "#4d5f28", mountain: "#3a4a1e", museum: "#8a6a44", culture: "#c0552b", nature: "#4a7c59", conference: "#00a3dd" };
+  const CAT_COLOR = { park: "#4d5f28", mountain: "#3a4a1e", museum: "#8a6a44", culture: "#c0552b", nature: "#4a7c59", conference: "#234f3b" };
 
   const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
@@ -843,7 +843,7 @@
     const wonders = dash.wonders || [];
     return `
       <section class="dashboard-hero">
-        <div class="dashboard-hero-bg" style="background: linear-gradient(135deg, #4d5f28 0%, #3a4a1e 50%, #2c3817 100%); position: relative; overflow: hidden;">
+        <div class="dashboard-hero-bg" style="background: linear-gradient(135deg, #4d5f28 0%, #3a4a1e 50%, #24331a 100%); position: relative; overflow: hidden;">
           <div class="dashboard-hero-content">
             <span class="dash-kicker">${t("hero_kicker")}</span>
             <h1 class="dash-title">${t("dash_title")}</h1>
