@@ -3803,13 +3803,25 @@
       if (!w || g.scrollWidth <= w + 2) return;
       const n = Math.round(g.scrollWidth / w);
       const next = (Math.round(g.scrollLeft / w) + 1) % n;
-      g.scrollTo({ left: next * w, behavior: "smooth" });
+      slowGlide(g, next * w);
     });
-  }, 1000);
+  }, 3000);
+  /* a slower, eased glide (~900ms) than the browser's default smooth scroll */
+  function slowGlide(el, to) {
+    const from = el.scrollLeft, dist = to - from, dur = 900, t0 = performance.now();
+    el._gliding = true;
+    (function step(now) {
+      const p = Math.min(1, (now - t0) / dur);
+      const e = p < .5 ? 2 * p * p : 1 - Math.pow(-2 * p + 2, 2) / 2;  // easeInOutQuad
+      el.scrollLeft = from + dist * e;
+      if (p < 1 && el._gliding) requestAnimationFrame(step);
+      else el._gliding = false;
+    })(t0);
+  }
   // touching a gallery pauses its auto-advance for a few seconds
   document.addEventListener("touchstart", (e) => {
     const g = e.target.closest(".svc-gal"); if (!g) return;
-    g._hold = true;
+    g._hold = true; g._gliding = false;   // stop any in-flight glide so it doesn't fight the finger
     clearTimeout(g._holdT);
     g._holdT = setTimeout(() => { g._hold = false; }, 5000);
   }, { passive: true });
