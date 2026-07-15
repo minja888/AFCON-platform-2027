@@ -73,26 +73,8 @@
     localStorage.setItem(REG_KEY, JSON.stringify(all));           // 1) keep a local copy (offline-safe)
     const url = window.CONFIG && window.CONFIG.registrationEndpoint;
     if (url) { try { fetch(url, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(rec) }); } catch (e) {} }
-    // 2) send to the central Supabase database (visible across all devices)
-    const sb = window.CONFIG && window.CONFIG.supabase;
-    if (sb && sb.url && sb.anonKey) {
-      try {
-        fetch(sb.url + "/rest/v1/registrations", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "apikey": sb.anonKey,
-            "Authorization": "Bearer " + sb.anonKey,
-            "Prefer": "return=minimal"
-          },
-          body: JSON.stringify({
-            name: rec.name, country: rec.country, country_code: rec.countryCode,
-            dial: rec.dial || null, phone: rec.phone || null, zone: rec.zone || null,
-            email: rec.email || null, interest: rec.interest || null, lang: rec.lang
-          })
-        }).catch(() => {});
-      } catch (e) {}
-    }
+    // 2) The central Supabase row is now created server-side by the user_register RPC
+    //    (with a bcrypt password + welcome email), so no direct REST insert here.
     return all.length;
   }
   function clearRegs() { localStorage.removeItem(REG_KEY); }
@@ -2671,6 +2653,35 @@
     });
   }
 
+  /* ---- tourist/user password reset (from the emailed 24h link) ---- */
+  function viewUserReset(token) {
+    return `
+      <section class="container auth-wrap">
+        <form id="uResetForm" class="auth-card" novalidate>
+          <div class="auth-icon">🔑</div>
+          <h1 class="auth-title">${t("ur_title")}</h1>
+          <p class="auth-sub">${t("ur_sub")}</p>
+          <div class="field"><label for="urPass">${t("login_pass")}</label>
+            <div class="pass-wrap"><input id="urPass" type="password" autocomplete="new-password" /><button type="button" class="pass-toggle" aria-label="${t("pass_show")}">👁</button></div></div>
+          <div id="urErr" class="form-error" role="alert" hidden></div>
+          <button type="submit" class="btn btn-primary btn-block" data-token="${esc(token || "")}">${t("ur_btn")}</button>
+        </form>
+      </section>`;
+  }
+  function bindUserReset() {
+    const f = document.getElementById("uResetForm");
+    if (!f) return;
+    f.addEventListener("submit", (e) => {
+      e.preventDefault();
+      const btn = f.querySelector("button[type=submit]");
+      const err = document.getElementById("urErr"); err.hidden = true;
+      btn.disabled = true;
+      sbRpc("user_reset_password", { p_token: btn.dataset.token, p_pass: document.getElementById("urPass").value })
+        .then(() => { alert(t("ur_ok")); location.hash = "#/login"; })
+        .catch(() => { err.textContent = t("pr_err"); err.hidden = false; btn.disabled = false; });
+    });
+  }
+
   /* ---- public services marketplace (approved partners only) ---- */
   function viewServices() {
     return `
@@ -3020,7 +3031,7 @@
     });
     document.addEventListener("click", (e) => { if (!combo.contains(e.target)) closeCountryList(); });
     rebuildDial();                                   // start in the EAC portal
-    form.addEventListener("submit", (e) => {
+    form.addEventListener("submit", async (e) => {
       e.preventDefault();
       const name = document.getElementById("regName").value.trim();
       const countryCode = hidden.value;
@@ -3043,6 +3054,22 @@
       }
       const fullPhone = phone ? dial.value + " " + phone : "";
       const ts = new Date().toISOString();
+      // Create the central server account (bcrypt password + welcome email) when an email is given.
+      // Falls back to local-only for phone-only sign-ups or if the backend is unreachable.
+      if (email) {
+        try {
+          await sbRpcNamed("user_register", {
+            p_name: name, p_country: countryName, p_country_code: countryCode,
+            p_dial: phone ? dial.value : null, p_phone: phone || null,
+            p_email: email, p_interest: interest, p_lang: lang, p_zone: zone, p_pass: pass
+          });
+        } catch (ex) {
+          if (/email_exists/.test(String(ex))) {
+            err.innerHTML = `<div>• ${esc(t("reg_err_exists"))}</div>`; err.hidden = false; return;
+          }
+          // other backend errors: keep going with the local copy so the user isn't blocked
+        }
+      }
       saveReg({
         ts, name, countryCode, country: countryName, zone,
         dial: phone ? dial.value : "", phone: fullPhone,
@@ -3458,6 +3485,7 @@
           </div>
           <div id="loginErr" class="form-error" role="alert" hidden></div>
           <button type="submit" class="btn btn-primary btn-block">${t("login_btn")}</button>
+          <p class="muted small auth-alt"><button type="button" class="link-inline linklike" id="uForgot">${t("login_forgot")}</button></p>
           <p class="muted small auth-alt">${t("login_no_acct")} <a href="#/register" class="link-inline">${t("login_register")}</a></p>
         </form>
       </section>`;
@@ -3465,19 +3493,34 @@
   function bindLogin() {
     const form = document.getElementById("loginForm");
     if (!form) return;
-    form.addEventListener("submit", (e) => {
+    // "Forgot password?" — email a reset link to the registered address (server-side).
+    const fg = document.getElementById("uForgot");
+    if (fg) fg.addEventListener("click", () => {
+      const em = (document.getElementById("loginId").value || "").trim() || prompt(t("login_forgot_ph"));
+      if (!em || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(em)) { alert(t("login_forgot_ph")); return; }
+      sbRpc("user_request_reset", { p_email: em }).finally(() => alert(t("login_forgot_sent")));
+    });
+    form.addEventListener("submit", async (e) => {
       e.preventDefault();
       const id = document.getElementById("loginId").value.trim();
       const pass = document.getElementById("loginPass").value;
-      const err = document.getElementById("loginErr");
+      const err = document.getElementById("loginErr"); err.hidden = true;
+      const btn = form.querySelector("button[type=submit]"); btn.disabled = true;
+      // 1) try the central server account (works across devices)
+      try {
+        const d = await sbRpcNamed("user_login", { p_id: id, p_pass: pass });
+        if (d && d.ok) {
+          setCurrentUser({ name: d.name, email: d.email, phone: d.phone, country: d.country, ts: new Date().toISOString() });
+          updateAuthNav(); location.hash = "#/home"; render(); return;
+        }
+      } catch (_ex) { /* fall through to local check */ }
+      // 2) fall back to a local account created on this device
       const rec = findRegByLogin(id);
       if (rec && rec.pass && rec.pass === hashPass(pass)) {
         setCurrentUser({ name: rec.name, email: rec.email, phone: rec.phone, country: rec.country, ts: rec.ts });
-        updateAuthNav();
-        location.hash = "#/home"; render();
-      } else {
-        err.textContent = t("login_err"); err.hidden = false;
+        updateAuthNav(); location.hash = "#/home"; render(); return;
       }
+      err.textContent = t("login_err"); err.hidden = false; btn.disabled = false;
     });
   }
 
@@ -3693,6 +3736,7 @@
       case "partner": html = viewPartnerPortal(); break;
       case "partner-profile": html = viewPartnerProfile(param); break;
       case "partner-reset": html = viewPartnerReset(param); break;
+      case "reset": html = viewUserReset(param); break;
       case "services": html = viewServices(); break;
       case "ambassadors": html = viewAmbassadors(); break;
       case "moments": html = viewMoments(); break;
@@ -3730,6 +3774,7 @@
     if (route === "partner") bindPartnerPortal();
     if (route === "partner-profile") bindPartnerProfile(param);
     if (route === "partner-reset") bindPartnerReset();
+    if (route === "reset") bindUserReset();
     if (route === "services") bindServices();
     if (route === "ambassadors") bindAmbassadors();
     if (route === "moments") bindMoments();

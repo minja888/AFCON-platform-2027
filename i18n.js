@@ -1055,3 +1055,25 @@ window.I18N = {
   Object.assign(window.I18N.en, { hero_flame: "Visit Arusha — Home of AFCON 2027" });
   Object.assign(window.I18N.sw, { hero_flame: "Karibu Arusha — Nyumbani kwa AFCON 2027" });
 })();
+
+/* v73 — tourist server accounts: forgot-password + reset */
+(function(){ if(!window.I18N) return;
+  Object.assign(window.I18N.en, {
+    login_forgot: "Forgot password?",
+    login_forgot_ph: "Enter your registered email",
+    login_forgot_sent: "If that email is registered, a reset link is on its way. Check your inbox.",
+    ur_title: "Set a new password",
+    ur_sub: "Choose a new password for your Karibu Arusha account.",
+    ur_btn: "Save new password",
+    ur_ok: "Password updated. Please sign in with your new password."
+  });
+  Object.assign(window.I18N.sw, {
+    login_forgot: "Umesahau nenosiri?",
+    login_forgot_ph: "Weka email uliyosajili",
+    login_forgot_sent: "Kama email hiyo imesajiliwa, kiungo cha kubadilisha nenosiri kinakuja. Angalia kikasha chako.",
+    ur_title: "Weka nenosiri jipya",
+    ur_sub: "Chagua nenosiri jipya kwa akaunti yako ya Karibu Arusha.",
+    ur_btn: "Hifadhi nenosiri jipya",
+    ur_ok: "Nenosiri limebadilishwa. Tafadhali ingia kwa nenosiri lako jipya."
+  });
+})();
