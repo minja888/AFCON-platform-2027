@@ -207,6 +207,7 @@
     calendar: '<rect x="4" y="5" width="16" height="16" rx="2"/><path d="M4 9h16M8 3v4M16 3v4M8 13h3M8 17h6"/>',
     rainbow:  '<path d="M4 20a8 8 0 0 1 16 0"/><path d="M7 20a5 5 0 0 1 10 0"/><path d="M10 20a2 2 0 0 1 4 0"/>',
     megaphone:'<path d="M4 10v4a1 1 0 0 0 1 1h2l7 4V5L7 9H5a1 1 0 0 0-1 1Z"/><path d="M8 15v3a1 1 0 0 0 1 1h1.5"/><path d="M18 9a3.5 3.5 0 0 1 0 6"/>',
+    flame:'<path d="M12 2c1 3 4 5 4 9a4 4 0 0 1-8 0c0-1 .4-2 1-3-2 1-3 3-3 5a6 6 0 0 0 12 0c0-5-4-8-6-11Z"/>',
     receipt:  '<path d="M6 3h12v18l-3-2-3 2-3-2-3 2z"/><path d="M9 8h6M9 12h6"/>',
     alert:    '<path d="M12 4 3 20h18z"/><path d="M12 10v4M12 17h.01"/>'
   };
@@ -446,6 +447,7 @@
           </span>
         </div>
         <div class="cine-content">
+          <span class="hero-flame">${svgIcon("flame", 16)}<span class="hero-flame-tx">${t("hero_flame")}</span></span>
           <span class="hero-kicker">${t("hero_kicker")}</span>
           <p class="hero-lead">${t("hero_lead")}</p>
           <h1 class="hero-arusha">Arusha</h1>

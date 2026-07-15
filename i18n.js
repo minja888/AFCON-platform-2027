@@ -1049,3 +1049,9 @@ window.I18N = {
     cal_when: "Tarehe", cal_count: "Muda uliobaki", cal_kind: "Aina", cal_see_all: "Ona kalenda kamili"
   });
 })();
+
+/* v71 — fiery home hero tagline */
+(function(){ if(!window.I18N) return;
+  Object.assign(window.I18N.en, { hero_flame: "Visit Arusha — Home of AFCON 2027" });
+  Object.assign(window.I18N.sw, { hero_flame: "Karibu Arusha — Nyumbani kwa AFCON 2027" });
+})();
