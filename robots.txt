@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://afcon-platform-2027.vercel.app/sitemap.xml

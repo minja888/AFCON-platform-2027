@@ -2222,3 +2222,8 @@ a.dcal-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-lg); b
 @keyframes flameShift { 0%,100% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } }
 @keyframes flameFlicker { 0%,100% { transform: scale(1) rotate(-2deg); opacity: 1; } 45% { transform: scale(1.12) rotate(2deg); opacity: .85; } }
 @media (prefers-reduced-motion: reduce) { .hero-flame, .hero-flame svg { animation: none; } }
+
+/* ======================================================================
+   v72 — hide live clock on phones; keep on tablet (iPad) + desktop
+   ====================================================================== */
+@media (max-width: 600px) { .clock-chip { display: none !important; } }
