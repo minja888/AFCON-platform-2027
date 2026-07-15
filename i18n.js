@@ -1077,3 +1077,35 @@ window.I18N = {
     ur_ok: "Nenosiri limebadilishwa. Tafadhali ingia kwa nenosiri lako jipya."
   });
 })();
+
+/* v76 — Explore Arusha: "What we commit to you" + peace/safety/hospitality */
+(function(){ if(!window.I18N) return;
+  Object.assign(window.I18N.en, {
+    commit_kicker: "Our promise",
+    commit_title: "What we commit to you",
+    commit_sub: "Arusha welcomes the world for AFCON 2027 — here is what every visitor can count on.",
+    commit_1_t: "Verified & licensed",
+    commit_1_d: "Every operator and host on Karibu Arusha is document-checked and approved by our team before you ever see them.",
+    commit_2_t: "Fair, local pricing",
+    commit_2_d: "Clear prices agreed with trusted local partners — no hidden mark-ups, no tourist traps, no surprises.",
+    commit_3_t: "Safety first",
+    commit_3_d: "We connect you only to vetted, insured providers, and share honest safety tips for every trip.",
+    commit_4_t: "Warm hospitality",
+    commit_4_d: "“Karibu” means welcome. Tanzanian warmth, patience and the “hakuna matata” spirit greet you everywhere you go.",
+    commit_peace: "Arusha is one of Africa's most peaceful, welcoming cities — the diplomatic capital of East Africa and home of the EAC. Come as a guest, leave as a friend."
+  });
+  Object.assign(window.I18N.sw, {
+    commit_kicker: "Ahadi yetu",
+    commit_title: "Tunachokuahidi",
+    commit_sub: "Arusha inakaribisha dunia kwa AFCON 2027 — hiki ndicho kila mgeni anaweza kutegemea.",
+    commit_1_t: "Waliothibitishwa & wenye leseni",
+    commit_1_d: "Kila mwendeshaji na mwenyeji kwenye Karibu Arusha amehakikiwa nyaraka na kuidhinishwa na timu yetu kabla hujawaona.",
+    commit_2_t: "Bei ya haki, ya kienyeji",
+    commit_2_d: "Bei wazi zilizokubaliwa na washirika wa kuaminika — hakuna nyongeza za siri wala mshangao.",
+    commit_3_t: "Usalama kwanza",
+    commit_3_d: "Tunakuunganisha na watoa huduma waliohakikiwa na wenye bima tu, na kukupa ushauri wa kweli wa usalama kwa kila safari.",
+    commit_4_t: "Ukarimu wa dhati",
+    commit_4_d: "“Karibu” maana yake welcome. Uchangamfu wa Kitanzania, subira na roho ya “hakuna matata” vinakupokea kila mahali.",
+    commit_peace: "Arusha ni mojawapo ya miji yenye amani na ukarimu zaidi Afrika — mji mkuu wa kidiplomasia wa Afrika Mashariki na makao ya EAC. Njoo kama mgeni, ondoka kama rafiki."
+  });
+})();

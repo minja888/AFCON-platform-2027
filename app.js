@@ -213,6 +213,8 @@
     rainbow:  '<path d="M4 20a8 8 0 0 1 16 0"/><path d="M7 20a5 5 0 0 1 10 0"/><path d="M10 20a2 2 0 0 1 4 0"/>',
     megaphone:'<path d="M4 10v4a1 1 0 0 0 1 1h2l7 4V5L7 9H5a1 1 0 0 0-1 1Z"/><path d="M8 15v3a1 1 0 0 0 1 1h1.5"/><path d="M18 9a3.5 3.5 0 0 1 0 6"/>',
     flame:'<path d="M12 2c1 3 4 5 4 9a4 4 0 0 1-8 0c0-1 .4-2 1-3-2 1-3 3-3 5a6 6 0 0 0 12 0c0-5-4-8-6-11Z"/>',
+    heart:'<path d="M12 21s-6.7-4.3-9.3-8.3C1 10 1.8 6.4 4.8 5.3 7 4.5 9.2 5.6 12 8.3c2.8-2.7 5-3.8 7.2-3 3 1.1 3.8 4.7 2.1 7.4C18.7 16.7 12 21 12 21Z"/>',
+    check:'<path d="M20 6 9 17l-5-5"/>',
     receipt:  '<path d="M6 3h12v18l-3-2-3 2-3-2-3 2z"/><path d="M9 8h6M9 12h6"/>',
     alert:    '<path d="M12 4 3 20h18z"/><path d="M12 10v4M12 17h.01"/>'
   };
@@ -1020,6 +1022,16 @@
         <div class="chips" id="attFilters">${chips}</div>
         <div id="attMap" class="att-map" role="application" aria-label="${t("exp_map_label")}"></div>
         <div class="card-grid att-grid" id="attGrid">${atts.map(attCard).join("")}</div>
+      </section>
+      <section class="container section commit-band">
+        <span class="trips-kicker">${t("commit_kicker")}</span>
+        <h2 class="commit-title">${t("commit_title")}</h2>
+        <p class="muted commit-sub">${t("commit_sub")}</p>
+        <div class="commit-grid">
+          ${[["shield","commit_1_t","commit_1_d"],["star","commit_2_t","commit_2_d"],["check","commit_3_t","commit_3_d"],["heart","commit_4_t","commit_4_d"]]
+            .map(([ic,tk,dk]) => `<div class="commit-card"><span class="commit-ic">${svgIcon(ic, 22)}</span><h3>${t(tk)}</h3><p>${t(dk)}</p></div>`).join("")}
+        </div>
+        <p class="commit-peace">${svgIcon("heart", 16)} ${t("commit_peace")}</p>
       </section>
       <section class="container section inv-section" id="invest">
         <div class="section-head"><div>

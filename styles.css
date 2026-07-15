@@ -2227,3 +2227,25 @@ a.dcal-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-lg); b
    v72 — hide live clock on phones; keep on tablet (iPad) + desktop
    ====================================================================== */
 @media (max-width: 600px) { .clock-chip { display: none !important; } }
+
+/* ======================================================================
+   v76 — Explore "What we commit to you" band
+   ====================================================================== */
+.commit-band { text-align: center; }
+.commit-title { margin: 6px 0 6px; }
+.commit-sub { max-width: 640px; margin: 0 auto 26px; }
+.commit-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin: 0 auto; }
+.commit-card { background: var(--white); border: 1px solid var(--line); border-radius: 16px;
+  padding: 22px 18px; text-align: left; box-shadow: var(--shadow); transition: transform .15s, box-shadow .15s; }
+.commit-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-lg); }
+.commit-ic { display: inline-grid; place-items: center; width: 44px; height: 44px; border-radius: 12px;
+  background: linear-gradient(135deg, var(--gold), var(--gold-deep)); color: var(--white); margin-bottom: 12px; }
+.commit-card h3 { font-size: 1.02rem; margin: 0 0 6px; }
+.commit-card p { color: var(--ink-soft); font-size: .9rem; line-height: 1.5; margin: 0; }
+.commit-peace { display: inline-flex; align-items: center; gap: 8px; justify-content: center;
+  max-width: 720px; margin: 26px auto 0; padding: 14px 20px; border-radius: 14px;
+  background: var(--ok-soft); border: 1px solid var(--ok-line); color: var(--green-darker);
+  font-weight: 600; font-size: .92rem; line-height: 1.5; text-align: left; }
+.commit-peace svg { flex: none; color: var(--red); }
+@media (max-width: 900px) { .commit-grid { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 520px) { .commit-grid { grid-template-columns: 1fr; } .commit-peace { flex-direction: column; text-align: center; } }
