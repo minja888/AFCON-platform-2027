@@ -98,6 +98,29 @@
     for (let i = 0; i < str.length; i++) h = ((h << 5) + h + str.charCodeAt(i)) >>> 0;
     return "h" + h.toString(16);
   }
+  // Shrink a picked photo before upload: partners may choose files up to 20MB, but we
+  // store a light ~1600px WebP (a few hundred KB) so galleries load fast. Falls back to
+  // the original for GIF/SVG or if compression wouldn't help.
+  function compressImage(file, maxDim = 1600, quality = 0.82) {
+    return new Promise((resolve) => {
+      if (!file || !/^image\//.test(file.type) || /gif|svg/i.test(file.type)) return resolve(file);
+      const url = URL.createObjectURL(file);
+      const img = new Image();
+      img.onload = () => {
+        URL.revokeObjectURL(url);
+        let w = img.naturalWidth, h = img.naturalHeight;
+        const scale = Math.min(1, maxDim / Math.max(w, h));
+        w = Math.max(1, Math.round(w * scale)); h = Math.max(1, Math.round(h * scale));
+        try {
+          const cv = document.createElement("canvas"); cv.width = w; cv.height = h;
+          cv.getContext("2d").drawImage(img, 0, 0, w, h);
+          cv.toBlob((blob) => resolve(blob && blob.size < file.size ? blob : file), "image/webp", quality);
+        } catch (e) { resolve(file); }
+      };
+      img.onerror = () => { URL.revokeObjectURL(url); resolve(file); };
+      img.src = url;
+    });
+  }
   function getCurrentUser() { try { return JSON.parse(localStorage.getItem(USER_KEY)); } catch (e) { return null; } }
   function setCurrentUser(u) { localStorage.setItem(USER_KEY, JSON.stringify(u)); }
   function logoutUser() { localStorage.removeItem(USER_KEY); }
@@ -253,8 +276,9 @@
         v.classList.remove("ready"); v.remove();
         vids = vids.filter(x => x !== v);
       });
-      // per-clip safety net: if it never becomes playable, remove it
-      setTimeout(() => { if (v.isConnected && v.readyState < 2) { v.remove(); vids = vids.filter(x => x !== v); } }, 12000);
+      // Only a real load error drops a clip. (Previously a 12s readyState timeout
+      // removed clips that were merely still buffering — on phones/slow networks the
+      // heavy clips got killed before they could play, so the hero showed no video.)
     });
 
     const meta = heroVideoList();
@@ -273,7 +297,7 @@
       if (!vids.length) return;
       idx = (i + vids.length) % vids.length;
       vids.forEach((v, n) => {
-        if (n === idx) { v.classList.add("ready"); play(v); setCaption(+v.dataset.vi); }
+        if (n === idx) { if (v.readyState === 0) { try { v.load(); } catch (e) {} } v.classList.add("ready"); play(v); setCaption(+v.dataset.vi); }
         else { v.classList.remove("ready"); setTimeout(() => { if (!v.classList.contains("ready")) v.pause(); }, 900); }
       });
     };
@@ -417,7 +441,7 @@
       <section class="cine-hero" id="cineHero">
         <div class="cine-bg" aria-hidden="true">
           ${CINE_SLIDES.map((u, i) => `<div class="cine-slide" style="background-image:url('${u}');animation-delay:${(i * 6 - 2).toFixed(0)}s"></div>`).join("")}
-          ${heroVideoList().map((v, i) => `<video class="cine-video" data-vi="${i}" muted loop playsinline preload="${(i === 0 || _cineWide) ? "auto" : "metadata"}" poster="${CINE_SLIDES[0]}"><source src="${v.src}" type="${/\.webm(\?|$)/i.test(v.src) ? "video/webm" : "video/mp4"}"></video>`).join("")}
+          ${heroVideoList().map((v, i) => `<video class="cine-video" data-vi="${i}" muted loop playsinline preload="${i === 0 ? "auto" : "none"}" poster="${CINE_SLIDES[0]}"><source src="${v.src}" type="${/\.webm(\?|$)/i.test(v.src) ? "video/webm" : "video/mp4"}"></video>`).join("")}
           <div class="cine-grain"></div>
           <div class="cine-scrim"></div>
         </div>
@@ -1685,17 +1709,18 @@
       if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v("aaEmail"))) problems.push(t("reg_err_email"));
       if (!v("aaPhone")) problems.push(t("ps_err_phone"));
       const file = document.getElementById("aaPhoto").files[0];
-      if (file && (!/^image\//.test(file.type) || file.size > 5 * 1024 * 1024)) problems.push(t("pp_s_photo_big"));
+      if (file && (!/^image\//.test(file.type) || file.size > 20 * 1024 * 1024)) problems.push(t("pp_s_photo_big"));
       if (problems.length) { err.innerHTML = problems.map(p => `<div>• ${esc(p)}</div>`).join(""); err.hidden = false; return; }
       const btn = form.querySelector("button[type=submit]"); btn.disabled = true; btn.textContent = "⏳ " + t("ps_uploading");
       const sb = window.CONFIG.supabase;
       try {
         let photoPath = null;
         if (file) {
-          const ext = (file.name.split(".").pop() || "jpg").toLowerCase().replace(/[^a-z0-9]/g, "") || "jpg";
+          const blob = await compressImage(file);
+          const ext = ((blob.type || file.type).split("/")[1] || "webp").replace(/[^a-z0-9]/g, "") || "webp";
           photoPath = "amb-" + crypto.randomUUID() + "." + ext;
           const up = await fetch(`${sb.url}/storage/v1/object/partner-photos/${photoPath}`, {
-            method: "POST", headers: { "apikey": sb.anonKey, "Authorization": "Bearer " + sb.anonKey, "Content-Type": file.type }, body: file
+            method: "POST", headers: { "apikey": sb.anonKey, "Authorization": "Bearer " + sb.anonKey, "Content-Type": blob.type || file.type }, body: blob
           });
           if (!up.ok) throw new Error("photo");
         }
@@ -2243,13 +2268,14 @@
       const sb2 = window.CONFIG.supabase;
       try {
         let logoPath = null;
-        const lf = (document.getElementById("pfLogo") || { files: [] }).files[0];
-        if (lf) {
-          if (lf.size > 3 * 1024 * 1024) throw new Error("logo_big");
-          const ext = (lf.name.split(".").pop() || "jpg").toLowerCase().replace(/[^a-z0-9]/g, "") || "jpg";
+        const lfRaw = (document.getElementById("pfLogo") || { files: [] }).files[0];
+        if (lfRaw) {
+          if (lfRaw.size > 20 * 1024 * 1024) throw new Error("logo_big");
+          const lf = await compressImage(lfRaw, 512);
+          const ext = ((lf.type || lfRaw.type).split("/")[1] || "webp").replace(/[^a-z0-9]/g, "") || "webp";
           logoPath = "logo-" + crypto.randomUUID() + "." + ext;
           const up = await fetch(sb2.url + "/storage/v1/object/partner-photos/" + logoPath, {
-            method: "POST", headers: { "apikey": sb2.anonKey, "Authorization": "Bearer " + sb2.anonKey, "Content-Type": lf.type }, body: lf });
+            method: "POST", headers: { "apikey": sb2.anonKey, "Authorization": "Bearer " + sb2.anonKey, "Content-Type": lf.type || lfRaw.type }, body: lf });
           if (!up.ok) throw new Error("logo");
         }
         await sbRpcNamed("partner_update_profile", {
@@ -2368,17 +2394,20 @@
       const v = (id) => (document.getElementById(id).value || "").trim();
       if (!v("sTitle") || !v("sArea") || !v("sWa")) { err.textContent = t("pp_s_err"); err.hidden = false; return; }
       const files = Array.from((document.getElementById("sPhotos") || { files: [] }).files || []).slice(0, 10);
-      if (files.find(fl => fl.size > 5 * 1024 * 1024)) { err.textContent = t("pp_s_photo_big"); err.hidden = false; return; }
+      if (files.find(fl => fl.size > 20 * 1024 * 1024)) { err.textContent = t("pp_s_photo_big"); err.hidden = false; return; }
       const btn = f.querySelector("button[type=submit]"); const wasEditing = editingSvc;
       btn.disabled = true; btn.textContent = "\u23F3 " + t("ps_uploading");
       const sb3 = window.CONFIG.supabase;
-      Promise.all(files.map(fl => {
-        const ext = (fl.name.split(".").pop() || "jpg").toLowerCase().replace(/[^a-z0-9]/g, "") || "jpg";
+      Promise.all(files.map(async fl => {
+        const blob = await compressImage(fl);
+        const ext = ((blob.type || fl.type).split("/")[1] || "webp").replace(/[^a-z0-9]/g, "") || "webp";
         const ph = crypto.randomUUID() + "." + ext;
-        return fetch(sb3.url + "/storage/v1/object/partner-photos/" + ph, {
-          method: "POST", headers: { "apikey": sb3.anonKey, "Authorization": "Bearer " + sb3.anonKey, "Content-Type": fl.type },
-          body: fl
-        }).then(r => { if (!r.ok) throw new Error("photo"); return ph; });
+        const r = await fetch(sb3.url + "/storage/v1/object/partner-photos/" + ph, {
+          method: "POST", headers: { "apikey": sb3.anonKey, "Authorization": "Bearer " + sb3.anonKey, "Content-Type": blob.type || fl.type },
+          body: blob
+        });
+        if (!r.ok) throw new Error("photo");
+        return ph;
       })).then(paths => {
         const common = {
           p_email: p.email, p_pass: p.pass, p_title: v("sTitle"), p_category: v("sCat"),
@@ -2418,12 +2447,13 @@
       const sbE = window.CONFIG.supabase;
       const pf2 = (document.getElementById("pePhoto") || { files: [] }).files[0];
       const uploadPhoto = (!pf2) ? Promise.resolve(null)
-        : (pf2.size > 3 * 1024 * 1024 ? Promise.reject(new Error("big"))
-          : (() => { const ext = (pf2.name.split(".").pop() || "jpg").toLowerCase().replace(/[^a-z0-9]/g, "") || "jpg";
+        : (pf2.size > 20 * 1024 * 1024 ? Promise.reject(new Error("big"))
+          : (async () => { const blob = await compressImage(pf2);
+              const ext = ((blob.type || pf2.type).split("/")[1] || "webp").replace(/[^a-z0-9]/g, "") || "webp";
               const ph = "ev-" + crypto.randomUUID() + "." + ext;
-              return fetch(sbE.url + "/storage/v1/object/partner-photos/" + ph, {
-                method: "POST", headers: { "apikey": sbE.anonKey, "Authorization": "Bearer " + sbE.anonKey, "Content-Type": pf2.type }, body: pf2
-              }).then(r => { if (!r.ok) throw new Error("photo"); return ph; }); })());
+              const r = await fetch(sbE.url + "/storage/v1/object/partner-photos/" + ph, {
+                method: "POST", headers: { "apikey": sbE.anonKey, "Authorization": "Bearer " + sbE.anonKey, "Content-Type": blob.type || pf2.type }, body: blob });
+              if (!r.ok) throw new Error("photo"); return ph; })());
       uploadPhoto.then(photoPath => sbRpcNamed("partner_event_submit", {
         p_email: p.email, p_pass: p.pass, p_title: v("peTitle"), p_etype: v("peType"),
         p_start: v("peStart"), p_end: v("peEnd") || null, p_venue: v("peVenue") || null,

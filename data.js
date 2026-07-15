@@ -359,7 +359,7 @@ window.ATTRACTIONS = [
     "materuni-falls":["1508233620744-7ff2b5b9f88f", "grad-brown"], // coffee falls
     "ndoro-falls":["1465146633011-14f8e0781093", "grad-teal"], // cascade
     "kalalani-falls":["1467890947394-8171244e5410", "grad-green"], // forest falls
-    "decl-museum":["1541963463532-d68292c34b19", "grad-brown"], // monument / museum
+    "decl-museum":["https://upload.wikimedia.org/wikipedia/commons/4/49/Uhuru_Monument_Aug_2011.jpg", "grad-brown"], // Arusha Uhuru Monument — the actual Arusha Declaration monument
     "nat-history":["1584285405429-136bf988919c", "grad-brown"], // historic building
     "tanzanite-mus":["1515562141207-7a88fb7ce338","grad-gold"], // gemstone
     "cultural-ctr":["1578321272176-b7bbc0679853", "grad-red"],  // african art
