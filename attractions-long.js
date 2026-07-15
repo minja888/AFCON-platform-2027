@@ -159,6 +159,20 @@ window.ATTRACTION_LONG = {
       "Kwa yeyote anayetaka kuelewa nchi zaidi ya wanyamapori, ziara hapa ni saa tulivu, yenye nguvu. Ukisimama jijini ambapo taifa liliweka mwelekeo wake, unaondoka na hisia ya kina ya kwa nini Arusha huitwa sehemu ambapo historia hutengenezwa."
     ]
   },
+  "hadzabe": {
+    en: [
+      "The Hadzabe — or Hadza — are one of the last true hunter-gatherer peoples on Earth, living much as humans did for tens of thousands of years. Fewer than 1,500 remain, and their remarkable click language is unrelated to any other tongue on the planet. To sit at their fire is to step into the deepest, oldest chapter of the human story.",
+      "They live around Lake Eyasi, a shimmering soda lake in the Great Rift Valley about four hours' drive south-west of Arusha, on the edge of the Ngorongoro highlands. It makes a spectacular add-on to a Serengeti or Ngorongoro safari, dropping you into a drier, wilder land of giant baobabs and golden acacia scrub where life still moves to the rhythm of the seasons.",
+      "The classic experience is to rise before dawn and join the men on a real hunt, moving in silence through the bush with handmade bows and arrows — or to follow the women and children as they dig for tubers and gather wild berries. You will watch fire made by hand in seconds, learn to read animal tracks, try your aim with a bow, and taste wild honey led to the hive by a honeyguide bird.",
+      "More than a photo stop, a Hadzabe visit is a humbling, unforgettable encounter with a way of life built entirely on the land and shared freely with everyone. Go with a responsible operator who pays the community fairly and respects their choices, and you will come away with a profound new sense of where we all came from."
+    ],
+    sw: [
+      "Wahadzabe — au Wahadza — ni mojawapo ya jamii za mwisho kabisa za wawindaji-wakusanyaji duniani, wanaoishi kama binadamu walivyoishi maelfu ya miaka iliyopita. Wamebaki chini ya 1,500, na lugha yao ya kipekee yenye mibofyo haihusiani na lugha nyingine yoyote duniani. Kuketi kwenye moto wao ni kuingia katika sura ya ndani na ya kale kabisa ya hadithi ya binadamu.",
+      "Wanaishi kandokando ya Ziwa Eyasi, ziwa la soda linalong'aa katika Bonde la Ufa, umbali wa takribani saa nne kwa gari kusini-magharibi mwa Arusha, pembezoni mwa nyanda za juu za Ngorongoro. Ni nyongeza ya kuvutia kwa safari ya Serengeti au Ngorongoro, ikikupeleka katika ardhi kavu na ya porini zaidi ya mibuyu mikubwa na vichaka vya miiba ya dhahabu ambako maisha bado yanafuata mdundo wa misimu.",
+      "Uzoefu maarufu ni kuamka kabla ya alfajiri na kuungana na wanaume kwenye uwindaji halisi, mkitembea kimyakimya msituni kwa pinde na mishale ya mikono — au kuwafuata wanawake na watoto wakichimba mizizi na kukusanya matunda ya porini. Utaona moto ukiwashwa kwa mikono kwa sekunde, ujifunze kusoma nyayo za wanyama, ujaribu ulengaji kwa upinde, na kuonja asali ya porini ukiongozwa kwenye mzinga na ndege wa asali.",
+      "Zaidi ya kituo cha kupiga picha, ziara ya Wahadzabe ni mkutano wa kunyenyekeza na wa kukumbukwa na mtindo wa maisha unaotegemea ardhi kabisa na kushirikishwa kwa ukarimu. Nenda na mwendeshaji mwenye uwajibikaji anayelipa jamii kwa haki na kuheshimu maamuzi yao, nawe utaondoka na hisia mpya ya kina ya asili yetu sote."
+    ]
+  },
   "nat-history": {
     en: [
       "The Natural History Museum is housed in the atmospheric Old Boma, a fortress-like German colonial building from the 1890s that is itself a piece of Arusha's history. Its thick walls and shady courtyard make it one of the oldest and most characterful buildings in the city.",

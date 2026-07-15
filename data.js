@@ -322,6 +322,9 @@ window.ATTRACTIONS = [
   { id: "mulala",       cat: "culture",  icon: "🌱", lat: -3.2660, lng: 36.8830,
     name: { en: "Mulala Cultural Village", sw: "Kijiji cha Utamaduni Mulala" },
     desc: { en: "A women-run village experience on Meru's slopes — cheese, coffee, farms.", sw: "Kijiji kinachoongozwa na akina mama miteremko ya Meru — jibini, kahawa, mashamba." } },
+  { id: "hadzabe",      cat: "culture",  icon: "🏹", lat: -3.6833, lng: 35.0500,
+    name: { en: "Hadzabe of Lake Eyasi", sw: "Wahadzabe wa Ziwa Eyasi" },
+    desc: { en: "Spend a dawn with one of Earth's last hunter-gatherer peoples — a real hunt, wild honey and the click language.", sw: "Tumia alfajiri na mojawapo ya jamii za mwisho za wawindaji-wakusanyaji duniani — uwindaji halisi, asali ya porini na lugha ya mibofyo." } },
   { id: "aicc",         cat: "conference", icon: "🏢", lat: -3.3667, lng: 36.6959,
     name: { en: "AICC — Arusha Int'l Conference Centre", sw: "AICC — Kituo cha Mikutano cha Kimataifa Arusha" },
     desc: { en: "East Africa's diplomatic hub — conferences, summits and the EAC neighbourhood.", sw: "Kitovu cha kidiplomasia cha Afrika Mashariki — mikutano, makongamano na eneo la EAC." } },
@@ -367,6 +370,7 @@ window.ATTRACTIONS = [
     meserani:     ["1516426122078-c23e76319801", "grad-brown"], // (reuse) wildlife
     longido:      ["1523805009345-7448845a9e53", "grad-red"],   // maasai land
     mulala:       ["1500382017468-9049fed747ef", "grad-green"], // farms
+    hadzabe:      ["https://upload.wikimedia.org/wikipedia/commons/1/1f/Hadzabe_Hunters.jpg", "grad-brown"], // Hadza hunters, Lake Eyasi
     aicc:         ["1587825140708-dfaf72ae4b04", "grad-teal"],  // conference hall
     "mtmeru-hotel":["1566073771259-6a8506099945", "grad-gold"], // hotel
     "gran-melia": ["1582719508461-905c673771fd", "grad-gold"],  // luxury hotel
