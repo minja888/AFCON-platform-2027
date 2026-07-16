@@ -46,7 +46,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Anton&family=Caveat:wght@600;700&family=Hanken+Grotesk:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="styles.css?v=77" />
+  <link rel="stylesheet" href="styles.css?v=78" />
 </head>
 <body>
   <!-- ===== HEADER ===== -->
@@ -81,12 +81,6 @@
         </div>
         <a href="#/services" data-i18n="nav_services">Services</a>
         <a href="#/partners" data-i18n="nav_partners">Become a Partner</a>
-        <a href="#/login" class="nav-login" id="navLogin" data-i18n="nav_login">Login</a>
-        <a href="#/register" class="nav-cta" id="navRegister" data-i18n="nav_register">Register</a>
-        <span class="nav-user" id="navUser" hidden>
-          <a class="nav-user-name" id="navUserName" href="#/account"></a>
-          <button class="nav-logout" id="navLogout" data-i18n="nav_logout">Log out</button>
-        </span>
       </nav>
 
       <div class="header-actions">
@@ -106,6 +100,13 @@
             <option value="ha">Hausa</option>
           </select>
         </label>
+        <!-- auth controls live at the very end of the header -->
+        <a href="#/login" class="nav-login" id="navLogin" data-i18n="nav_login">Login</a>
+        <a href="#/register" class="nav-cta" id="navRegister" data-i18n="nav_register">Register</a>
+        <span class="nav-user" id="navUser" hidden>
+          <a class="nav-user-name" id="navUserName" href="#/account"></a>
+          <button class="nav-logout" id="navLogout" data-i18n="nav_logout">Log out</button>
+        </span>
         <button class="nav-toggle" id="navToggle" aria-label="Menu">☰</button>
       </div>
     </div>
@@ -176,10 +177,10 @@
   </div>
 
   <!-- data + logic (order matters) -->
-  <script src="countries.js?v=77"></script>
-  <script src="data.js?v=77"></script>
-  <script src="attractions-long.js?v=77"></script>
-  <script src="i18n.js?v=77"></script>
-  <script src="app.js?v=77"></script>
+  <script src="countries.js?v=78"></script>
+  <script src="data.js?v=78"></script>
+  <script src="attractions-long.js?v=78"></script>
+  <script src="i18n.js?v=78"></script>
+  <script src="app.js?v=78"></script>
 </body>
 </html>

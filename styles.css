@@ -2249,3 +2249,46 @@ a.dcal-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-lg); b
 .commit-peace svg { flex: none; color: var(--red); }
 @media (max-width: 900px) { .commit-grid { grid-template-columns: repeat(2, 1fr); } }
 @media (max-width: 520px) { .commit-grid { grid-template-columns: 1fr; } .commit-peace { flex-direction: column; text-align: center; } }
+
+/* ======================================================================
+   v78 — auth controls (Login / Register / Log out) moved to the very end
+   of the header, after the clock + language. Restyle since they left
+   .main-nav. Registration EAC/International split removed (one list).
+   ====================================================================== */
+.header-actions { gap: 8px; }
+.header-actions .nav-login,
+.header-actions .nav-cta {
+  font-family: var(--display); font-weight: 600; font-size: .88rem;
+  padding: 8px 14px; border-radius: 999px; text-decoration: none; white-space: nowrap;
+  transition: .15s;
+}
+.header-actions .nav-login { color: var(--ink-soft); }
+.header-actions .nav-login:hover { color: var(--ink); background: var(--cream-2); }
+.header-actions .nav-cta { background: var(--gold); color: var(--ink); }
+.header-actions .nav-cta:hover, .header-actions .nav-cta.active { background: var(--gold-deep); color: #fff; }
+.header-actions .nav-user { display: inline-flex; align-items: center; gap: 10px; }
+
+@media (max-width: 600px) {
+  .header-actions .nav-login, .header-actions .nav-cta { font-size: .8rem; padding: 7px 11px; }
+  .header-actions .nav-user-name { display: none; }   /* keep just the Log out button on phones */
+}
+@media (max-width: 400px) {
+  .header-actions .nav-login { display: none; }        /* Register CTA + menu still cover sign-in on tiny screens */
+}
+
+/* v78b — reclaim header width now that auth sits in header-actions (avoid tight overflow ~1024-1280) */
+@media (min-width: 1025px) {
+  .header-inner { gap: 12px; }
+  .header-actions { gap: 6px; margin-left: 6px; }
+  .main-nav a { padding: 8px 9px; }
+  .header-actions .clock-chip { padding: 6px 10px; }
+}
+
+/* v78c — make the header fit on phones now that auth sits in the top bar */
+@media (max-width: 600px) {
+  .header-inner { gap: 6px; }
+  .header-actions { gap: 5px; margin-left: 4px; }
+  .header-actions .nav-login, .header-actions .nav-cta { font-size: .76rem; padding: 6px 10px; }
+  .lang-switch { padding: 4px 6px; }
+  .lang-switch .globe { display: none; }
+}

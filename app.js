@@ -2607,19 +2607,6 @@
           <div class="reg-formcol">
         <form id="regForm" class="reg-form" novalidate>
           <div class="field">
-            <label>${t("reg_zone")} <span class="req">*</span></label>
-            <div class="zone-pick" id="zonePick" role="radiogroup" aria-label="${t("reg_zone")}">
-              <button type="button" class="zone-opt active" data-zone="eac" aria-pressed="true">
-                <span class="zone-flags">${eacFlags}</span>
-                <b>${t("reg_zone_eac")}</b><small>${t("reg_zone_eac_sub")}</small>
-              </button>
-              <button type="button" class="zone-opt" data-zone="intl" aria-pressed="false">
-                <span class="zone-globe">🌍</span>
-                <b>${t("reg_zone_intl")}</b><small>${t("reg_zone_intl_sub")}</small>
-              </button>
-            </div>
-          </div>
-          <div class="field">
             <label for="regName">${t("reg_name")} <span class="req">*</span></label>
             <input id="regName" type="text" autocomplete="name" placeholder="${t("reg_name_ph")}" />
           </div>
@@ -2679,32 +2666,15 @@
     const dial = document.getElementById("regDial");
     const err = document.getElementById("regError");
 
-    /* EAC vs Non-EAC portal: EAC citizens register with their own country phone code */
-    let zone = "eac";
-    const EAC_SET = new Set((window.EAC || []).map(c => c.c));
-    const zoneCountries = () => zone === "eac"
-      ? window.COUNTRIES.filter(c => EAC_SET.has(c.c))
-      : window.COUNTRIES;
+    /* One unified list — every country is equally welcome (no EAC / non-EAC split). */
+    const zone = "all";
+    const zoneCountries = () => window.COUNTRIES;
     function rebuildDial() {
       dial.innerHTML = zoneCountries().map(c =>
         `<option value="+${c.d}" data-c="${c.c}"${c.c === "TZ" ? " selected" : ""}>${flag(c.c)} +${c.d}</option>`).join("");
       const opt = dial.selectedOptions[0];
       if (opt) setDialFlag(opt.getAttribute("data-c"));
     }
-    const zonePick = document.getElementById("zonePick");
-    if (zonePick) zonePick.addEventListener("click", (e) => {
-      const b = e.target.closest(".zone-opt"); if (!b) return;
-      zone = b.dataset.zone;
-      zonePick.querySelectorAll(".zone-opt").forEach(x => {
-        const on = x === b; x.classList.toggle("active", on); x.setAttribute("aria-pressed", on);
-      });
-      rebuildDial();
-      // reset the chosen country if it no longer fits the zone
-      const hiddenC = document.getElementById("regCountry");
-      if (zone === "eac" && hiddenC.value && !EAC_SET.has(hiddenC.value)) {
-        hiddenC.value = ""; document.getElementById("regCountrySearch").value = "";
-      }
-    });
 
     /* searchable country combobox — type to filter, pick to auto-set the phone code */
     const combo = document.getElementById("regCountryCombo");
