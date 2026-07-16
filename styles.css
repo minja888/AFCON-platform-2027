@@ -5,25 +5,25 @@
 
 :root {
   /* light savanna palette */
-  --cream: #fbf6ea;      /* page background — light sand */
-  --cream-2: #f1e7d0;    /* muted chips / fills */
-  --sand: #f6ecd6;
-  --ink: #2c2718;        /* warm near-black text */
-  --ink-soft: #7a6c52;
-  --gold: #e0a52e;       /* savanna gold (price-tag accent) */
-  --gold-deep: #bd8418;
-  --green: #4d5f28;      /* olive safari green (headings) */
-  --green-deep: #3a4a1e; /* deep olive */
-  --teal: #4a7c59;
+  --cream: #faf5ec;      /* page background — warm clean sand */
+  --cream-2: #f2e9d4;    /* muted chips / fills */
+  --sand: #f8eeda;
+  --ink: #29231a;        /* warm espresso text (richer contrast) */
+  --ink-soft: #786a52;
+  --gold: #e6a62c;       /* luminous honey gold (accent) */
+  --gold-deep: #b57e14;  /* rich amber */
+  --green: #47612c;      /* fresh acacia safari green (headings) */
+  --green-deep: #33471f; /* deep leaf green */
+  --teal: #3f7a57;       /* rich emerald */
   --brown: #8a6a44;
   --red: #c0552b;
-  --line: #e6d8ba;       /* warm hairline */
+  --line: #ebdcc0;       /* soft warm hairline */
   --white: #ffffff;
   /* extended, disciplined scales (every colour on the site maps to one of these) */
   --gold-ink: #7a5d00;    /* darkest gold - small text on light */
-  --gold-pale: #f4d68a;   /* gold on dark surfaces */
-  --green-darker: #24331a;/* olive hover / pressed */
-  --teal-deep: #234f3b;   /* forest text on light */
+  --gold-pale: #f6d98f;   /* gold on dark surfaces */
+  --green-darker: #20301a;/* leaf hover / pressed */
+  --teal-deep: #1f4d38;   /* forest text on light */
   --ok: #14702a;          /* success text */
   --ok-bright: #7ee787;   /* success on dark (live dots) */
   --ok-soft: #e7f3ec;     /* success fill */
@@ -36,8 +36,8 @@
   --tz-yellow: #fcd116;
   --tz-blue: #00a3dd;
   --tz-blue-deep: #00679c;
-  --shadow: 0 6px 24px rgba(60, 48, 24, 0.08);
-  --shadow-lg: 0 18px 50px rgba(60, 48, 24, 0.18);
+  --shadow: 0 8px 28px rgba(56, 42, 18, 0.09);
+  --shadow-lg: 0 22px 60px rgba(56, 42, 18, 0.15);
   --radius: 16px;
   --radius-sm: 10px;
   --maxw: 1160px;
