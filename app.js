@@ -456,7 +456,6 @@
         </div>
         <div class="cine-content">
           <span class="hero-flame">${svgIcon("flame", 16)}<span class="hero-flame-tx">${t("hero_flame")}</span></span>
-          <span class="hero-kicker">${t("hero_kicker")}</span>
           <p class="hero-lead">${t("hero_lead")}</p>
           <h1 class="hero-arusha">Arusha</h1>
           <p class="hero-script">${t("hero_script")}</p>

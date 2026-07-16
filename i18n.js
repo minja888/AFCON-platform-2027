@@ -1109,3 +1109,13 @@ window.I18N = {
     commit_peace: "Arusha ni mojawapo ya miji yenye amani na ukarimu zaidi Afrika — mji mkuu wa kidiplomasia wa Afrika Mashariki na makao ya EAC. Njoo kama mgeni, ondoka kama rafiki."
   });
 })();
+
+/* v79 — tighter home hero: shorter sub, redundant kicker removed */
+(function(){ if(!window.I18N) return;
+  Object.assign(window.I18N.en, {
+    hero_sub: "Football by day, safari by dawn — Arusha is your gateway to the Serengeti, Ngorongoro and Kilimanjaro. Find a trusted operator and book in seconds."
+  });
+  Object.assign(window.I18N.sw, {
+    hero_sub: "Soka mchana, safari alfajiri — Arusha ni lango lako la Serengeti, Ngorongoro na Kilimanjaro. Pata mwendeshaji wa kuaminika, weka booking kwa sekunde."
+  });
+})();
