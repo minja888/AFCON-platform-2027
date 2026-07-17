@@ -173,6 +173,20 @@ window.ATTRACTION_LONG = {
       "Zaidi ya kituo cha kupiga picha, ziara ya Wahadzabe ni mkutano wa kunyenyekeza na wa kukumbukwa na mtindo wa maisha unaotegemea ardhi kabisa na kushirikishwa kwa ukarimu. Nenda na mwendeshaji mwenye uwajibikaji anayelipa jamii kwa haki na kuheshimu maamuzi yao, nawe utaondoka na hisia mpya ya kina ya asili yetu sote."
     ]
   },
+  "flower-farm": {
+    en: [
+      "Few visitors realise that Arusha is one of the great flower capitals of Africa. Across the fertile Usa River and Tengeru plains east of the city, vast greenhouses stretch to the horizon, growing millions of roses, chrysanthemums and cuttings in the cool, high-altitude air beneath Mount Meru and Kilimanjaro.",
+      "This is serious business: horticulture is one of Tanzania's fastest-growing exports. Blooms cut here in the morning are graded, packed in cold rooms and flown out of Kilimanjaro Airport the same day, arriving in the flower auctions and supermarkets of Europe within 48 hours. The farms are among the largest employers in the region, giving thousands of local people — many of them women — steady work and skills.",
+      "For visitors, a guided farm tour is a surprising and beautiful half-day: rows upon rows of colour under glass, the science of grading and cold-chain logistics, and the story of how a bloom travels from an Arusha greenhouse to a vase in Amsterdam. It is also a window into the investment and jobs quietly powering the region beyond safari and coffee.",
+      "The same rich volcanic soils and springtime climate that make Arusha perfect for flowers also drive its coffee, seed and vegetable farms — a green economy blooming right beside the safari trail."
+    ],
+    sw: [
+      "Wageni wachache wanajua kwamba Arusha ni mojawapo ya vitovu vikubwa vya maua barani Afrika. Kwenye tambarare zenye rutuba za Usa River na Tengeru mashariki mwa jiji, mashamba makubwa ya greenhouse yanaenea hadi upeo wa macho, yakikuza mamilioni ya waridi, chrysanthemum na miche katika hewa ya baridi ya nyanda za juu chini ya Mlima Meru na Kilimanjaro.",
+      "Hii ni biashara kubwa: kilimo cha maua ni moja ya mauzo yanayokua kwa kasi zaidi Tanzania. Maua yanayokatwa hapa asubuhi hupangwa, hufungashwa kwenye vyumba vya baridi na kusafirishwa kutoka Uwanja wa Ndege wa Kilimanjaro siku hiyo hiyo, yakifika kwenye minada na maduka makubwa ya Ulaya ndani ya saa 48. Mashamba haya ni miongoni mwa waajiri wakubwa kanda hii, yakiwapa maelfu ya wenyeji — wengi wao wanawake — kazi na ujuzi.",
+      "Kwa mgeni, ziara ya kiongozi shambani ni nusu siku ya kushangaza na nzuri: safu baada ya safu za rangi chini ya kioo, sayansi ya upangaji na usafirishaji wa baridi, na hadithi ya jinsi ua linavyosafiri kutoka greenhouse ya Arusha hadi kwenye chombo cha maua Amsterdam. Pia ni dirisha la uwekezaji na ajira zinazoiendesha kanda kwa utulivu zaidi ya safari na kahawa.",
+      "Udongo uleule wa volkeno wenye rutuba na hali ya hewa ya majira ya masika inayoifanya Arusha kamili kwa maua pia inaendesha mashamba yake ya kahawa, mbegu na mboga — uchumi wa kijani unaochanua kando kabisa ya njia ya safari."
+    ]
+  },
   "nat-history": {
     en: [
       "The Natural History Museum is housed in the atmospheric Old Boma, a fortress-like German colonial building from the 1890s that is itself a piece of Arusha's history. Its thick walls and shady courtyard make it one of the oldest and most characterful buildings in the city.",
