@@ -5,23 +5,23 @@
 
 :root {
   /* light savanna palette */
-  --cream: #faf5ec;      /* page background — warm clean sand */
-  --cream-2: #f2e9d4;    /* muted chips / fills */
-  --sand: #f8eeda;
+  --cream: #faf4e8;      /* page background — warm clean sand */
+  --cream-2: #f1e6cd;    /* muted chips / fills */
+  --sand: #f7ebd3;
   --ink: #29231a;        /* warm espresso text (richer contrast) */
   --ink-soft: #786a52;
-  --gold: #e6a62c;       /* luminous honey gold (accent) */
-  --gold-deep: #b57e14;  /* rich amber */
-  --green: #47612c;      /* fresh acacia safari green (headings) */
-  --green-deep: #33471f; /* deep leaf green */
-  --teal: #3f7a57;       /* rich emerald */
-  --brown: #8a6a44;
-  --red: #c0552b;
-  --line: #ebdcc0;       /* soft warm hairline */
+  --gold: #eaa827;       /* luminous honey gold (accent) */
+  --gold-deep: #bd8112;  /* rich amber */
+  --green: #4c6a2d;      /* fresh acacia safari green (headings) */
+  --green-deep: #2f491d; /* deep leaf green */
+  --teal: #3d7d58;       /* rich emerald */
+  --brown: #99724a;
+  --red: #c65a2c;
+  --line: #ead9bb;       /* soft warm hairline */
   --white: #ffffff;
   /* extended, disciplined scales (every colour on the site maps to one of these) */
   --gold-ink: #7a5d00;    /* darkest gold - small text on light */
-  --gold-pale: #f6d98f;   /* gold on dark surfaces */
+  --gold-pale: #f7dc96;   /* gold on dark surfaces */
   --green-darker: #20301a;/* leaf hover / pressed */
   --teal-deep: #1f4d38;   /* forest text on light */
   --ok: #14702a;          /* success text */
