@@ -12,8 +12,8 @@
   --ink-soft: #786a52;
   --gold: #eaa827;       /* luminous honey gold (accent) */
   --gold-deep: #bd8112;  /* rich amber */
-  --green: #4c6a2d;      /* fresh acacia safari green (headings) */
-  --green-deep: #2f491d; /* deep leaf green */
+  --green: #8a6a1e;      /* bronze-gold accent (green reduced) */
+  --green-deep: #3a2c18; /* dark warm espresso (was green) */
   --teal: #3d7d58;       /* rich emerald */
   --brown: #99724a;
   --red: #c65a2c;
@@ -22,7 +22,7 @@
   /* extended, disciplined scales (every colour on the site maps to one of these) */
   --gold-ink: #7a5d00;    /* darkest gold - small text on light */
   --gold-pale: #f7dc96;   /* gold on dark surfaces */
-  --green-darker: #20301a;/* leaf hover / pressed */
+  --green-darker: #281d10;/* deep espresso hover */
   --teal-deep: #1f4d38;   /* forest text on light */
   --ok: #14702a;          /* success text */
   --ok-bright: #7ee787;   /* success on dark (live dots) */
@@ -365,7 +365,7 @@ img { max-width: 100%; display: block; }
 
 /* gradients for media / detail heroes */
 .grad-gold { background: linear-gradient(135deg, var(--gold), var(--red)); }
-.grad-green { background: linear-gradient(135deg, var(--teal), var(--teal-deep)); }
+.grad-green { background: linear-gradient(135deg, var(--gold-deep), var(--gold-ink)); }
 .grad-teal { background: linear-gradient(135deg, var(--tz-blue), var(--teal)); }
 .grad-brown { background: linear-gradient(135deg, var(--brown), var(--brown)); }
 .grad-red { background: linear-gradient(135deg, var(--red), var(--red-deep)); }
