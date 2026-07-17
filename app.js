@@ -143,7 +143,7 @@
     if (!login || !reg || !chip) return;
     if (u && u.name) {
       login.hidden = true; reg.hidden = true; chip.hidden = false;
-      nameEl.textContent = "👋 " + String(u.name).split(" ")[0];
+      nameEl.textContent = "" + String(u.name).split(" ")[0];
     } else {
       login.hidden = false; reg.hidden = false; chip.hidden = true;
     }
@@ -620,7 +620,7 @@
       <a class="card op-card" href="#/operator/${op.id}">
         <div class="op-top">
           <span class="op-icon">${op.icon}</span>
-          ${op.verified ? `<span class="verified-pill">✔ ${t("verified")}</span>` : ""}
+          ${op.verified ? `<span class="verified-pill">${t("verified")}</span>` : ""}
         </div>
         <h3>${esc(L(op.name))}</h3>
         <p class="muted">${esc(L(op.desc))}</p>
@@ -681,9 +681,9 @@
           ${hl.map(h => `<li>${esc(h)}</li>`).join("")}
         </ul>
         <div class="detail-cta">
-          <button class="btn btn-primary btn-wa" data-book="${tr.id}">💬 ${t("book_whatsapp")}</button>
+          <button class="btn btn-primary btn-wa" data-book="${tr.id}">${t("book_whatsapp")}</button>
           <button class="btn btn-ghost fav-btn ${isFav(tr.id) ? "on" : ""}" data-fav="${tr.id}" aria-pressed="${isFav(tr.id)}">
-            <span class="fav-heart">♥</span> <span class="fav-txt">${isFav(tr.id) ? t("fav_saved") : t("fav_save")}</span>
+            <span class="fav-heart"></span> <span class="fav-txt">${isFav(tr.id) ? t("fav_saved") : t("fav_save")}</span>
           </button>
           <span class="muted small">${t("safe_text")}</span>
         </div>
@@ -779,7 +779,7 @@
           <span class="detail-icon">${op.icon}</span>
           <h1>${esc(L(op.name))}</h1>
           <div class="detail-meta">
-            ${op.verified ? `<span class="verified-pill light">✔ ${t("verified")}</span>` : ""}
+            ${op.verified ? `<span class="verified-pill light">${t("verified")}</span>` : ""}
             <span>• ★ ${op.rating}</span>
             <span>• ${t("cat_" + op.category)}</span>
           </div>
@@ -789,7 +789,7 @@
         <p class="detail-summary">${esc(L(op.desc))}</p>
         <p class="licence-line">${t("licence")}: <code>${esc(op.license)}</code></p>
         <div class="detail-cta">
-          <a class="btn btn-primary" target="_blank" rel="noopener" href="${waLink(op.whatsapp, L(op.name))}">💬 ${t("contact_whatsapp")}</a>
+          <a class="btn btn-primary" target="_blank" rel="noopener" href="${waLink(op.whatsapp, L(op.name))}">${t("contact_whatsapp")}</a>
           <span class="muted small">${t("safe_text")}</span>
         </div>
       </section>`;
@@ -804,7 +804,7 @@
         <div class="container matches-hero-inner">
           <span class="matches-ball">⚽</span>
           <h1>${t("matches_strip_title")}</h1>
-          <p>${t("matches_strip_sub")} · 📍 ${esc(window.CONFIG.stadium)}</p>
+          <p>${t("matches_strip_sub")} · ${esc(window.CONFIG.stadium)}</p>
         </div>
       </section>
       <section class="container section">
@@ -1050,7 +1050,7 @@
           <h3>${t("inv_cta_title")}</h3>
           <p class="muted small">${t("inv_cta_sub")}</p>
           <textarea class="acct-msg" id="invMsg" rows="3" placeholder="${t("inv_ph")}"></textarea>
-          <div class="form-ok" id="invOk" hidden>✓ ${t("acct_sent")}</div>
+          <div class="form-ok" id="invOk" hidden>${t("acct_sent")}</div>
           <button class="btn btn-gold" type="submit">${t("inv_send")}</button>
         </form>
       </section>`;
@@ -1565,7 +1565,7 @@
           <p class="muted small reg-privacy">${t("ps_privacy")}</p>
         </form>
         <div id="pOk" class="reg-success" hidden>
-          <div class="reg-success-mark">✓</div>
+          <div class="reg-success-mark"></div>
           <p class="reg-success-msg">${t("ps_success")}</p>
           <a class="btn btn-primary" href="#/partner">${t("pw_login")}</a>
         </div>
@@ -1610,7 +1610,7 @@
       if (problems.length) { err.innerHTML = problems.map(p => `<div>• ${esc(p)}</div>`).join(""); err.hidden = false; return; }
 
       const btn = form.querySelector("button[type=submit]");
-      btn.disabled = true; btn.textContent = "⏳ " + t("ps_uploading");
+      btn.disabled = true; btn.textContent = "" + t("ps_uploading");
       const sb = window.CONFIG.supabase;
       try {
         // 1) upload the verification PDF to the PRIVATE bucket
@@ -1661,7 +1661,7 @@
         <section class="container auth-wrap auth-split">
           ${authArt("partner")}
           <form id="pLoginForm" class="auth-card" novalidate>
-            <div class="auth-icon">🤝</div>
+            <div class="auth-icon">${svgIcon("users", 26)}</div>
             <h1 class="auth-title">${t("pp_login_title")}</h1>
             <p class="auth-sub">${t("pp_login_sub")}</p>
             <div class="field"><label for="plEmail">${t("reg_email")}</label>
@@ -1675,9 +1675,9 @@
           </form>
         </section>`;
     }
-    const stBadge = { pending: `<span class="pstat pstat-pending">⏳ ${t("pp_st_pending")}</span>`,
-                      approved: `<span class="pstat pstat-approved">✓ ${t("pp_st_approved")}</span>`,
-                      rejected: `<span class="pstat pstat-rejected">✕ ${t("pp_st_rejected")}</span>` }[p.status] || "";
+    const stBadge = { pending: `<span class="pstat pstat-pending">${t("pp_st_pending")}</span>`,
+                      approved: `<span class="pstat pstat-approved">${t("pp_st_approved")}</span>`,
+                      rejected: `<span class="pstat pstat-rejected">${t("pp_st_rejected")}</span>` }[p.status] || "";
     const catOpts = P_TYPES.map(tt => `<option value="${tt}">${t("pt_" + tt)}</option>`).join("");
     const approved = p.status === "approved";
     const tab = (id, icon, label, badge) => `<button type="button" class="pdash-tab" data-ptab="${id}">
@@ -1776,7 +1776,7 @@
               <input id="sPhotos" type="file" accept="image/jpeg,image/png,image/webp" multiple />
               <p class="field-note">${t("pp_s_photos_note")}</p></div>
             <div id="sErr" class="form-error" role="alert" hidden></div>
-            <div class="form-ok" id="sOk" hidden>✓ ${t("pp_s_ok")}</div>
+            <div class="form-ok" id="sOk" hidden>${t("pp_s_ok")}</div>
             <button type="submit" class="btn btn-primary">${t("pp_s_add")}</button>
           </form>
           <h2 class="acct-section-h">${t("pp_mine_h")}</h2>
@@ -1812,7 +1812,7 @@
             <div class="field"><label for="peLink">${t("pe_link")}</label>
               <input id="peLink" type="url" placeholder="https://..." /></div>
             <div id="peErr" class="form-error" role="alert" hidden></div>
-            <div class="form-ok" id="peOk" hidden>✓ ${t("pe_ok")}</div>
+            <div class="form-ok" id="peOk" hidden>${t("pe_ok")}</div>
             <button type="submit" class="btn btn-primary">${t("pe_submit")}</button>
           </form>
           <div id="myEvents"></div>`}
@@ -1840,7 +1840,7 @@
       const st = done[k] ? "done" : (i === nowIdx ? "now" : "todo");
       const tag = st === "done" ? t("pd_step_done") : st === "now" ? t("pd_step_now") : t("pd_step_todo");
       return `<li class="pstep pstep-${st}">
-        <span class="pstep-dot">${done[k] ? "✓" : i + 1}</span>
+        <span class="pstep-dot">${done[k] ? "" : i + 1}</span>
         <div class="pstep-tx"><strong>${t("pd_step_" + k)}</strong><small>${t("pd_step_" + k + "_d")}</small></div>
         <span class="pstep-tag">${tag}</span></li>`;
     }).join("");
@@ -1995,14 +1995,14 @@
               <span class="pdash-enq-date">${new Date(q.created_at).toLocaleDateString(lang === "sw" ? "sw-TZ" : lang, { day: "numeric", month: "short" })}</span></div>
             <p class="pdash-enq-msg">${esc(q.message)}</p>
             ${q.tourist_contact ? `<p class="pdash-enq-contact">${svgIcon("chat", 13)} <a href="${/@/.test(q.tourist_contact) ? "mailto:" : "https://wa.me/"}${esc(q.tourist_contact.replace(/[^0-9a-zA-Z@._+-]/g, ""))}">${esc(q.tourist_contact)}</a></p>` : ""}
-          </div>`).join("")}</div>` : `<div class="mo-empty"><span>💬</span><p class="muted">${t("pd_enq_none")}</p></div>`;
+          </div>`).join("")}</div>` : `<div class="mo-empty"><span></span><p class="muted">${t("pd_enq_none")}</p></div>`;
       }).catch(() => { host.innerHTML = `<p class="form-error">${t("acct_err")}</p>`; });
     }
     const shareBtn = document.getElementById("pdShareProfile");
     if (shareBtn) shareBtn.addEventListener("click", () => {
       const url = location.origin + location.pathname + "#/partner-profile/" + (p.slug || prof?.slug || "");
       if (navigator.share) navigator.share({ title: p.company, url }).catch(() => {});
-      else { navigator.clipboard?.writeText(url); shareBtn.textContent = "✓ " + url; }
+      else { navigator.clipboard?.writeText(url); shareBtn.textContent = "" + url; }
     });
 
     if (p.status !== "approved") return;
@@ -2123,7 +2123,7 @@
       evList.innerHTML = (rows && rows.length) ? `<div class="table-wrap"><table class="reg-table">
         <thead><tr><th>${t("pe_title")}</th><th>${t("pe_start")}</th><th>${t("admin_status")}</th></tr></thead>
         <tbody>${rows.map(e2 => `<tr><td>${esc(e2.title)}</td><td>${esc(e2.date_start)}</td>
-          <td><span class="pstat pstat-${e2.status}">${e2.status === "approved" ? "✓" : e2.status === "rejected" ? "✕" : "⏳"} ${t("pp_st_" + e2.status)}</span></td></tr>`).join("")}</tbody></table></div>` : "";
+          <td><span class="pstat pstat-${e2.status}">${e2.status === "approved" ? "" : e2.status === "rejected" ? "" : ""} ${t("pp_st_" + e2.status)}</span></td></tr>`).join("")}</tbody></table></div>` : "";
     }).catch(() => {});
     loadMyEvents();
     const ef = document.getElementById("peForm");
@@ -2185,7 +2185,7 @@
       fetch(`${sb.url}/rest/v1/public_services?partner_slug=eq.${encodeURIComponent(slug)}&select=*&order=created_at.desc`, { headers: h }).then(r => r.json())
     ]).then(([partners, svcs]) => {
       const prof = Array.isArray(partners) && partners[0];
-      if (!prof) { body.innerHTML = `<div class="mo-empty"><span>🔍</span><p class="muted">${t("pr_not_found")}</p></div>`; return; }
+      if (!prof) { body.innerHTML = `<div class="mo-empty"><span></span><p class="muted">${t("pr_not_found")}</p></div>`; return; }
       const initial = (prof.company_name || "?").trim().charAt(0).toUpperCase();
       const socials = partnerSocials(prof);
       const since = new Date(prof.created_at).getFullYear();
@@ -2218,7 +2218,7 @@
             <div id="prEnqErr" class="form-error" role="alert" hidden></div>
             <button type="submit" class="btn btn-primary">${t("pr_enq_send")}</button>
           </form>
-          <div id="prEnqOk" class="reg-success" hidden><div class="reg-success-mark">✓</div><p class="reg-success-msg">${t("pr_enq_ok")}</p></div>
+          <div id="prEnqOk" class="reg-success" hidden><div class="reg-success-mark"></div><p class="reg-success-msg">${t("pr_enq_ok")}</p></div>
         </div>`;
       const ef = document.getElementById("prEnqForm");
       if (ef) ef.addEventListener("submit", (e) => {
@@ -2348,7 +2348,7 @@
     return `
       <section class="container auth-wrap">
         <form id="pResetForm" class="auth-card" novalidate>
-          <div class="auth-icon">🔑</div>
+          <div class="auth-icon">${svgIcon("shield", 26)}</div>
           <h1 class="auth-title">${t("pr_title")}</h1>
           <p class="auth-sub">${t("pr_sub")}</p>
           <div class="field"><label for="prPass">${t("ps_pass")}</label>
@@ -2377,7 +2377,7 @@
     return `
       <section class="container auth-wrap">
         <form id="uResetForm" class="auth-card" novalidate>
-          <div class="auth-icon">🔑</div>
+          <div class="auth-icon">${svgIcon("shield", 26)}</div>
           <h1 class="auth-title">${t("ur_title")}</h1>
           <p class="auth-sub">${t("ur_sub")}</p>
           <div class="field"><label for="urPass">${t("login_pass")}</label>
@@ -2568,7 +2568,7 @@
       return `
         <section class="container auth-wrap">
           <div class="auth-card">
-            <div class="auth-icon">✅</div>
+            <div class="auth-icon">${svgIcon("check", 26)}</div>
             <h1 class="auth-title">${t("reg_already")}</h1>
             <p class="auth-sub">${f} — ${t("reg_already_sub")}</p>
             <div class="hero-cta-row" style="justify-content:center">
@@ -2647,10 +2647,10 @@
           </div>
           <div id="regError" class="form-error" role="alert" hidden></div>
           <button type="submit" class="btn btn-primary btn-block">${t("reg_submit")}</button>
-          <p class="muted small reg-privacy">🛡️ ${t("reg_privacy")}</p>
+          <p class="muted small reg-privacy">${t("reg_privacy")}</p>
         </form>
         <div id="regSuccess" class="reg-success" hidden>
-          <div class="reg-success-mark">✓</div>
+          <div class="reg-success-mark"></div>
           <p class="reg-success-msg">${t("reg_success")}</p>
           <a class="btn btn-primary" href="#/home">${t("reg_explore")}</a>
         </div>
@@ -2871,7 +2871,7 @@
         <section class="container auth-wrap auth-split">
           ${authArt("admin")}
           <form id="adminLogin" class="auth-card" novalidate>
-            <div class="auth-icon">🔒</div>
+            <div class="auth-icon">${svgIcon("star", 26)}</div>
             <h1 class="auth-title">${t("admin_login_title")}</h1>
             <p class="auth-sub">${t("admin_login_sub")}</p>
             <div class="field">
@@ -2890,7 +2890,7 @@
       <section class="container section">
         <div id="adminData"><p class="muted">${t("admin_loading")}</p></div>
         <details class="admin-cp">
-          <summary>🔑 ${t("admin_change_pw")}</summary>
+          <summary>${t("admin_change_pw")}</summary>
           <form id="adminCpForm" class="admin-cp-form" novalidate>
             <div class="field"><label for="cpOld">${t("admin_cp_old")}</label>${pwField("cpOld", t("admin_cp_old"))}</div>
             <div class="field"><label for="cpNew">${t("admin_cp_new")}</label>${pwField("cpNew", t("admin_cp_new"))}</div>
@@ -2976,7 +2976,7 @@
       rows = Array.isArray(rows) ? rows : [];
       setAdminBadge("badgeEvs", rows.filter(x => x.status === "pending").length);
       if (!rows.length) { host.innerHTML = `<p class="muted admin-empty">${t("admin_none")}</p>`; return; }
-      const stPill = (st) => `<span class="pstat pstat-${st}">${st === "approved" ? "✓" : st === "rejected" ? "✕" : "⏳"} ${t("pp_st_" + st)}</span>`;
+      const stPill = (st) => `<span class="pstat pstat-${st}">${st === "approved" ? "" : st === "rejected" ? "" : ""} ${t("pp_st_" + st)}</span>`;
       host.innerHTML = `<div class="table-wrap"><table class="reg-table">
         <thead><tr><th>${t("pe_title")}</th><th>${t("ev_type_l")}</th><th>${t("pe_start")}</th><th>${t("pe_venue")}</th><th>${t("ps_company")}</th><th>${t("admin_status")}</th><th></th></tr></thead>
         <tbody>${rows.map(e2 => `<tr>
@@ -2987,8 +2987,8 @@
           <td>${esc(e2.company || "—")}</td>
           <td>${stPill(e2.status)}</td>
           <td class="admin-actions-cell">
-            ${e2.status !== "approved" ? `<button class="btn btn-small btn-gold" data-estat="approved" data-eid="${e2.id}">✓ ${t("admin_approve")}</button>` : ""}
-            ${e2.status !== "rejected" ? `<button class="btn btn-small" data-estat="rejected" data-eid="${e2.id}">✕ ${t("admin_reject")}</button>` : ""}
+            ${e2.status !== "approved" ? `<button class="btn btn-small btn-gold" data-estat="approved" data-eid="${e2.id}">${t("admin_approve")}</button>` : ""}
+            ${e2.status !== "rejected" ? `<button class="btn btn-small" data-estat="rejected" data-eid="${e2.id}">${t("admin_reject")}</button>` : ""}
           </td></tr>`).join("")}</tbody></table></div>`;
       host.querySelectorAll("[data-estat]").forEach(b => b.addEventListener("click", () => {
         b.disabled = true;
@@ -3018,9 +3018,9 @@
     sbRpc("admin_partners", { p_pass: pass }).then(d => {
       const rows = (d && d.partners) || [];
       setAdminBadge("badgePartners", rows.filter(x => x.status === "pending").length);
-      const exportBar = `<div class="admin-head"><h4 style="margin:0">${rows.length} ${t("admin_sum_partners")}</h4><button class="btn btn-small" id="partExport">⬇ ${t("admin_export")}</button></div>`;
+      const exportBar = `<div class="admin-head"><h4 style="margin:0">${rows.length} ${t("admin_sum_partners")}</h4><button class="btn btn-small" id="partExport">${t("admin_export")}</button></div>`;
       if (!rows.length) { host.innerHTML = `<p class="muted admin-empty">${t("admin_none")}</p>`; return; }
-      const stPill = (s) => `<span class="pstat pstat-${s}">${s === "approved" ? "✓" : s === "rejected" ? "✕" : "⏳"} ${t("pp_st_" + s)}</span>`;
+      const stPill = (s) => `<span class="pstat pstat-${s}">${s === "approved" ? "" : s === "rejected" ? "" : ""} ${t("pp_st_" + s)}</span>`;
       host.innerHTML = exportBar + `<div class="table-wrap"><table class="reg-table">
         <thead><tr><th>${t("ps_company")}</th><th>${t("ps_type")}</th><th>${t("admin_contact")}</th><th>${t("ps_website")}</th><th>TIN / ${t("ps_license")}</th><th>${t("admin_docs")}</th><th>${t("admin_status")}</th><th></th></tr></thead>
         <tbody>${rows.map(p => `<tr>
@@ -3034,8 +3034,8 @@
               ${p.tin_doc_path ? `<span class="doc-pair"><button class="btn btn-small" data-doc="${esc(p.tin_doc_path)}">${svgIcon("receipt", 13)} TIN</button><button class="doc-dl" data-doc="${esc(p.tin_doc_path)}" data-dl="1" title="${t("admin_download")}" aria-label="${t("admin_download")}">${svgIcon("download", 15)}</button></span>` : ""}</td>
           <td>${stPill(p.status)}<br><small class="muted">${p.services} ${t("admin_services_n")}</small></td>
           <td class="admin-actions-cell">
-            ${p.status !== "approved" ? `<button class="btn btn-small btn-gold" data-pstat="approved" data-pid="${p.id}">✓ ${t("admin_approve")}</button>` : ""}
-            ${p.status !== "rejected" ? `<button class="btn btn-small" data-pstat="rejected" data-pid="${p.id}">✕ ${t("admin_reject")}</button>` : ""}
+            ${p.status !== "approved" ? `<button class="btn btn-small btn-gold" data-pstat="approved" data-pid="${p.id}">${t("admin_approve")}</button>` : ""}
+            ${p.status !== "rejected" ? `<button class="btn btn-small" data-pstat="rejected" data-pid="${p.id}">${t("admin_reject")}</button>` : ""}
           </td></tr>`).join("")}</tbody></table></div>`;
       host.querySelectorAll("[data-pstat]").forEach(b => b.addEventListener("click", () => {
         b.disabled = true;
@@ -3101,7 +3101,7 @@
       return `
         <section class="container auth-wrap">
           <div class="auth-card">
-            <div class="auth-icon">✅</div>
+            <div class="auth-icon">${svgIcon("check", 26)}</div>
             <h1 class="auth-title">${t("login_already")}</h1>
             <p class="auth-sub">${esc(String(u.name).split(" ")[0])} — ${t("login_already_sub")}</p>
             <a class="btn btn-primary btn-block" href="#/home">${t("reg_explore")}</a>
@@ -3112,7 +3112,7 @@
       <section class="container auth-wrap auth-split">
         ${authArt("tourist")}
         <form id="loginForm" class="auth-card" novalidate>
-          <div class="auth-icon">👋</div>
+          <div class="auth-icon">${svgIcon("users", 26)}</div>
           <h1 class="auth-title">${t("login_title")}</h1>
           <p class="auth-sub">${t("login_sub")}</p>
           <div class="field">
@@ -3176,7 +3176,7 @@
       return `
         <section class="container auth-wrap">
           <div class="auth-card">
-            <div class="auth-icon">🔑</div>
+            <div class="auth-icon">${svgIcon("shield", 26)}</div>
             <h1 class="auth-title">${t("acct_need_login")}</h1>
             <p class="auth-sub">${t("acct_need_login_sub")}</p>
             <div class="hero-cta-row" style="justify-content:center">
@@ -3191,7 +3191,7 @@
     const act = getActivity();
     const favCount = getFavs().length;
     const countOf = (ty) => act.filter(a => a.type === ty).length;
-    const actIcon = { register: "🎉", enquiry: "📨", review: "⭐", challenge: "⚠️" };
+    const actIcon = { register: "check", enquiry: "chat", review: "star", challenge: "alert" };
     const actLabel = { register: t("acct_enquiry_h"), enquiry: t("acct_enquiry"), review: t("acct_review"), challenge: t("acct_challenge") };
     const timeAgo = (iso) => { try { return new Date(iso).toLocaleString(undefined, { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" }); } catch (e) { return ""; } };
     const activityList = act.length
@@ -3206,14 +3206,14 @@
       : `<p class="muted">${t("acct_no_activity")}</p>`;
     const profileCard = `
       <div class="acct-profile">
-        <div class="acct-avatar">${esc(String(u.name).trim().charAt(0).toUpperCase() || "🙂")}</div>
+        <div class="acct-avatar">${esc(String(u.name).trim().charAt(0).toUpperCase() || "")}</div>
         <div class="acct-profile-info">
           <h2 class="acct-profile-name">${esc(u.name)}</h2>
           <div class="acct-profile-meta">
-            ${u.country ? `<span>📍 ${esc(u.country)}</span>` : ""}
-            ${u.phone ? `<span>📱 ${esc(u.phone)}</span>` : ""}
-            ${u.email ? `<span>✉️ ${esc(u.email)}</span>` : ""}
-            ${memberSince ? `<span>🗓️ ${t("acct_since")} ${esc(memberSince)}</span>` : ""}
+            ${u.country ? `<span>${esc(u.country)}</span>` : ""}
+            ${u.phone ? `<span>${esc(u.phone)}</span>` : ""}
+            ${u.email ? `<span>${esc(u.email)}</span>` : ""}
+            ${memberSince ? `<span>${t("acct_since")} ${esc(memberSince)}</span>` : ""}
           </div>
         </div>
       </div>
@@ -3235,13 +3235,13 @@
           <p class="muted small">${sub}</p>
           ${extra || ""}
           <textarea class="acct-msg" rows="4" placeholder="${ph}" required></textarea>
-          <div class="acct-ok form-ok" hidden>✓ ${t("acct_sent")}</div>
+          <div class="acct-ok form-ok" hidden>${t("acct_sent")}</div>
           <button class="btn btn-primary" type="submit">${t("acct_send")}</button>
         </form>
       </div>`;
     return `
       <section class="detail-hero grad-gold">
-        <div class="container"><h1>${t("acct_hi")}, ${first} 👋</h1><p class="detail-meta">${t("acct_lead")}</p></div>
+        <div class="container"><h1>${t("acct_hi")}, ${first} </h1><p class="detail-meta">${t("acct_lead")}</p></div>
       </section>
       <section class="container section">
         ${profileCard}
@@ -3254,10 +3254,10 @@
         ${activityList}
         <h2 class="acct-section-h">${t("acct_tools_h")}</h2>
         <div class="acct-tabs" id="acctTabs">
-          <button class="acct-tab active" data-tab="enquiry">📨 ${t("acct_enquiry")}</button>
-          <button class="acct-tab" data-tab="review">⭐ ${t("acct_review")}</button>
-          <button class="acct-tab" data-tab="challenge">⚠️ ${t("acct_challenge")}</button>
-          <button class="acct-tab" data-tab="favs">❤️ ${t("acct_favs")}</button>
+          <button class="acct-tab active" data-tab="enquiry">${t("acct_enquiry")}</button>
+          <button class="acct-tab" data-tab="review">${t("acct_review")}</button>
+          <button class="acct-tab" data-tab="challenge">${t("acct_challenge")}</button>
+          <button class="acct-tab" data-tab="favs">${t("acct_favs")}</button>
         </div>
         ${panel("enquiry", t("acct_enquiry_h"), t("acct_enquiry_sub"), t("acct_enquiry_ph"))}
         ${panel("review", t("acct_review_h"), t("acct_review_sub"), t("acct_review_ph"), starPicker)}
@@ -3310,7 +3310,7 @@
 
   function notFound() {
     return `<section class="container section center">
-      <h2>🦒</h2><p class="muted">404</p>
+      <h2></h2><p class="muted">404</p>
       <a href="#/home" class="btn btn-primary">${t("nav_home")}</a></section>`;
   }
 
@@ -3327,7 +3327,7 @@
     modalBody.innerHTML = `
       <h3 id="modalTitle">${t("book_title")}</h3>
       <p class="muted">${t("book_intro")}</p>
-      <p class="book-trip">🎟️ <strong>${esc(L(tr.name))}</strong> · ${t("from")} $${tr.priceFrom}</p>
+      <p class="book-trip"><strong>${esc(L(tr.name))}</strong> · ${t("from")} $${tr.priceFrom}</p>
       <p class="book-choose">${t("book_choose")}</p>
       <div class="book-list">
         <a class="book-op" target="_blank" rel="noopener" href="${waLink(window.CONFIG.visitorDeskWhatsApp, L(tr.name))}">
@@ -3517,7 +3517,7 @@
     const lb = document.createElement("div");
     lb.id = "kaLightbox"; lb.className = "lb";
     lb.innerHTML = `
-      <button class="lb-x" aria-label="Close">✕</button>
+      <button class="lb-x" aria-label="Close"></button>
       ${imgs.length > 1 ? `<button class="lb-nav lb-prev" aria-label="Previous">‹</button><button class="lb-nav lb-next" aria-label="Next">›</button>` : ""}
       <img class="lb-img" src="${imgs[i]}" alt="" />
       ${imgs.length > 1 ? `<span class="lb-count">${i + 1} / ${imgs.length}</span>` : ""}`;
@@ -3568,7 +3568,7 @@
     if (!input) return;
     const reveal = input.type === "password";
     input.type = reveal ? "text" : "password";
-    btn.textContent = reveal ? "🙈" : "👁";
+    btn.textContent = reveal ? "" : "👁";
     btn.setAttribute("aria-label", reveal ? t("pass_hide") : t("pass_show"));
   });
 
@@ -3603,33 +3603,33 @@
      =================================================================== */
   // A node = { m:{en,sw} hook, o:[{g:goto, l:{en,sw}}] }. goto: node id,
   // "wa" (WhatsApp), "page:#/..." (navigate), or "root".
-  const WA = { g: "wa", l: { en: "💬 Karibu Live — chat on WhatsApp", sw: "💬 Karibu Live — ongea WhatsApp" } };
+  const WA = { g: "wa", l: { en: "Karibu Live — chat on WhatsApp", sw: "Karibu Live — ongea WhatsApp" } };
   const HOME = { g: "root", l: { en: "↩︎ Explore more topics", sw: "↩︎ Gundua mada zaidi" } };
-  const MORE = { g: "root", l: { en: "✨ Show me something else", sw: "✨ Nionyeshe kitu kingine" } };
+  const MORE = { g: "root", l: { en: "Show me something else", sw: "Nionyeshe kitu kingine" } };
   const WELCOME_ARUSHA = {
     root: {
-      m: { en: "Karibu sana! 🦒 You're at the gateway to the Northern Safari Circuit — a city humming with energy under the peak of Mount Meru. Wildlife, coffee, culture… Arusha has a rhythm you'll love.\n\nWhat vibe are you feeling today?",
-           sw: "Karibu sana! 🦒 Uko kwenye lango la Mzunguko wa Safari wa Kaskazini — jiji lenye msisimko chini ya Mlima Meru. Wanyamapori, kahawa, utamaduni… Arusha ina mdundo utakaoupenda.\n\nUnahisi vibe gani leo?" },
+      m: { en: "Karibu sana! You're at the gateway to the Northern Safari Circuit — a city humming with energy under the peak of Mount Meru. Wildlife, coffee, culture… Arusha has a rhythm you'll love.\n\nWhat vibe are you feeling today?",
+           sw: "Karibu sana! Uko kwenye lango la Mzunguko wa Safari wa Kaskazini — jiji lenye msisimko chini ya Mlima Meru. Wanyamapori, kahawa, utamaduni… Arusha ina mdundo utakaoupenda.\n\nUnahisi vibe gani leo?" },
       o: [
-        { g: "thrill", l: { en: "🏔️ Thrill seeker", sw: "🏔️ Mpenda msisimko" } },
-        { g: "culture", l: { en: "🪘 Culture lover", sw: "🪘 Mpenda utamaduni" } },
-        { g: "relax", l: { en: "🌿 Relaxation", sw: "🌿 Pumziko" } },
-        { g: "book", l: { en: "🎟️ How to book / contact an operator", sw: "🎟️ Kuweka booking / kupata operator" } },
-        { g: "prices", l: { en: "💰 Prices & typical costs", sw: "💰 Bei na gharama za kawaida" } },
-        { g: "logistics", l: { en: "✈️ Getting there & around", sw: "✈️ Kufika na kuzunguka" } },
-        { g: "stay", l: { en: "🏨 Where to stay", sw: "🏨 Malazi" } },
-        { g: "eat", l: { en: "🍽️ Food & nightlife", sw: "🍽️ Chakula na burudani" } },
-        { g: "practical", l: { en: "🧭 Practical tips (money, SIM, packing)", sw: "🧭 Vidokezo (pesa, SIM, kubeba)" } },
-        { g: "shop", l: { en: "🛍️ Shopping & Tanzanite", sw: "🛍️ Ununuzi na Tanzanite" } }
+        { g: "thrill", l: { en: "Thrill seeker", sw: "Mpenda msisimko" } },
+        { g: "culture", l: { en: "Culture lover", sw: "Mpenda utamaduni" } },
+        { g: "relax", l: { en: "Relaxation", sw: "Pumziko" } },
+        { g: "book", l: { en: "How to book / contact an operator", sw: "Kuweka booking / kupata operator" } },
+        { g: "prices", l: { en: "Prices & typical costs", sw: "Bei na gharama za kawaida" } },
+        { g: "logistics", l: { en: "Getting there & around", sw: "Kufika na kuzunguka" } },
+        { g: "stay", l: { en: "Where to stay", sw: "Malazi" } },
+        { g: "eat", l: { en: "Food & nightlife", sw: "Chakula na burudani" } },
+        { g: "practical", l: { en: "Practical tips (money, SIM, packing)", sw: "Vidokezo (pesa, SIM, kubeba)" } },
+        { g: "shop", l: { en: "Shopping & Tanzanite", sw: "Ununuzi na Tanzanite" } }
       ]
     },
     book: {
       m: { en: "Booking on Karibu Arusha is simple and safe: you always deal with a document-verified, licensed operator. Here's the flow — find what you love, then reach the operator directly on WhatsApp to lock in dates and details.",
            sw: "Kuweka booking kwenye Karibu Arusha ni rahisi na salama: daima unashughulika na mwendeshaji mwenye leseni aliyekaguliwa. Njia yenyewe — pata unachopenda, kisha wasiliana na mwendeshaji moja kwa moja WhatsApp kuthibitisha tarehe na maelezo." },
       o: [
-        { g: "page:#/trips", l: { en: "🎟️ Browse trips", sw: "🎟️ Angalia safari" } },
-        { g: "page:#/services", l: { en: "🧑‍🌾 Find a verified operator/service", sw: "🧑‍🌾 Pata operator/huduma" } },
-        { g: "prices", l: { en: "💰 What will it cost?", sw: "💰 Itagharimu kiasi gani?" } },
+        { g: "page:#/trips", l: { en: "Browse trips", sw: "Angalia safari" } },
+        { g: "page:#/services", l: { en: "‍Find a verified operator/service", sw: "‍Pata operator/huduma" } },
+        { g: "prices", l: { en: "What will it cost?", sw: "Itagharimu kiasi gani?" } },
         WA, MORE
       ]
     },
@@ -3637,66 +3637,66 @@
       m: { en: "Here's a realistic guide to Arusha day-trip prices (per person, with a licensed operator — 4x4, guide and park fees included):",
            sw: "Hii hapa mwongozo halisi wa bei za safari za siku Arusha (kwa mtu, na mwendeshaji mwenye leseni — 4x4, kiongozi na ada):" },
       o: [
-        { g: "prices2", l: { en: "🦁 Day trips (Ngorongoro, Tarangire…)", sw: "🦁 Safari za siku" } },
-        { g: "prices3", l: { en: "🌍 Multi-day safaris (3–7 days)", sw: "🌍 Safari za siku nyingi" } },
-        { g: "book", l: { en: "🎟️ How do I book?", sw: "🎟️ Naweza kuwekaje?" } },
+        { g: "prices2", l: { en: "Day trips (Ngorongoro, Tarangire…)", sw: "Safari za siku" } },
+        { g: "prices3", l: { en: "Multi-day safaris (3–7 days)", sw: "Safari za siku nyingi" } },
+        { g: "book", l: { en: "How do I book?", sw: "Naweza kuwekaje?" } },
         WA, MORE
       ]
     },
     prices2: {
       m: { en: "Day trips from Arusha, indicative from-prices per person: Arusha National Park ~$220 · Materuni waterfalls & coffee ~$200 · Maasai boma ~$200 · Tarangire ~$280 · Ngorongoro Crater ~$320. These bundle transport, a guide and park fees; your operator confirms the final quote for your group size and season.",
            sw: "Safari za siku kutoka Arusha, bei za kuanzia kwa mtu: Hifadhi ya Arusha ~$220 · Materuni na kahawa ~$200 · Boma la Kimaasai ~$200 · Tarangire ~$280 · Kreta ya Ngorongoro ~$320. Zinajumuisha usafiri, kiongozi na ada; mwendeshaji atathibitisha bei ya mwisho kulingana na idadi yenu na msimu." },
-      o: [ { g: "page:#/trips", l: { en: "🎟️ See all trips", sw: "🎟️ Ona safari zote" } }, WA, MORE ]
+      o: [ { g: "page:#/trips", l: { en: "See all trips", sw: "Ona safari zote" } }, WA, MORE ]
     },
     prices3: {
       m: { en: "Multi-day safaris (from-prices per person, guided, with lodging): 3-day Serengeti + Ngorongoro ~$1,150 · 5-day AFCON-week explorer ~$1,590 · 7-day grand northern circuit ~$2,350. Longer trips cost more per day for premium lodges and fly-in options — just ask your operator.",
            sw: "Safari za siku nyingi (bei za kuanzia kwa mtu, na malazi): siku 3 Serengeti + Ngorongoro ~$1,150 · siku 5 wiki ya AFCON ~$1,590 · siku 7 mzunguko mkuu ~$2,350. Safari ndefu zina gharama zaidi kwa loji za kifahari na ndege — uliza mwendeshaji." },
-      o: [ { g: "page:#/itineraries", l: { en: "🗺️ See itineraries", sw: "🗺️ Ona ratiba" } }, WA, MORE ]
+      o: [ { g: "page:#/itineraries", l: { en: "See itineraries", sw: "Ona ratiba" } }, WA, MORE ]
     },
     practical: {
       m: { en: "A few practical things make an Arusha trip smooth — money, connectivity and what to pack. Which one shall I cover?",
            sw: "Vitu vichache vinafanya safari ya Arusha iwe rahisi — pesa, mtandao na cha kubeba. Nikueleze kipi?" },
       o: [
-        { g: "money", l: { en: "💳 Money, ATMs & cash", sw: "💳 Pesa, ATM na fedha" } },
-        { g: "sim", l: { en: "📶 SIM cards & internet", sw: "📶 Laini za simu na intaneti" } },
-        { g: "pack", l: { en: "🎒 What to pack", sw: "🎒 Cha kubeba" } }
+        { g: "money", l: { en: "Money, ATMs & cash", sw: "Pesa, ATM na fedha" } },
+        { g: "sim", l: { en: "SIM cards & internet", sw: "Laini za simu na intaneti" } },
+        { g: "pack", l: { en: "What to pack", sw: "Cha kubeba" } }
       ]
     },
     money: {
       m: { en: "The currency is the Tanzanian Shilling (TZS); USD is widely accepted for safaris and hotels (bring clean, newer notes). ATMs are common in Arusha city and accept Visa/Mastercard. Carry some cash for markets, tips and small vendors, and agree prices before services. Tipping guides/drivers is customary and appreciated.",
            sw: "Sarafu ni Shilingi ya Tanzania (TZS); USD inakubalika sana kwa safari na hoteli (beba noti mpya, safi). ATM zipo nyingi jijini Arusha na zinakubali Visa/Mastercard. Beba fedha kidogo kwa masoko, tip na wauzaji wadogo, na kubaliana bei kabla ya huduma. Kutoa tip kwa viongozi/madereva ni desturi." },
-      o: [ { g: "sim", l: { en: "📶 What about SIM & internet?", sw: "📶 Vipi SIM na intaneti?" } }, WA, MORE ]
+      o: [ { g: "sim", l: { en: "What about SIM & internet?", sw: "Vipi SIM na intaneti?" } }, WA, MORE ]
     },
     sim: {
       m: { en: "Buy a local SIM (Vodacom, Airtel, Halotel or Tigo/Yas) at the airport or in town — cheap data bundles keep you online for maps and WhatsApp. You'll need your passport to register it. Most hotels and lodges have Wi-Fi, though it can be slow deep in the parks.",
            sw: "Nunua laini ya ndani (Vodacom, Airtel, Halotel au Tigo/Yas) uwanjani au mjini — bando za bei nafuu zitakuweka mtandaoni kwa ramani na WhatsApp. Utahitaji pasipoti kuisajili. Hoteli nyingi zina Wi-Fi, ingawa inaweza kuwa polepole ndani ya hifadhi." },
-      o: [ { g: "pack", l: { en: "🎒 And what should I pack?", sw: "🎒 Na nibebe nini?" } }, WA, MORE ]
+      o: [ { g: "pack", l: { en: "And what should I pack?", sw: "Na nibebe nini?" } }, WA, MORE ]
     },
     pack: {
       m: { en: "For Arusha, pack layers: warm mornings and cool evenings at altitude, plus chilly game drives. Bring neutral colours for safari, a hat, sunscreen, sunglasses, insect repellent, sturdy shoes, a light rain jacket, binoculars and a good camera. For mountains (Meru/Kili) you'll need proper cold-weather gear — your operator provides a packing list.",
            sw: "Kwa Arusha, beba nguo za tabaka: asubuhi joto na jioni baridi kwa mwinuko, pamoja na game drive za baridi. Beba rangi za wastani kwa safari, kofia, sunscreen, miwani, dawa ya wadudu, viatu imara, koti jepesi la mvua, darubini na kamera nzuri. Kwa milima (Meru/Kili) utahitaji vifaa vya baridi — mwendeshaji atakupa orodha." },
-      o: [ { g: "besttime", l: { en: "📅 Best time to visit?", sw: "📅 Wakati bora wa kuja?" } }, WA, MORE ]
+      o: [ { g: "besttime", l: { en: "Best time to visit?", sw: "Wakati bora wa kuja?" } }, WA, MORE ]
     },
     besttime: {
       m: { en: "Arusha is a year-round destination. June–October is dry, cooler and superb for game viewing (and AFCON 2027!). The Great Migration river crossings in the northern Serengeti peak around July–September. The green season (Nov–May) is lush, quieter and great for birds and calving in the south. There is no bad time — just different magic.",
            sw: "Arusha ni kivutio cha mwaka mzima. Juni–Oktoba ni kavu, baridi kidogo na bora kwa kuona wanyama (na AFCON 2027!). Uvukaji wa Uhamiaji Mkuu kaskazini mwa Serengeti hupamba moto Julai–Septemba. Msimu wa kijani (Nov–Mei) ni wa majani, tulivu na mzuri kwa ndege na kuzaliana. Hakuna wakati mbaya — ni maajabu tofauti tu." },
-      o: [ { g: "prices", l: { en: "💰 And the costs?", sw: "💰 Na gharama?" } }, WA, MORE ]
+      o: [ { g: "prices", l: { en: "And the costs?", sw: "Na gharama?" } }, WA, MORE ]
     },
     thrill: {
       m: { en: "Excellent choice! Arusha is base camp for the world-famous Serengeti migration and the Ngorongoro Crater, and for climbers there's the underrated Mount Meru — technically challenging with breathtaking sunrise views.",
            sw: "Chaguo zuri! Arusha ni kambi ya uhamiaji maarufu wa Serengeti na Kreta ya Ngorongoro, na kwa wapandaji kuna Mlima Meru — wenye changamoto lakini machweo/mawio ya kupendeza." },
       o: [
-        { g: "ngorongoro", l: { en: "🦁 Ngorongoro Crater — how long?", sw: "🦁 Kreta ya Ngorongoro — muda gani?" } },
-        { g: "serengeti", l: { en: "🦓 Serengeti safari — cost?", sw: "🦓 Safari ya Serengeti — bei?" } },
-        { g: "meru", l: { en: "⛰️ Is Meru harder than Kili?", sw: "⛰️ Meru ni ngumu kuliko Kili?" } }
+        { g: "ngorongoro", l: { en: "Ngorongoro Crater — how long?", sw: "Kreta ya Ngorongoro — muda gani?" } },
+        { g: "serengeti", l: { en: "Serengeti safari — cost?", sw: "Safari ya Serengeti — bei?" } },
+        { g: "meru", l: { en: "Is Meru harder than Kili?", sw: "Meru ni ngumu kuliko Kili?" } }
       ]
     },
     ngorongoro: {
       m: { en: "The Ngorongoro Crater is a collapsed volcano — a natural amphitheatre packed with the Big Five, including the rare black rhino. It's about a 3-hour drive from Arusha; give it a full day so you're on the crater floor at dawn when the cats are active. A day trip starts around $320 pp (4x4, guide, park fees). Pair it with Lake Manyara or Tarangire for an overnight.",
            sw: "Kreta ya Ngorongoro ni volkano iliyoporomoka — uwanja wa asili uliojaa Big Five, ikiwemo kifaru mweusi adimu. Ni takribani saa 3 kutoka Arusha; itenge siku nzima uwe ndani ya kreta alfajiri wanyama wakiwa hai. Safari ya siku huanzia $320 kwa mtu (4x4, kiongozi, ada). Iunganishe na Ziwa Manyara au Tarangire kwa kulala." },
       o: [
-        { g: "page:#/itineraries", l: { en: "🗺️ See ready-made itineraries", sw: "🗺️ Ona ratiba tayari" } },
-        { g: "serengeti", l: { en: "🦓 And the Serengeti?", sw: "🦓 Na Serengeti?" } },
+        { g: "page:#/itineraries", l: { en: "See ready-made itineraries", sw: "Ona ratiba tayari" } },
+        { g: "serengeti", l: { en: "And the Serengeti?", sw: "Na Serengeti?" } },
         WA, HOME
       ]
     },
@@ -3704,8 +3704,8 @@
       m: { en: "The Serengeti is a 5–7 hour drive (or a short flight) from Arusha — endless plains and, in season, 2M+ wildebeest on the move. Most visitors do a 3-day Serengeti + Ngorongoro loop from about $1,150 pp (guide, 4x4, park fees, lodge/camp). The Great Migration river crossings peak roughly July–September in the north.",
            sw: "Serengeti ni saa 5–7 kwa gari (au ndege fupi) kutoka Arusha — tambarare zisizo na mwisho na, kwa msimu, nyumbu 2M+ wakihama. Wengi hufanya mzunguko wa siku 3 Serengeti + Ngorongoro kuanzia $1,150 kwa mtu. Uvukaji wa mito wa Uhamiaji Mkuu hupamba moto Julai–Septemba kaskazini." },
       o: [
-        { g: "page:#/trips", l: { en: "🎟️ Browse safari trips", sw: "🎟️ Angalia safari" } },
-        { g: "meru", l: { en: "⛰️ I'd rather climb", sw: "⛰️ Napendelea kupanda" } },
+        { g: "page:#/trips", l: { en: "Browse safari trips", sw: "Angalia safari" } },
+        { g: "meru", l: { en: "I'd rather climb", sw: "Napendelea kupanda" } },
         WA, HOME
       ]
     },
@@ -3713,7 +3713,7 @@
       m: { en: "Mount Meru (4,566 m) is Meru's quieter giant — usually 3–4 days via Momella. It's steeper and more technical near the summit than Kilimanjaro's gentler routes, so many climbers use it as the perfect acclimatisation warm-up before Kili. You go with an armed ranger (there's wildlife!) and the sunrise over Kilimanjaro from the summit is unforgettable.",
            sw: "Mlima Meru (m 4,566) ni jitu tulivu — kawaida siku 3–4 kupitia Momella. Ni mwinuko na wenye ufundi zaidi karibu na kilele kuliko njia laini za Kilimanjaro, hivyo wengi huutumia kama maandalizi kabla ya Kili. Unaenda na askari (kuna wanyama!) na mawio juu ya Kilimanjaro ni ya kusahaulika." },
       o: [
-        { g: "page:#/explore", l: { en: "🗺️ See it on the map", sw: "🗺️ Ione kwenye ramani" } },
+        { g: "page:#/explore", l: { en: "See it on the map", sw: "Ione kwenye ramani" } },
         WA, HOME
       ]
     },
@@ -3721,58 +3721,58 @@
       m: { en: "Arusha's soul is its people — Maasai, Chagga, Meru and more. You can roast your own Chagga coffee, dance at a Maasai boma, and browse East Africa's biggest art centre all in a day.",
            sw: "Roho ya Arusha ni watu wake — Wamaasai, Wachaga, Wameru na wengine. Unaweza kukaanga kahawa yako ya Kichaga, kucheza kwenye boma la Kimaasai, na kutembelea kituo kikubwa cha sanaa Afrika Mashariki kwa siku moja." },
       o: [
-        { g: "heritage", l: { en: "🎨 Cultural Heritage Centre", sw: "🎨 Kituo cha Urithi" } },
-        { g: "coffee", l: { en: "☕ Coffee & Materuni falls", sw: "☕ Kahawa na Materuni" } },
-        { g: "maasai", l: { en: "🪘 Maasai market & boma", sw: "🪘 Soko na boma la Kimaasai" } }
+        { g: "heritage", l: { en: "Cultural Heritage Centre", sw: "Kituo cha Urithi" } },
+        { g: "coffee", l: { en: "Coffee & Materuni falls", sw: "Kahawa na Materuni" } },
+        { g: "maasai", l: { en: "Maasai market & boma", sw: "Soko na boma la Kimaasai" } }
       ]
     },
     heritage: {
       m: { en: "The Cultural Heritage Centre is a landmark spiral gallery on the edge of town — Africa's largest, with Tingatinga paintings, Makonde carvings and a serious Tanzanite gallery. Entry is free; it's a great half-day and an easy taxi ride from the city centre.",
            sw: "Kituo cha Urithi wa Utamaduni ni jumba la mviringo pembezoni mwa jiji — kikubwa zaidi Afrika, chenye michoro ya Tingatinga, vinyago vya Makonde na jumba kubwa la Tanzanite. Kuingia ni bure; ni nusu siku nzuri, teksi rahisi kutoka mjini." },
-      o: [ { g: "shop", l: { en: "🛍️ What should I buy?", sw: "🛍️ Ninunue nini?" } }, WA, HOME ]
+      o: [ { g: "shop", l: { en: "What should I buy?", sw: "Ninunue nini?" } }, WA, HOME ]
     },
     coffee: {
       m: { en: "On Kilimanjaro's foothills, Materuni village pairs an 80 m waterfall hike with a hands-on Chagga coffee experience — pick, roast and brew your own cup with a local family (about $200 pp for the day, income straight to the community). Closer to town, Napuru waterfalls make a lovely short escape.",
            sw: "Miteremko ya Kilimanjaro, kijiji cha Materuni huunganisha maporomoko ya m 80 na uzoefu wa kahawa ya Kichaga — chuma, kaanga na tengeneza kikombe chako na familia (takriban $200 kwa mtu, kipato kwa jamii). Karibu na mji, maporomoko ya Napuru ni pumziko fupi zuri." },
-      o: [ { g: "page:#/trips", l: { en: "🎟️ Book a coffee tour", sw: "🎟️ Weka ziara ya kahawa" } }, WA, HOME ]
+      o: [ { g: "page:#/trips", l: { en: "Book a coffee tour", sw: "Weka ziara ya kahawa" } }, WA, HOME ]
     },
     maasai: {
       m: { en: "The Maasai Market is a burst of colour — beadwork, shukas and carvings. Bargaining is expected and friendly: greet first, offer around half, settle with a smile. For the real thing, a half-day at a Maasai boma (from ~$200) brings dances, warrior stories and homestead life, with income going straight to the community.",
            sw: "Soko la Kimaasai ni mlipuko wa rangi — shanga, shuka na vinyago. Kupunguza bei ni kawaida na kwa furaha: salimia kwanza, toa nusu, malizia kwa tabasamu. Kwa uhalisia, nusu siku kwenye boma la Kimaasai (kuanzia ~$200) huleta ngoma, hadithi za morani na maisha ya boma, kipato kwa jamii." },
-      o: [ { g: "shop", l: { en: "💎 Tell me about Tanzanite", sw: "💎 Niambie kuhusu Tanzanite" } }, WA, HOME ]
+      o: [ { g: "shop", l: { en: "Tell me about Tanzanite", sw: "Niambie kuhusu Tanzanite" } }, WA, HOME ]
     },
     relax: {
       m: { en: "Prefer to slow down? Arusha does calm beautifully — coffee-plantation lodges, a crater lake for canoeing, and gardens with Mount Meru views. Perfect between matches.",
            sw: "Unapenda kupumzika? Arusha ina utulivu mzuri — loji za mashamba ya kahawa, ziwa la kreta kwa makasia, na bustani zenye mandhari ya Mlima Meru. Inafaa kati ya mechi." },
       o: [
-        { g: "luxstay", l: { en: "🛎️ Luxury lodges", sw: "🛎️ Loji za kifahari" } },
-        { g: "duluti", l: { en: "🛶 Lake Duluti & Chemka", sw: "🛶 Ziwa Duluti na Chemka" } },
-        { g: "coffee", l: { en: "☕ A gentle coffee day", sw: "☕ Siku ya kahawa" } }
+        { g: "luxstay", l: { en: "Luxury lodges", sw: "Loji za kifahari" } },
+        { g: "duluti", l: { en: "Lake Duluti & Chemka", sw: "Ziwa Duluti na Chemka" } },
+        { g: "coffee", l: { en: "A gentle coffee day", sw: "Siku ya kahawa" } }
       ]
     },
     duluti: {
       m: { en: "Lake Duluti is a forest-ringed volcanic crater lake minutes from town — a gentle canoe and a birdwatch (130+ species). For a warm-water treat, the turquoise Chemka (Kikuletwa) hot springs under fig trees are a dreamy rest-day swim about 1.5 h away.",
            sw: "Ziwa Duluti ni ziwa la kreta lililozungukwa na msitu dakika chache kutoka mjini — makasia mepesi na kuangalia ndege (aina 130+). Kwa maji ya joto, chemchemi za Chemka (Kikuletwa) za bluu chini ya mikuyu ni kuogelea kwa ndoto saa 1.5 kutoka hapa." },
-      o: [ { g: "luxstay", l: { en: "🛎️ Where do I stay?", sw: "🛎️ Nikae wapi?" } }, WA, HOME ]
+      o: [ { g: "luxstay", l: { en: "Where do I stay?", sw: "Nikae wapi?" } }, WA, HOME ]
     },
     luxstay: {
       m: { en: "Top-end Arusha is gorgeous: Arusha Coffee Lodge (plantation chalets), Gran Meliá and Lake Duluti Serena for lakeside calm, and the landmark Mount Meru Hotel for city convenience and big Mount Meru views. Great for honeymooners and post-safari unwinding.",
            sw: "Arusha ya kiwango cha juu ni ya kuvutia: Arusha Coffee Lodge (vibanda shambani), Gran Meliá na Lake Duluti Serena kwa utulivu wa ziwani, na Mount Meru Hotel maarufu kwa urahisi wa mjini na mandhari ya Meru. Nzuri kwa fungate na kupumzika baada ya safari." },
-      o: [ { g: "stay", l: { en: "💰 Mid-range & budget too", sw: "💰 Bei ya kati na nafuu" } }, WA, HOME ]
+      o: [ { g: "stay", l: { en: "Mid-range & budget too", sw: "Bei ya kati na nafuu" } }, WA, HOME ]
     },
     stay: {
       m: { en: "Arusha has a bed for every budget. Where shall I point you?",
            sw: "Arusha ina malazi kwa kila bajeti. Nikuelekeze wapi?" },
       o: [
-        { g: "luxstay", l: { en: "🛎️ Luxury lodges", sw: "🛎️ Loji za kifahari" } },
-        { g: "midstay", l: { en: "🏨 Mid-range value", sw: "🏨 Bei ya kati" } },
-        { g: "budstay", l: { en: "🎒 Budget & backpacker", sw: "🎒 Nafuu na wasafiri" } }
+        { g: "luxstay", l: { en: "Luxury lodges", sw: "Loji za kifahari" } },
+        { g: "midstay", l: { en: "Mid-range value", sw: "Bei ya kati" } },
+        { g: "budstay", l: { en: "Budget & backpacker", sw: "Nafuu na wasafiri" } }
       ]
     },
     midstay: {
       m: { en: "Mid-range Arusha is excellent value — try Kibo Palace, Planet Lodge or the historic Arusha Hotel: comfortable rooms, pools, reliable Wi-Fi and easy access to the stadium and city. Expect roughly $60–150 a night depending on season.",
            sw: "Bei ya kati Arusha ina thamani nzuri — jaribu Kibo Palace, Planet Lodge au Arusha Hotel ya kihistoria: vyumba vizuri, mabwawa, Wi-Fi, na urahisi wa kufika uwanjani na mjini. Takribani $60–150 kwa usiku kutegemea msimu." },
-      o: [ { g: "budstay", l: { en: "🎒 Cheaper options?", sw: "🎒 Chaguo nafuu?" } }, WA, HOME ]
+      o: [ { g: "budstay", l: { en: "Cheaper options?", sw: "Chaguo nafuu?" } }, WA, HOME ]
     },
     budstay: {
       m: { en: "Backpackers love Arusha's social hostels and guesthouses — dorms and privates, shared kitchens, safari-buddy vibes and helpful staff who arrange trips. Budget from roughly $12–35 a night. Stick to well-reviewed places and keep valuables in a locker.",
@@ -3783,20 +3783,20 @@
       m: { en: "Hungry? Arusha eats well — smoky nyama choma joints, ugali with the family, wood-fired 'Zanzibar pizza', plus Indian, Italian and Ethiopian tables, and coffee that's grown on the hills you can see.",
            sw: "Una njaa? Arusha inakula vizuri — nyama choma, ugali, 'Zanzibar pizza', pamoja na vyakula vya Kihindi, Kiitaliano na Kiethiopia, na kahawa inayolimwa milimani unayoiona." },
       o: [
-        { g: "localeat", l: { en: "🍖 Best local food", sw: "🍖 Chakula bora cha kienyeji" } },
-        { g: "fineeat", l: { en: "🍝 International dining", sw: "🍝 Migahawa ya kimataifa" } },
-        { g: "night", l: { en: "🌙 Nightlife", sw: "🌙 Burudani ya usiku" } }
+        { g: "localeat", l: { en: "Best local food", sw: "Chakula bora cha kienyeji" } },
+        { g: "fineeat", l: { en: "International dining", sw: "Migahawa ya kimataifa" } },
+        { g: "night", l: { en: "Nightlife", sw: "Burudani ya usiku" } }
       ]
     },
     localeat: {
       m: { en: "For the real taste of Arusha, go where locals go: grilled nyama choma with kachumbari, ugali and fresh mishkaki, and the famous 'Zanzibar pizza' from a street griddle at night. Ask for the halal and vegetarian options — most places have them. Karibu Arusha lists verified food partners on the Services page.",
            sw: "Kwa ladha halisi ya Arusha, nenda wanapoenda wenyeji: nyama choma na kachumbari, ugali na mishkaki, na 'Zanzibar pizza' maarufu usiku. Uliza chaguo la halali na mboga — sehemu nyingi zinazo. Karibu Arusha ina washirika wa chakula waliothibitishwa kwenye Huduma." },
-      o: [ { g: "page:#/services", l: { en: "🍽️ See food partners", sw: "🍽️ Ona washirika wa chakula" } }, WA, HOME ]
+      o: [ { g: "page:#/services", l: { en: "See food partners", sw: "Ona washirika wa chakula" } }, WA, HOME ]
     },
     fineeat: {
       m: { en: "For a treat, Arusha has excellent Indian and Italian kitchens, cosy Ethiopian injera spots, and lodge restaurants with garden views. Many sit around the Njiro and city-centre areas — a taxi ride from most hotels. Reservations are wise on match nights.",
            sw: "Kwa starehe, Arusha ina migahawa bora ya Kihindi na Kiitaliano, sehemu za injera za Kiethiopia, na migahawa ya loji yenye mandhari. Nyingi ziko maeneo ya Njiro na katikati ya jiji — teksi kutoka hoteli nyingi. Weka booking usiku wa mechi." },
-      o: [ { g: "night", l: { en: "🌙 And after dinner?", sw: "🌙 Na baada ya chakula?" } }, WA, HOME ]
+      o: [ { g: "night", l: { en: "And after dinner?", sw: "Na baada ya chakula?" } }, WA, HOME ]
     },
     night: {
       m: { en: "Evenings range from quiet rooftop lounges with Mount Meru sunsets to lively bars and clubs around Njiro and the city centre. Go with a group, use a trusted taxi back to your hotel, and keep your phone discreet. On match days the fan-zone atmosphere is electric.",
@@ -3807,20 +3807,20 @@
       m: { en: "Getting to and around Arusha is easy once you know the basics — two airports, and everything from dala-dalas to private 4x4s.",
            sw: "Kufika na kuzunguka Arusha ni rahisi ukijua misingi — viwanja viwili vya ndege, na kila kitu kutoka dala-dala hadi 4x4 binafsi." },
       o: [
-        { g: "airport", l: { en: "✈️ Airports & transfers", sw: "✈️ Viwanja na usafiri" } },
-        { g: "around", l: { en: "🚕 Getting around town", sw: "🚕 Kuzunguka mjini" } },
-        { g: "safety", l: { en: "🛡️ Safety tips", sw: "🛡️ Ushauri wa usalama" } }
+        { g: "airport", l: { en: "Airports & transfers", sw: "Viwanja na usafiri" } },
+        { g: "around", l: { en: "Getting around town", sw: "Kuzunguka mjini" } },
+        { g: "safety", l: { en: "Safety tips", sw: "Ushauri wa usalama" } }
       ]
     },
     airport: {
       m: { en: "Most international visitors land at Kilimanjaro International Airport (JRO/KIA), about 46 km (~1 hour) from Arusha — arrange a transfer in advance (roughly $50 by car). The small Arusha Airport (ARK) in town handles light aircraft and bush flights to the parks. Have your hotel or a licensed operator meet you; agree the fare before you set off.",
            sw: "Wageni wengi wa kimataifa hutua Kilimanjaro International Airport (JRO/KIA), takriban km 46 (~saa 1) kutoka Arusha — panga usafiri mapema (takriban $50 kwa gari). Kiwanja kidogo cha Arusha (ARK) mjini hushughulikia ndege ndogo za hifadhini. Mwambie hoteli au mwendeshaji akulaki; kubaliana nauli kabla ya kuondoka." },
-      o: [ { g: "around", l: { en: "🚕 Now, getting around", sw: "🚕 Sasa, kuzunguka" } }, WA, HOME ]
+      o: [ { g: "around", l: { en: "Now, getting around", sw: "Sasa, kuzunguka" } }, WA, HOME ]
     },
     around: {
       m: { en: "In town: dala-dalas (shared minibuses) are cheapest, bajaji (tuk-tuks) and taxis are handy for short hops, and for parks you'll want a 4x4 with a driver-guide. Agree taxi fares before you ride, or use a licensed transport partner. Karibu Arusha lists verified transport and car-rental partners on the Services page.",
            sw: "Mjini: dala-dala ndizo nafuu, bajaji na teksi ni rahisi kwa umbali mfupi, na kwa hifadhi unahitaji 4x4 na dereva-kiongozi. Kubaliana nauli ya teksi kabla, au tumia mshirika wa usafiri mwenye leseni. Karibu Arusha ina washirika wa usafiri na magari ya kukodi kwenye Huduma." },
-      o: [ { g: "page:#/services", l: { en: "🚗 See transport partners", sw: "🚗 Ona washirika wa usafiri" } }, { g: "safety", l: { en: "🛡️ Safety tips", sw: "🛡️ Usalama" } }, HOME ]
+      o: [ { g: "page:#/services", l: { en: "See transport partners", sw: "Ona washirika wa usafiri" } }, { g: "safety", l: { en: "Safety tips", sw: "Usalama" } }, HOME ]
     },
     safety: {
       m: { en: "Arusha is welcoming, and a little street-sense goes a long way: use trusted, licensed operators (look for the Karibu Arusha verified badge), agree prices first, and avoid unofficial 'flycatcher' guides who approach you on the street. Keep valuables discreet, use hotel safes, and take a known taxi at night. For anything urgent, the Visitor Desk is on WhatsApp.",
@@ -3831,15 +3831,15 @@
       m: { en: "Take Arusha home with you — vibrant Maasai beadwork, Tingatinga art, Makonde carvings, and the star of the show: Tanzanite, the blue-violet gem found in just one place on Earth, right here near Arusha.",
            sw: "Beba Arusha nyumbani — shanga za Kimaasai, sanaa ya Tingatinga, vinyago vya Makonde, na nyota ya show: Tanzanite, kito cha bluu-zambarau kinachopatikana sehemu moja tu duniani, hapa Arusha." },
       o: [
-        { g: "tanzanite", l: { en: "💎 Buying Tanzanite safely", sw: "💎 Kununua Tanzanite salama" } },
-        { g: "maasai", l: { en: "🪘 Markets & bargaining", sw: "🪘 Masoko na kupunguza bei" } },
-        { g: "malls", l: { en: "🛒 Malls for essentials", sw: "🛒 Maduka ya mahitaji" } }
+        { g: "tanzanite", l: { en: "Buying Tanzanite safely", sw: "Kununua Tanzanite salama" } },
+        { g: "maasai", l: { en: "Markets & bargaining", sw: "Masoko na kupunguza bei" } },
+        { g: "malls", l: { en: "Malls for essentials", sw: "Maduka ya mahitaji" } }
       ]
     },
     tanzanite: {
       m: { en: "Tanzanite is a thousand times rarer than diamond and mined only at Mererani near Arusha. Buy from certified dealers (the Tanzanite Experience and Cultural Heritage Centre are reputable), always ask for a certificate of authenticity, and be cautious of 'too good to be true' street offers. It's the ultimate Arusha souvenir.",
            sw: "Tanzanite ni adimu mara elfu kuliko almasi na huchimbwa Mererani karibu na Arusha pekee. Nunua kutoka wauzaji walioidhinishwa (Tanzanite Experience na Kituo cha Urithi ni wa kuaminika), daima uliza cheti cha uhalisia, na kuwa makini na bei za mtaani 'nzuri mno'. Ni zawadi bora ya Arusha." },
-      o: [ { g: "page:#/explore", l: { en: "🗺️ Find it on the map", sw: "🗺️ Itafute kwenye ramani" } }, WA, HOME ]
+      o: [ { g: "page:#/explore", l: { en: "Find it on the map", sw: "Itafute kwenye ramani" } }, WA, HOME ]
     },
     malls: {
       m: { en: "For everyday needs — SIM cards, snacks, pharmacies, ATMs — Arusha has modern shopping at places like the city-centre supermarkets and malls. Handy for stocking up before a safari or grabbing a local SIM for data.",
@@ -3931,7 +3931,7 @@
           if (node) { goNode(node); return; }
           const key = /visa|immigration|uhamiaji/.test(q) ? "visa" : /match|afcon|mechi|stadium|uwanja/.test(q) ? "match" : "weather";
           bubble("bot", esc(L(facts[key])).replace(/\n/g, "<br>"));
-          renderOptions([{ g: "root", l: { en: "🧭 Explore more", sw: "🧭 Gundua zaidi" } }, WA]);
+          renderOptions([{ g: "root", l: { en: "Explore more", sw: "Gundua zaidi" } }, WA]);
           return;
         }
       }
@@ -3954,8 +3954,8 @@
           bubble("bot", esc(d.reply).replace(/\n/g, "<br>"));
           // keep guiding: always offer a few next taps so the user never dead-ends
           renderOptions([
-            { g: "book", l: { en: "🎟️ Help me book", sw: "🎟️ Nisaidie kuweka" } },
-            { g: "prices", l: { en: "💰 Prices", sw: "💰 Bei" } },
+            { g: "book", l: { en: "Help me book", sw: "Nisaidie kuweka" } },
+            { g: "prices", l: { en: "Prices", sw: "Bei" } },
             WA, MORE
           ]);
         } else {
