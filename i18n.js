@@ -1119,3 +1119,27 @@ window.I18N = {
     hero_sub: "Soka mchana, safari alfajiri — Arusha ni lango lako la Serengeti, Ngorongoro na Kilimanjaro. Pata mwendeshaji wa kuaminika, weka booking kwa sekunde."
   });
 })();
+
+/* v84 — Invest & Learn: clickable sector detail pages */
+(function(){ if(!window.I18N) return;
+  Object.assign(window.I18N.en, {
+    sec_learn_more: "Invest & learn",
+    sec_pill: "Invest & Learn",
+    sec_learn_h: "Skills to learn",
+    sec_start_h: "How to get started",
+    sec_partners_h: "Who to work with",
+    sec_enq_title: "Interested in this sector?",
+    sec_enq_sub: "Tell us your idea or question. Our team will get back to you.",
+    sec_msg_ph: "I'd like to learn more about…"
+  });
+  Object.assign(window.I18N.sw, {
+    sec_learn_more: "Wekeza & jifunze",
+    sec_pill: "Wekeza & Jifunze",
+    sec_learn_h: "Ujuzi wa kujifunza",
+    sec_start_h: "Jinsi ya kuanza",
+    sec_partners_h: "Nani wa kushirikiana naye",
+    sec_enq_title: "Una nia na sekta hii?",
+    sec_enq_sub: "Tuambie wazo au swali lako. Timu yetu itakujibu.",
+    sec_msg_ph: "Ningependa kujua zaidi kuhusu…"
+  });
+})();

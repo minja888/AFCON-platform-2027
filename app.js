@@ -1033,12 +1033,13 @@
         </div></div>
         <div class="inv-grid">
           ${inv.sectors.map(s => `
-            <div class="card inv-card">
+            <a class="card inv-card" href="#/sector/${s.id}">
               <span class="inv-icon">${svgIcon(s.ic, 26)}</span>
               <h3>${esc(L(s.name))}</h3>
               <p class="inv-stat">${esc(L(s.stat))}</p>
               <p class="muted">${esc(L(s.desc))}</p>
-            </div>`).join("")}
+              <span class="inv-more">${t("sec_learn_more")} →</span>
+            </a>`).join("")}
         </div>
         <div class="inv-safe">
           <h3>${t("inv_safe_title")}</h3>
@@ -1173,6 +1174,79 @@
       const col = CAT_COLOR[a.cat] || "#4d5f28";
       window.L.marker([a.lat, a.lng], { icon: window.L.divIcon({ className: "att-pin", html: `<svg viewBox="0 0 32 40" width="32" height="40"><path d="M16 1C8.3 1 2 7.1 2 14.7 2 25 16 39 16 39s14-14 14-24.3C30 7.1 23.7 1 16 1Z" fill="${col}" stroke="#fff" stroke-width="2"/><circle cx="16" cy="14.5" r="5.2" fill="#fff"/></svg>`, iconSize: [32, 40], iconAnchor: [16, 39] }) }).addTo(m);
     }).catch(() => {});
+  }
+
+  /* ===================================================================
+     VIEW: SECTOR (Invest & Learn — single opportunity, long-form)
+     Clickable from the Explore "Invest in Arusha" grid. Content lives in
+     window.SECTOR_LONG (sectors-long.js); the card data in INVESTMENTS.
+     =================================================================== */
+  function viewSector(id) {
+    const inv = window.INVESTMENTS || { sectors: [] };
+    const s = (inv.sectors || []).find(x => x.id === id);
+    const lng = (window.SECTOR_LONG || {})[id];
+    if (!s || !lng) return notFound();
+    const pick = (block) => block ? (block[lang] || block.en || []) : [];
+    const block = (titleKey, ic, items, ordered) => {
+      const list = pick(items);
+      if (!list.length) return "";
+      const tag = ordered ? "ol" : "ul";
+      return `
+        <div class="sec-block">
+          <h2 class="sec-h">${svgIcon(ic, 18)} ${t(titleKey)}</h2>
+          <${tag} class="sec-list ${ordered ? "sec-steps" : ""}">
+            ${list.map(x => `<li>${esc(x)}</li>`).join("")}
+          </${tag}>
+        </div>`;
+    };
+    return `
+      <section class="detail-hero grad-gold tz-band sec-hero">
+        <div class="container">
+          <a href="#/explore" class="back-link">← ${t("inv_title")}</a>
+          <span class="att-cat-pill place-pill">${svgIcon(s.ic, 14)} ${t("sec_pill")}</span>
+          <h1>${esc(L(s.name))}</h1>
+          <p class="detail-meta">${esc(L(s.stat))}</p>
+        </div>
+      </section>
+      <section class="container detail-body sec-body">
+        <div class="prose sec-prose">${pick(lng.intro).map(p => `<p>${esc(p)}</p>`).join("")}</div>
+        <div class="sec-cols">
+          ${block("sec_learn_h", "star", lng.learn, false)}
+          ${block("sec_start_h", "check", lng.start, true)}
+          ${block("sec_partners_h", "users", lng.partners, false)}
+        </div>
+        <form class="inv-form sec-form" id="secForm" novalidate>
+          <h3>${t("sec_enq_title")}</h3>
+          <p class="muted small">${t("sec_enq_sub")}</p>
+          <textarea class="acct-msg" id="secMsg" rows="3" placeholder="${t("inv_ph")}"></textarea>
+          <div class="form-ok" id="secOk" hidden>${t("acct_sent")}</div>
+          <button class="btn btn-gold" type="submit">${t("inv_send")}</button>
+        </form>
+        <div class="place-actions">
+          <a class="btn btn-ghost" href="#/explore">← ${t("inv_title")}</a>
+        </div>
+      </section>`;
+  }
+  function bindSector(id) {
+    const s = (window.INVESTMENTS?.sectors || []).find(x => x.id === id);
+    const form = document.getElementById("secForm");
+    if (!form || !s) return;
+    form.addEventListener("submit", (e) => {
+      e.preventDefault();
+      const msg = (document.getElementById("secMsg").value || "").trim();
+      if (!msg) return;
+      const u = getCurrentUser() || {};
+      const btn = form.querySelector("button[type=submit]"); btn.disabled = true;
+      const tagged = `[SECTOR:${id}] ` + msg;
+      sbInsert("submissions", {
+        type: "enquiry", name: u.name || null, email: u.email || null, phone: u.phone || null,
+        country: u.country || null, rating: null, lang, message: tagged
+      }).then(() => {
+        addActivity({ type: "enquiry", message: tagged });
+        document.getElementById("secOk").hidden = false;
+        document.getElementById("secMsg").value = ""; btn.disabled = false;
+      }).catch(() => { btn.disabled = false; alert(t("acct_err")); });
+    });
   }
 
   /* ===================================================================
@@ -3373,6 +3447,7 @@
       case "admin": html = viewAdmin(); break;
       case "explore": html = viewExplore(); break;
       case "place": html = viewPlace(param); break;
+      case "sector": html = viewSector(param); break;
       case "itineraries": html = viewItineraries(); break;
       case "partners": html = viewPartners(); break;
       case "partner-signup": html = viewPartnerSignup(); break;
@@ -3407,6 +3482,7 @@
     if (route === "admin") bindAdminPage();
     if (route === "explore") bindExplore();
     if (route === "place") bindPlace(param);
+    if (route === "sector") bindSector(param);
     if (route === "operators") bindOperators();
     if (route === "itineraries") bindItineraries();
     if (route === "partners") bindPartners();
