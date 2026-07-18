@@ -2334,11 +2334,11 @@ a.dcal-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-lg); b
 .cult-form { margin-top: 26px; }
 @media (max-width: 600px) { .cult-subnav { top: 58px; } }
 
-/* ===== v91 — LOGIN ALWAYS VISIBLE =====
-   The header keeps its normal look on every screen (full wordmark, tagline and
-   normal-size controls). The only change vs. the original v78 phone rules is that
-   .nav-login is no longer hidden below 400px — flexbox absorbs the extra width.
-   Must stay last so it wins over the earlier v78/v78c phone blocks. */
-@media (max-width: 400px) {
-  .header-actions .nav-login { display: inline-flex; }
-}
+/* ===== v92 — LOGIN LIVES IN THE MENU BAR =====
+   Login sits inside .main-nav with the other menu links, so it shows on every
+   screen size (in the hamburger menu on phones) without crowding the top bar.
+   No display override here: updateAuthNav() sets [hidden] after sign-in and the
+   UA's display:none must be allowed to win, so Login disappears once logged in. */
+.main-nav .nav-login { font-weight: 600; color: var(--gold-deep); }
+.main-nav .nav-login:hover { color: var(--gold); }
+[hidden] { display: none !important; }
