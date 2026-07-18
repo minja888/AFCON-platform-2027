@@ -1025,6 +1025,22 @@
         </div>
         <p class="commit-peace">${svgIcon("heart", 16)} ${t("commit_peace")}</p>
       </section>
+      <section class="container section cult-section" id="culture">
+        <div class="section-head"><div>
+          <span class="trips-kicker">${t("cult_kicker")}</span>
+          <h2>${t("cult_title")}</h2>
+          <p class="muted">${t("cult_sub")}</p>
+        </div></div>
+        <div class="cult-grid">
+          ${(window.CULTURE || []).map(c => `
+            <a class="cult-card ${c.grad || "grad-green"}" href="#/culture/${c.id}">
+              <span class="cult-card-ic">${svgIcon(c.ic, 24)}</span>
+              <h3>${esc(L(c.name))}</h3>
+              <p>${esc(L(c.tag))}</p>
+              <span class="cult-more">${t("cult_open")} →</span>
+            </a>`).join("")}
+        </div>
+      </section>
       <section class="container section inv-section" id="invest">
         <div class="section-head"><div>
           <span class="trips-kicker">${t("inv_kicker")}</span>
@@ -1245,6 +1261,79 @@
         addActivity({ type: "enquiry", message: tagged });
         document.getElementById("secOk").hidden = false;
         document.getElementById("secMsg").value = ""; btn.disabled = false;
+      }).catch(() => { btn.disabled = false; alert(t("acct_err")); });
+    });
+  }
+
+  /* ===================================================================
+     VIEW: CULTURE (Cultural Tourism — deep, clickable aspects)
+     Content in window.CULTURE / window.CULTURE_LONG (culture.js).
+     Sub-aspect chips scroll within the page to each section.
+     =================================================================== */
+  function viewCulture(id) {
+    const c = (window.CULTURE || []).find(x => x.id === id);
+    const lng = (window.CULTURE_LONG || {})[id];
+    if (!c || !lng) return notFound();
+    const pick = (block) => block ? (block[lang] || block.en || []) : [];
+    const secs = lng.sections || [];
+    const nav = secs.length > 1
+      ? `<div class="cult-subnav">${secs.map(s => `<a class="cult-chip" href="#cs-${s.id}" data-cs="${s.id}">${esc(L(s.name))}</a>`).join("")}</div>`
+      : "";
+    return `
+      <section class="detail-hero ${c.grad || "grad-brown"} tz-band cult-hero">
+        <div class="container">
+          <a href="#/explore" class="back-link">← ${t("cult_title")}</a>
+          <span class="att-cat-pill place-pill">${svgIcon(c.ic, 14)} ${t("cult_pill")}</span>
+          <h1>${esc(L(c.name))}</h1>
+          <p class="detail-meta">${esc(L(c.tag))}</p>
+        </div>
+      </section>
+      <section class="container detail-body cult-body">
+        <div class="prose cult-prose">${pick(lng.intro).map(p => `<p>${esc(p)}</p>`).join("")}</div>
+        ${nav}
+        <div class="cult-sections">
+          ${secs.map(s => `
+            <article class="cult-sec" id="cs-${s.id}">
+              <h2 class="cult-sec-h">${esc(L(s.name))}</h2>
+              ${pick(s.body).map(p => `<p>${esc(p)}</p>`).join("")}
+            </article>`).join("")}
+        </div>
+        <form class="inv-form cult-form" id="cultForm" novalidate>
+          <h3>${t("cult_enq_title")}</h3>
+          <p class="muted small">${t("cult_enq_sub")}</p>
+          <textarea class="acct-msg" id="cultMsg" rows="3" placeholder="${t("cult_msg_ph")}"></textarea>
+          <div class="form-ok" id="cultOk" hidden>${t("acct_sent")}</div>
+          <button class="btn btn-gold" type="submit">${t("inv_send")}</button>
+        </form>
+        <div class="place-actions">
+          <a class="btn btn-ghost" href="#/explore">← ${t("cult_title")}</a>
+        </div>
+      </section>`;
+  }
+  function bindCulture(id) {
+    const c = (window.CULTURE || []).find(x => x.id === id);
+    if (!c) return;
+    // smooth-scroll sub-aspect chips without touching the hash router
+    document.querySelectorAll(".cult-chip").forEach(a => a.addEventListener("click", (e) => {
+      e.preventDefault();
+      const el = document.getElementById("cs-" + a.dataset.cs);
+      if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+    }));
+    const form = document.getElementById("cultForm");
+    if (form) form.addEventListener("submit", (e) => {
+      e.preventDefault();
+      const msg = (document.getElementById("cultMsg").value || "").trim();
+      if (!msg) return;
+      const u = getCurrentUser() || {};
+      const btn = form.querySelector("button[type=submit]"); btn.disabled = true;
+      const tagged = `[CULTURE:${id}] ` + msg;
+      sbInsert("submissions", {
+        type: "enquiry", name: u.name || null, email: u.email || null, phone: u.phone || null,
+        country: u.country || null, rating: null, lang, message: tagged
+      }).then(() => {
+        addActivity({ type: "enquiry", message: tagged });
+        document.getElementById("cultOk").hidden = false;
+        document.getElementById("cultMsg").value = ""; btn.disabled = false;
       }).catch(() => { btn.disabled = false; alert(t("acct_err")); });
     });
   }
@@ -3448,6 +3537,7 @@
       case "explore": html = viewExplore(); break;
       case "place": html = viewPlace(param); break;
       case "sector": html = viewSector(param); break;
+      case "culture": html = viewCulture(param); break;
       case "itineraries": html = viewItineraries(); break;
       case "partners": html = viewPartners(); break;
       case "partner-signup": html = viewPartnerSignup(); break;
@@ -3483,6 +3573,7 @@
     if (route === "explore") bindExplore();
     if (route === "place") bindPlace(param);
     if (route === "sector") bindSector(param);
+    if (route === "culture") bindCulture(param);
     if (route === "operators") bindOperators();
     if (route === "itineraries") bindItineraries();
     if (route === "partners") bindPartners();

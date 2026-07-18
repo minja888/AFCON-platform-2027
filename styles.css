@@ -2310,3 +2310,27 @@ a.dcal-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-lg); b
 .sec-list.sec-steps li { position: relative; padding-left: 30px; margin-bottom: 12px; }
 .sec-list.sec-steps li::before { counter-increment: step; content: counter(step); position: absolute; left: 0; top: 0; width: 21px; height: 21px; border-radius: 50%; background: linear-gradient(135deg, var(--gold), var(--gold-deep)); color: #fff; font-size: .74rem; font-weight: 700; display: flex; align-items: center; justify-content: center; }
 .sec-form { margin-top: 26px; }
+
+/* ===== CULTURAL TOURISM — grid + deep pages — v85 ===== */
+.cult-section { margin-top: 8px; }
+.cult-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 16px; margin-top: 16px; }
+.cult-card { position: relative; display: flex; flex-direction: column; min-height: 172px; padding: 20px; border-radius: var(--radius); color: #fff; text-decoration: none; overflow: hidden; box-shadow: var(--shadow); transition: transform .18s ease, box-shadow .18s ease; }
+.cult-card::after { content: ""; position: absolute; inset: 0; background: linear-gradient(160deg, rgba(20,16,10,.12), rgba(20,16,10,.55)); z-index: 0; }
+.cult-card > * { position: relative; z-index: 1; }
+.cult-card:hover { transform: translateY(-4px); box-shadow: 0 14px 30px rgba(20,24,14,.22); }
+.cult-card-ic { display: inline-flex; align-items: center; justify-content: center; width: 44px; height: 44px; border-radius: 12px; background: rgba(255,255,255,.2); color: #fff; margin-bottom: auto; }
+.cult-card h3 { font-family: var(--display); font-weight: 700; font-size: 1.12rem; margin: 12px 0 4px; }
+.cult-card p { font-size: .86rem; line-height: 1.4; opacity: .95; margin: 0 0 8px; }
+.cult-more { font-size: .8rem; font-weight: 700; letter-spacing: .02em; }
+/* deep page */
+.cult-body { max-width: 900px; }
+.cult-prose p { line-height: 1.75; margin: 0 0 15px; color: var(--ink, #2a2418); }
+.cult-subnav { display: flex; flex-wrap: wrap; gap: 8px; margin: 6px 0 24px; position: sticky; top: 66px; background: var(--bg, #faf4e8); padding: 10px 0; z-index: 5; border-bottom: 1px solid var(--line); }
+.cult-chip { font-size: .84rem; font-weight: 600; padding: 7px 13px; border-radius: 999px; background: var(--sand); border: 1px solid var(--line); color: var(--green-deep); text-decoration: none; transition: background .15s ease, color .15s ease; }
+.cult-chip:hover { background: var(--gold); color: #fff; border-color: var(--gold); }
+.cult-sec { scroll-margin-top: 120px; padding: 22px 0; border-top: 1px solid var(--line); }
+.cult-sec:first-child { border-top: none; }
+.cult-sec-h { font-family: var(--display); font-weight: 700; font-size: 1.28rem; color: var(--green-deep); margin: 0 0 12px; }
+.cult-sec p { line-height: 1.72; margin: 0 0 12px; }
+.cult-form { margin-top: 26px; }
+@media (max-width: 600px) { .cult-subnav { top: 58px; } }

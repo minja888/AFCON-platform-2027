@@ -1143,3 +1143,27 @@ window.I18N = {
     sec_msg_ph: "Ningependa kujua zaidi kuhusu…"
   });
 })();
+
+/* v85 — Cultural Tourism: deep, clickable aspect pages */
+(function(){ if(!window.I18N) return;
+  Object.assign(window.I18N.en, {
+    cult_kicker: "Cultural tourism",
+    cult_title: "The living culture of Arusha",
+    cult_sub: "Meet the people, taste the food, hear the drums — deep, respectful, community-run experiences. Tap any theme to explore.",
+    cult_open: "Explore",
+    cult_pill: "Cultural Tourism",
+    cult_enq_title: "Want to experience this?",
+    cult_enq_sub: "Tell us what interests you and we'll connect you with a trusted, community-run programme.",
+    cult_msg_ph: "I'd love to visit / learn about…"
+  });
+  Object.assign(window.I18N.sw, {
+    cult_kicker: "Utalii wa utamaduni",
+    cult_title: "Utamaduni hai wa Arusha",
+    cult_sub: "Kutana na watu, onja chakula, sikia ngoma — uzoefu wa kina, wenye heshima, unaoendeshwa na jamii. Gusa mada yoyote kuchunguza.",
+    cult_open: "Chunguza",
+    cult_pill: "Utalii wa Utamaduni",
+    cult_enq_title: "Ungependa kupata uzoefu huu?",
+    cult_enq_sub: "Tuambie kinachokuvutia nasi tutakuunganisha na programu ya kuaminika inayoendeshwa na jamii.",
+    cult_msg_ph: "Ningependa kutembelea / kujifunza kuhusu…"
+  });
+})();
